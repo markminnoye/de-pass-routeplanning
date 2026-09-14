@@ -53,3 +53,5 @@ def test_compare_markdown_table(school, students, buses, fake_client):
     md = compare_markdown([d, {**d, "scenario": "other"}])
     assert md.splitlines()[0].startswith("| Scenario")
     assert "| r " in md and "| other " in md
+    assert "| Bussen |" in md.splitlines()[0]
+    assert "| r | 2 |" in md

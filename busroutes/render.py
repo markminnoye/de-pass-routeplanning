@@ -15,6 +15,7 @@ BUS_COLOURS = ["#d7263d", "#1b7f79", "#f46036", "#2e294e", "#3a86ff", "#8338ec",
 
 COMPARE_COLUMNS = [
     ("scenario", "Scenario"),
+    ("buses_used", "Bussen"),
     ("max_ride_min", "Langste rit (min)"),
     ("avg_ride_min", "Gem. rit (min)"),
     ("median_ride_min", "Mediaan rit (min)"),

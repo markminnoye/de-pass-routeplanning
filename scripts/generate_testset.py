@@ -51,7 +51,7 @@ ZONES: dict[str, tuple[float, float, float, int]] = {
 }
 
 BUS_COUNT = 7
-BUS_CAPACITY = 20
+BUS_CAPACITY = 30
 
 PICKUP_POINTS = {
     "pp-tienen-station": {"lat": 50.8085, "lon": 4.9245, "name": "Tienen station"},

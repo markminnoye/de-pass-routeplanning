@@ -2,7 +2,7 @@
 
 **Doel:** AI-gedreven route-optimalisatie voor de 7 schoolbussen van "de pass" (Hoegaarden) — scenario's simuleren en vergelijken, met als kernvraag een zo kort mogelijke individuele rit per kind (niet de laagste vlootkost).
 
-**Schaal:** 7 bussen × ±20 kinderen/bus (±140 leerlingen totaal).
+**Schaal:** 7 bussen × max. 30 kinderen/bus (aanname 14/09/2026), ±140 leerlingen totaal.
 
 ### Context Routing (Read Order)
 

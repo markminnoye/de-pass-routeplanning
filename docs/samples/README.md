@@ -38,7 +38,9 @@ om scenario's mee op te bouwen; de evaluator gebruikt het niet.
 
 ### `buses.json`
 
-Lijst van `{"id": "bus1", "capacity": 20, "start": "school"}`. `start` is waar de bus zijn
+Lijst van `{"id": "bus1", "capacity": 30, "start": "school"}`. Capaciteit 30 is de aanname
+van Mark (14/09/2026) als fysieke bovengrens voor alle bussen — geen streefcijfer: de doelfunctie
+blijft rittijd per kind, dus scenario's hoeven een bus niet vol te zetten. Per bus aanpasbaar. `start` is waar de bus zijn
 rit begint: `"school"` of `{"lat": ..., "lon": ...}` (bv. een stelplaats). Rittijd per kind
 hangt hier niet van af, totale rijtijd/km wel.
 
@@ -83,7 +85,7 @@ thuisstop — die verplaatsing zit **niet** in `ride_min`).
   - `"auto"` — de evaluator bepaalt zelf een volgorde per bus (heuristiek op de TomTom-matrix;
     minimaliseert routelengte, niet rittijd per kind).
 - Regels die de evaluator afdwingt: elke leerling exact één keer toegewezen, aantal instappers
-  per bus ≤ `capacity`, elke `bus_id` bestaat in `buses.json`. Overtreding = foutmelding.
+  per bus ≤ `capacity` (30), elke `bus_id` bestaat in `buses.json`. Overtreding = foutmelding.
 
 ### Meegeleverde scenario's
 

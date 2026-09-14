@@ -15,7 +15,8 @@ bezetting, vertrek- en aankomsttijden, plus een kaart. Geen solver: de indeling 
    Mark het wil bewaren). Formaat: `docs/samples/README.md`. Kopieer een referentie uit
    `docs/samples/scenarios/` en pas aan. Bronnen: leerlingen per zone in
    `docs/samples/students.json` (`zone`), opstapplaatsen in `docs/samples/pickup_points.json`.
-   Regels: elke leerling exact één keer, max. 20 per bus. `ordering: "auto"` als default;
+   Regels: elke leerling exact één keer, max. 30 per bus (`docs/samples/buses.json`;
+   bovengrens, geen streefcijfer — niet alle 7 bussen hoeven gebruikt). `ordering: "auto"` als default;
    per bus overschrijfbaar met `"ordering": "given"` in het bus-object (dan geldt de
    opgegeven stopvolgorde voor die bus alleen).
    Zet een scenario **alleen** in `docs/samples/scenarios/` + `expected/` als Mark het als
@@ -31,7 +32,8 @@ bezetting, vertrek- en aankomsttijden, plus een kaart. Geen solver: de indeling 
    reken die eerst (opnieuw) door met `... evaluate docs/samples/scenarios/<naam>.json`.
    Probeersels (bv. meerdere handmatige volgordes bij `given` — probeer er minstens twee)
    met `--out <scratchmap>` zodat `out/` alleen echte varianten bevat.
-3. **Vergelijken**: `uv run busroutes compare out/*/metrics.json` → markdown-tabel.
+3. **Vergelijken**: `uv run busroutes compare out/*/metrics.json` → markdown-tabel (incl.
+   aantal gebruikte bussen).
    Verander per scenario **één ding** t.o.v. een referentie, of vergelijk alleen de
    gewijzigde bus(sen) (`metrics.json` → `buses[]`); anders vergelijk je appels met peren.
 4. **Rapporteren**: de `compare`-tabel (langste/gem./mediaan rit, ritten > 60 min, max.
