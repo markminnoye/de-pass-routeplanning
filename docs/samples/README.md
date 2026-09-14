@@ -1,0 +1,72 @@
+# Fictieve testset
+
+Alles in deze map is **verzonnen** en deterministisch gegenereerd door
+`scripts/generate_testset.py` (vaste seed). Er staan geen echte adressen of namen in;
+de punten liggen willekeurig verspreid rond echte dorpskernen in de regio Hoegaarden.
+Regenereren: `uv run python scripts/generate_testset.py` (geeft byte-identieke output).
+
+Zie AGENTS.md, sectie "Privacy": echte leerlingdata komt hier nooit in.
+
+## Bestanden
+
+### `school.json`
+
+```json
+{"id": "school", "name": "...", "lat": 50.778, "lon": 4.896, "target_arrival": "08:20"}
+```
+
+`target_arrival` is de gewenste aankomsttijd van alle bussen aan de school (lokale tijd,
+Europe/Brussels). De evaluator rekent hiervan terug naar ophaaltijden en vertrektijd per bus.
+De echte beltijd is nog te bevestigen door de school.
+
+### `students.json`
+
+Lijst van `{"id": "s001", "lat": ..., "lon": ..., "zone": "tienen"}`. 140 leerlingen,
+ids per zone gegroepeerd (s001–s030 = hoegaarden-centrum, enz.). `zone` is enkel een label
+om scenario's mee op te bouwen; de evaluator gebruikt het niet.
+
+### `buses.json`
+
+Lijst van `{"id": "bus1", "capacity": 20, "start": "school"}`. `start` is waar de bus zijn
+rit begint: `"school"` of `{"lat": ..., "lon": ...}` (bv. een stelplaats). Rittijd per kind
+hangt hier niet van af, totale rijtijd/km wel.
+
+### `scenarios/*.json` — scenario-formaat
+
+```json
+{
+  "name": "regiobus-per-zone",
+  "description": "vrije tekst",
+  "ordering": "auto",
+  "buses": [
+    {
+      "bus_id": "bus4",
+      "stops": [
+        "s041",
+        {"id": "pp-tienen-station", "lat": 50.8085, "lon": 4.9245, "name": "Tienen station",
+         "students": ["s042", "s043"]}
+      ]
+    }
+  ]
+}
+```
+
+- Een **stop** is een locatie plus de leerlingen die daar instappen.
+  - Een string (`"s041"`) is een thuisstop: locatie = het punt van die leerling, één instapper.
+  - Een object is een **vaste opstapplaats** met eigen coördinaten en een lijst `students`.
+- `ordering`:
+  - `"given"` — de bus rijdt de stops exact in de opgegeven volgorde.
+  - `"auto"` — de evaluator bepaalt zelf een volgorde per bus (heuristiek op de TomTom-matrix).
+- Regels die de evaluator afdwingt: elke leerling exact één keer toegewezen, aantal instappers
+  per bus ≤ `capacity`, elke `bus_id` bestaat in `buses.json`. Overtreding = foutmelding.
+
+### Meegeleverde scenario's
+
+| Scenario | Idee |
+|---|---|
+| `spreiding-gemengd` | Negatieve referentie: leerlingen willekeurig over de bussen, zones gemengd. |
+| `regiobus-per-zone` | Elke bus bedient één streek; bus6 = regiobus Leuven/Bierbeek, bus7 = Landen/Linter/Zoutleeuw. Ophalen aan huis. |
+| `opstapplaatsen` | Zoals per-zone, maar Tienen via station + Grote Markt en Leuven via het station. |
+
+Zones en aantallen: hoegaarden-centrum 30, tienen 24, leuven 14, meldert 10, boutersem 10,
+landen 10, outgaarden 8, hoksem 6, jodoigne 6, kumtich 6, bierbeek 6, linter 6, zoutleeuw 4.

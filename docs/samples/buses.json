@@ -1,0 +1,37 @@
+[
+  {
+    "id": "bus1",
+    "capacity": 20,
+    "start": "school"
+  },
+  {
+    "id": "bus2",
+    "capacity": 20,
+    "start": "school"
+  },
+  {
+    "id": "bus3",
+    "capacity": 20,
+    "start": "school"
+  },
+  {
+    "id": "bus4",
+    "capacity": 20,
+    "start": "school"
+  },
+  {
+    "id": "bus5",
+    "capacity": 20,
+    "start": "school"
+  },
+  {
+    "id": "bus6",
+    "capacity": 20,
+    "start": "school"
+  },
+  {
+    "id": "bus7",
+    "capacity": 20,
+    "start": "school"
+  }
+]

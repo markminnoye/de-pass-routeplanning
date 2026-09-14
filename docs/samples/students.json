@@ -1,0 +1,842 @@
+[
+  {
+    "id": "s001",
+    "lat": 50.771857,
+    "lon": 4.883719,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s002",
+    "lat": 50.769653,
+    "lon": 4.884861,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s003",
+    "lat": 50.775237,
+    "lon": 4.877758,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s004",
+    "lat": 50.770867,
+    "lon": 4.881278,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s005",
+    "lat": 50.768419,
+    "lon": 4.887207,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s006",
+    "lat": 50.773556,
+    "lon": 4.884841,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s007",
+    "lat": 50.77525,
+    "lon": 4.886279,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s008",
+    "lat": 50.776088,
+    "lon": 4.894504,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s009",
+    "lat": 50.78152,
+    "lon": 4.895794,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s010",
+    "lat": 50.77819,
+    "lon": 4.883083,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s011",
+    "lat": 50.770373,
+    "lon": 4.892385,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s012",
+    "lat": 50.776762,
+    "lon": 4.880892,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s013",
+    "lat": 50.773177,
+    "lon": 4.889229,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s014",
+    "lat": 50.771188,
+    "lon": 4.887355,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s015",
+    "lat": 50.781003,
+    "lon": 4.88074,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s016",
+    "lat": 50.774069,
+    "lon": 4.899095,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s017",
+    "lat": 50.779197,
+    "lon": 4.883964,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s018",
+    "lat": 50.775254,
+    "lon": 4.884894,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s019",
+    "lat": 50.768352,
+    "lon": 4.886129,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s020",
+    "lat": 50.774267,
+    "lon": 4.892811,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s021",
+    "lat": 50.779025,
+    "lon": 4.882726,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s022",
+    "lat": 50.7753,
+    "lon": 4.896948,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s023",
+    "lat": 50.779765,
+    "lon": 4.895971,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s024",
+    "lat": 50.777035,
+    "lon": 4.889563,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s025",
+    "lat": 50.773417,
+    "lon": 4.882273,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s026",
+    "lat": 50.782722,
+    "lon": 4.890332,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s027",
+    "lat": 50.777431,
+    "lon": 4.877451,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s028",
+    "lat": 50.771925,
+    "lon": 4.895982,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s029",
+    "lat": 50.769421,
+    "lon": 4.887188,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s030",
+    "lat": 50.773727,
+    "lon": 4.87857,
+    "zone": "hoegaarden-centrum"
+  },
+  {
+    "id": "s031",
+    "lat": 50.760991,
+    "lon": 4.885649,
+    "zone": "meldert"
+  },
+  {
+    "id": "s032",
+    "lat": 50.759896,
+    "lon": 4.887936,
+    "zone": "meldert"
+  },
+  {
+    "id": "s033",
+    "lat": 50.762121,
+    "lon": 4.890234,
+    "zone": "meldert"
+  },
+  {
+    "id": "s034",
+    "lat": 50.760582,
+    "lon": 4.879808,
+    "zone": "meldert"
+  },
+  {
+    "id": "s035",
+    "lat": 50.766159,
+    "lon": 4.880699,
+    "zone": "meldert"
+  },
+  {
+    "id": "s036",
+    "lat": 50.76041,
+    "lon": 4.880732,
+    "zone": "meldert"
+  },
+  {
+    "id": "s037",
+    "lat": 50.761908,
+    "lon": 4.888457,
+    "zone": "meldert"
+  },
+  {
+    "id": "s038",
+    "lat": 50.764085,
+    "lon": 4.886913,
+    "zone": "meldert"
+  },
+  {
+    "id": "s039",
+    "lat": 50.759324,
+    "lon": 4.881931,
+    "zone": "meldert"
+  },
+  {
+    "id": "s040",
+    "lat": 50.759686,
+    "lon": 4.882507,
+    "zone": "meldert"
+  },
+  {
+    "id": "s041",
+    "lat": 50.762305,
+    "lon": 4.920813,
+    "zone": "outgaarden"
+  },
+  {
+    "id": "s042",
+    "lat": 50.759908,
+    "lon": 4.921054,
+    "zone": "outgaarden"
+  },
+  {
+    "id": "s043",
+    "lat": 50.761342,
+    "lon": 4.922842,
+    "zone": "outgaarden"
+  },
+  {
+    "id": "s044",
+    "lat": 50.760808,
+    "lon": 4.916123,
+    "zone": "outgaarden"
+  },
+  {
+    "id": "s045",
+    "lat": 50.761065,
+    "lon": 4.914299,
+    "zone": "outgaarden"
+  },
+  {
+    "id": "s046",
+    "lat": 50.756385,
+    "lon": 4.916244,
+    "zone": "outgaarden"
+  },
+  {
+    "id": "s047",
+    "lat": 50.761789,
+    "lon": 4.921995,
+    "zone": "outgaarden"
+  },
+  {
+    "id": "s048",
+    "lat": 50.759667,
+    "lon": 4.917561,
+    "zone": "outgaarden"
+  },
+  {
+    "id": "s049",
+    "lat": 50.788277,
+    "lon": 4.916616,
+    "zone": "hoksem"
+  },
+  {
+    "id": "s050",
+    "lat": 50.79092,
+    "lon": 4.916967,
+    "zone": "hoksem"
+  },
+  {
+    "id": "s051",
+    "lat": 50.789515,
+    "lon": 4.919975,
+    "zone": "hoksem"
+  },
+  {
+    "id": "s052",
+    "lat": 50.789925,
+    "lon": 4.911543,
+    "zone": "hoksem"
+  },
+  {
+    "id": "s053",
+    "lat": 50.785817,
+    "lon": 4.914231,
+    "zone": "hoksem"
+  },
+  {
+    "id": "s054",
+    "lat": 50.786499,
+    "lon": 4.919186,
+    "zone": "hoksem"
+  },
+  {
+    "id": "s055",
+    "lat": 50.725474,
+    "lon": 4.874426,
+    "zone": "jodoigne"
+  },
+  {
+    "id": "s056",
+    "lat": 50.723401,
+    "lon": 4.871621,
+    "zone": "jodoigne"
+  },
+  {
+    "id": "s057",
+    "lat": 50.729468,
+    "lon": 4.870966,
+    "zone": "jodoigne"
+  },
+  {
+    "id": "s058",
+    "lat": 50.718962,
+    "lon": 4.869959,
+    "zone": "jodoigne"
+  },
+  {
+    "id": "s059",
+    "lat": 50.725577,
+    "lon": 4.86689,
+    "zone": "jodoigne"
+  },
+  {
+    "id": "s060",
+    "lat": 50.720927,
+    "lon": 4.867307,
+    "zone": "jodoigne"
+  },
+  {
+    "id": "s061",
+    "lat": 50.802496,
+    "lon": 4.93885,
+    "zone": "tienen"
+  },
+  {
+    "id": "s062",
+    "lat": 50.800176,
+    "lon": 4.93468,
+    "zone": "tienen"
+  },
+  {
+    "id": "s063",
+    "lat": 50.81718,
+    "lon": 4.944412,
+    "zone": "tienen"
+  },
+  {
+    "id": "s064",
+    "lat": 50.812867,
+    "lon": 4.933504,
+    "zone": "tienen"
+  },
+  {
+    "id": "s065",
+    "lat": 50.810832,
+    "lon": 4.942815,
+    "zone": "tienen"
+  },
+  {
+    "id": "s066",
+    "lat": 50.818288,
+    "lon": 4.933777,
+    "zone": "tienen"
+  },
+  {
+    "id": "s067",
+    "lat": 50.805319,
+    "lon": 4.924886,
+    "zone": "tienen"
+  },
+  {
+    "id": "s068",
+    "lat": 50.809383,
+    "lon": 4.927631,
+    "zone": "tienen"
+  },
+  {
+    "id": "s069",
+    "lat": 50.797813,
+    "lon": 4.945643,
+    "zone": "tienen"
+  },
+  {
+    "id": "s070",
+    "lat": 50.796972,
+    "lon": 4.9443,
+    "zone": "tienen"
+  },
+  {
+    "id": "s071",
+    "lat": 50.811568,
+    "lon": 4.925646,
+    "zone": "tienen"
+  },
+  {
+    "id": "s072",
+    "lat": 50.817129,
+    "lon": 4.942843,
+    "zone": "tienen"
+  },
+  {
+    "id": "s073",
+    "lat": 50.79588,
+    "lon": 4.935201,
+    "zone": "tienen"
+  },
+  {
+    "id": "s074",
+    "lat": 50.809252,
+    "lon": 4.926549,
+    "zone": "tienen"
+  },
+  {
+    "id": "s075",
+    "lat": 50.808827,
+    "lon": 4.944191,
+    "zone": "tienen"
+  },
+  {
+    "id": "s076",
+    "lat": 50.814766,
+    "lon": 4.924449,
+    "zone": "tienen"
+  },
+  {
+    "id": "s077",
+    "lat": 50.814989,
+    "lon": 4.950991,
+    "zone": "tienen"
+  },
+  {
+    "id": "s078",
+    "lat": 50.809226,
+    "lon": 4.935701,
+    "zone": "tienen"
+  },
+  {
+    "id": "s079",
+    "lat": 50.797742,
+    "lon": 4.929078,
+    "zone": "tienen"
+  },
+  {
+    "id": "s080",
+    "lat": 50.80054,
+    "lon": 4.929536,
+    "zone": "tienen"
+  },
+  {
+    "id": "s081",
+    "lat": 50.7993,
+    "lon": 4.939131,
+    "zone": "tienen"
+  },
+  {
+    "id": "s082",
+    "lat": 50.808473,
+    "lon": 4.946198,
+    "zone": "tienen"
+  },
+  {
+    "id": "s083",
+    "lat": 50.80087,
+    "lon": 4.939741,
+    "zone": "tienen"
+  },
+  {
+    "id": "s084",
+    "lat": 50.807059,
+    "lon": 4.949679,
+    "zone": "tienen"
+  },
+  {
+    "id": "s085",
+    "lat": 50.815431,
+    "lon": 4.895348,
+    "zone": "kumtich"
+  },
+  {
+    "id": "s086",
+    "lat": 50.817699,
+    "lon": 4.891594,
+    "zone": "kumtich"
+  },
+  {
+    "id": "s087",
+    "lat": 50.813938,
+    "lon": 4.89613,
+    "zone": "kumtich"
+  },
+  {
+    "id": "s088",
+    "lat": 50.817034,
+    "lon": 4.898966,
+    "zone": "kumtich"
+  },
+  {
+    "id": "s089",
+    "lat": 50.81421,
+    "lon": 4.895162,
+    "zone": "kumtich"
+  },
+  {
+    "id": "s090",
+    "lat": 50.816112,
+    "lon": 4.892878,
+    "zone": "kumtich"
+  },
+  {
+    "id": "s091",
+    "lat": 50.833783,
+    "lon": 4.843682,
+    "zone": "boutersem"
+  },
+  {
+    "id": "s092",
+    "lat": 50.833533,
+    "lon": 4.827865,
+    "zone": "boutersem"
+  },
+  {
+    "id": "s093",
+    "lat": 50.829388,
+    "lon": 4.835229,
+    "zone": "boutersem"
+  },
+  {
+    "id": "s094",
+    "lat": 50.834877,
+    "lon": 4.832084,
+    "zone": "boutersem"
+  },
+  {
+    "id": "s095",
+    "lat": 50.827306,
+    "lon": 4.83774,
+    "zone": "boutersem"
+  },
+  {
+    "id": "s096",
+    "lat": 50.837052,
+    "lon": 4.832155,
+    "zone": "boutersem"
+  },
+  {
+    "id": "s097",
+    "lat": 50.828585,
+    "lon": 4.837795,
+    "zone": "boutersem"
+  },
+  {
+    "id": "s098",
+    "lat": 50.835742,
+    "lon": 4.832103,
+    "zone": "boutersem"
+  },
+  {
+    "id": "s099",
+    "lat": 50.830033,
+    "lon": 4.841636,
+    "zone": "boutersem"
+  },
+  {
+    "id": "s100",
+    "lat": 50.837583,
+    "lon": 4.830355,
+    "zone": "boutersem"
+  },
+  {
+    "id": "s101",
+    "lat": 50.829013,
+    "lon": 4.767298,
+    "zone": "bierbeek"
+  },
+  {
+    "id": "s102",
+    "lat": 50.826414,
+    "lon": 4.75239,
+    "zone": "bierbeek"
+  },
+  {
+    "id": "s103",
+    "lat": 50.82557,
+    "lon": 4.765907,
+    "zone": "bierbeek"
+  },
+  {
+    "id": "s104",
+    "lat": 50.828021,
+    "lon": 4.762237,
+    "zone": "bierbeek"
+  },
+  {
+    "id": "s105",
+    "lat": 50.832018,
+    "lon": 4.760597,
+    "zone": "bierbeek"
+  },
+  {
+    "id": "s106",
+    "lat": 50.823153,
+    "lon": 4.763443,
+    "zone": "bierbeek"
+  },
+  {
+    "id": "s107",
+    "lat": 50.887099,
+    "lon": 4.684365,
+    "zone": "leuven"
+  },
+  {
+    "id": "s108",
+    "lat": 50.873175,
+    "lon": 4.708309,
+    "zone": "leuven"
+  },
+  {
+    "id": "s109",
+    "lat": 50.88115,
+    "lon": 4.694604,
+    "zone": "leuven"
+  },
+  {
+    "id": "s110",
+    "lat": 50.872764,
+    "lon": 4.716949,
+    "zone": "leuven"
+  },
+  {
+    "id": "s111",
+    "lat": 50.882317,
+    "lon": 4.693363,
+    "zone": "leuven"
+  },
+  {
+    "id": "s112",
+    "lat": 50.888202,
+    "lon": 4.705469,
+    "zone": "leuven"
+  },
+  {
+    "id": "s113",
+    "lat": 50.879308,
+    "lon": 4.721695,
+    "zone": "leuven"
+  },
+  {
+    "id": "s114",
+    "lat": 50.879373,
+    "lon": 4.702943,
+    "zone": "leuven"
+  },
+  {
+    "id": "s115",
+    "lat": 50.890548,
+    "lon": 4.692947,
+    "zone": "leuven"
+  },
+  {
+    "id": "s116",
+    "lat": 50.877215,
+    "lon": 4.698734,
+    "zone": "leuven"
+  },
+  {
+    "id": "s117",
+    "lat": 50.889195,
+    "lon": 4.696472,
+    "zone": "leuven"
+  },
+  {
+    "id": "s118",
+    "lat": 50.88015,
+    "lon": 4.72008,
+    "zone": "leuven"
+  },
+  {
+    "id": "s119",
+    "lat": 50.875301,
+    "lon": 4.68185,
+    "zone": "leuven"
+  },
+  {
+    "id": "s120",
+    "lat": 50.869802,
+    "lon": 4.704838,
+    "zone": "leuven"
+  },
+  {
+    "id": "s121",
+    "lat": 50.746821,
+    "lon": 5.084994,
+    "zone": "landen"
+  },
+  {
+    "id": "s122",
+    "lat": 50.746443,
+    "lon": 5.075792,
+    "zone": "landen"
+  },
+  {
+    "id": "s123",
+    "lat": 50.754456,
+    "lon": 5.080996,
+    "zone": "landen"
+  },
+  {
+    "id": "s124",
+    "lat": 50.750884,
+    "lon": 5.079024,
+    "zone": "landen"
+  },
+  {
+    "id": "s125",
+    "lat": 50.753605,
+    "lon": 5.079121,
+    "zone": "landen"
+  },
+  {
+    "id": "s126",
+    "lat": 50.754159,
+    "lon": 5.073977,
+    "zone": "landen"
+  },
+  {
+    "id": "s127",
+    "lat": 50.750516,
+    "lon": 5.067867,
+    "zone": "landen"
+  },
+  {
+    "id": "s128",
+    "lat": 50.756127,
+    "lon": 5.070302,
+    "zone": "landen"
+  },
+  {
+    "id": "s129",
+    "lat": 50.754137,
+    "lon": 5.085953,
+    "zone": "landen"
+  },
+  {
+    "id": "s130",
+    "lat": 50.751828,
+    "lon": 5.080828,
+    "zone": "landen"
+  },
+  {
+    "id": "s131",
+    "lat": 50.829805,
+    "lon": 5.036453,
+    "zone": "linter"
+  },
+  {
+    "id": "s132",
+    "lat": 50.833398,
+    "lon": 5.035524,
+    "zone": "linter"
+  },
+  {
+    "id": "s133",
+    "lat": 50.832707,
+    "lon": 5.030928,
+    "zone": "linter"
+  },
+  {
+    "id": "s134",
+    "lat": 50.832877,
+    "lon": 5.043289,
+    "zone": "linter"
+  },
+  {
+    "id": "s135",
+    "lat": 50.838744,
+    "lon": 5.032215,
+    "zone": "linter"
+  },
+  {
+    "id": "s136",
+    "lat": 50.837871,
+    "lon": 5.038344,
+    "zone": "linter"
+  },
+  {
+    "id": "s137",
+    "lat": 50.829763,
+    "lon": 5.105714,
+    "zone": "zoutleeuw"
+  },
+  {
+    "id": "s138",
+    "lat": 50.833198,
+    "lon": 5.096531,
+    "zone": "zoutleeuw"
+  },
+  {
+    "id": "s139",
+    "lat": 50.829406,
+    "lon": 5.108024,
+    "zone": "zoutleeuw"
+  },
+  {
+    "id": "s140",
+    "lat": 50.830547,
+    "lon": 5.101298,
+    "zone": "zoutleeuw"
+  }
+]
