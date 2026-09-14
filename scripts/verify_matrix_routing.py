@@ -12,7 +12,7 @@ import os
 import sys
 import urllib.error
 import urllib.request
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -99,9 +99,7 @@ def main() -> int:
         f"{summary.get('travelTimeInSeconds')}s "
         f"delay={summary.get('trafficDelayInSeconds')}s"
     )
-    print(
-        f"times={summary.get('departureTime')} -> {summary.get('arrivalTime')}"
-    )
+    print(f"times={summary.get('departureTime')} -> {summary.get('arrivalTime')}")
     print(
         f"statistics=total:{stats.get('totalCount')} "
         f"ok:{stats.get('successes')} fail:{stats.get('failures')}"

@@ -18,12 +18,27 @@ Uitgangspunt: we hebben drie losse lagen nodig, en dat is meteen de belangrijkst
 
 | Optie | Status in Claude registry | Wat het levert | Link |
 |---|---|---|---|
-| **TomTom Maps** | ✅ Installeerbare connector | Geocoding, routing, **verkeersdata** | [developer.tomtom.com](https://developer.tomtom.com/) |
+| **TomTom Maps** | ✅ Installeerbare connector | Geocoding, routing, **verkeersdata** | [developer.tomtom.com](https://developer.tomtom.com/) · MCP: [overview](https://docs.tomtom.com/tomtom-maps-mcp/documentation/overview), [tools](https://docs.tomtom.com/tomtom-maps-mcp/documentation/tools), [quick-setup](https://docs.tomtom.com/tomtom-maps-mcp/documentation/quick-setup), [Claude Desktop](https://docs.tomtom.com/tomtom-maps-mcp/documentation/integration-guides/claude-desktop), [GitHub](https://github.com/tomtom-international/tomtom-mcp) |
 | Google Maps / Routes API | ❌ Geen connector | Rechtstreeks aan te roepen met eigen API-key (zie onder) | [developers.google.com/maps](https://developers.google.com/maps) |
 | Mapbox | ❌ Geen connector | Idem | [docs.mapbox.com](https://docs.mapbox.com/api/navigation/) |
 | OpenRouteService (OSM-based) | ❌ Geen connector, wel gratis publieke API | Geocoding + matrix bruikbaar; optimalisatie zwaar gelimiteerd | [openrouteservice.org](https://openrouteservice.org/) |
 
 Van de vier genoemde kandidaten is **enkel TomTom nu als connector te activeren** in Claude.
+
+### Wat de TomTom MCP-connector wel en niet kan (nagekeken 14/09/2026)
+
+De officiële server ([tomtom-international/tomtom-mcp](https://github.com/tomtom-international/tomtom-mcp), npm `@tomtom-org/tomtom-mcp`, of hosted op `https://mcp.tomtom.com/maps` — "public preview", authenticatie met dezelfde API-key) biedt 11 tools: `tomtom-geocode`, `tomtom-reverse-geocode`, `tomtom-fuzzy-search`, `tomtom-poi-search`, `tomtom-nearby`, `tomtom-routing` (A→B), `tomtom-waypoint-routing` (meerdere stops in vaste volgorde; `departAt`/`arriveAt`, `traffic`, `computeBestOrder`), `tomtom-reachable-range`, `tomtom-traffic`, `tomtom-static-map`, `tomtom-dynamic-map`.
+
+Beperkingen die voor dit project tellen:
+
+- **Geen Matrix Routing-tool.** De reistijdmatrix (invoer voor auto-ordening en OR-Tools) is via MCP alleen te benaderen met honderden losse routing-calls.
+- **Geometrie wordt standaard weggegooid**: `response_detail` staat op `compact` (strips polyline-coördinaten, guidance, secties); `full` geeft alles, maar dan stroomt per bus een volledige polyline door de conversatiecontext.
+- **Alles loopt door de context**: 7 routes per scenario met geometrie = tienduizenden tokens per doorrekening, en de agent moet cijfers manueel overnemen naar metrics/GeoJSON.
+- **Niet cachebaar/reproduceerbaar**: elke herberekening = nieuwe live-calls; de DoD vraagt identieke cijfers bij identieke input.
+
+De REST-tegenhanger is klein: het smoke-script doet de Matrix-call in ~40 regels, `calculateRoute` is vergelijkbaar.
+
+**Beslissing: hybride.** De MCP-connector voor interactief verkennen (een opstapplaats geocoden, "Leuven-station → school om 7u30" snel checken, een kaartbeeld in het gesprek, scenario-ideeën aftoetsen). Python + REST (Matrix Routing v2 + `calculateRoute`, met disk-cache en `traffic: historical`) voor de batch-evaluator die scenario's doorrekent. Uitgangspunt blijft: bestaande connectoren gebruiken waar ze het werk dekken, eigen code enkel waar ze tekortschieten.
 
 ### Bestaat er een (open source) Google Maps MCP?
 
@@ -155,7 +170,7 @@ Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's
 
 ## Beslissingen (14/09/2026)
 
-- **Geodata-bron: TomTom** (cloud, verkeersbewust) — connector moet nog geactiveerd worden.
+- **Geodata-bron: TomTom** (cloud, verkeersbewust), **hybride ingezet**: MCP-connector voor interactief verkennen, REST met eigen `TOMTOM_API_KEY` (uit `.env`) voor de evaluator. Matrix Routing v2 via REST bevestigd werkend op 14/09/2026 (`scripts/verify_matrix_routing.py`). Connector zelf nog te activeren (zie actielijst).
 - **Schaal: 7 bussen, ±20 kinderen/bus (±140 leerlingen totaal).**
 - **Leerlingdata/buscapaciteiten: nog niet beschikbaar.** Eerste iteratie start met een klein fictief/steekproef-voorbeeld rond Hoegaarden.
 - **Optimalisatie-laag: OR-Tools, niet Google Route Optimization.** Geverifieerd dat Google's API optimaliseert op vlootkost (vaste kost, uren, km, boetes), niet op individuele rittijd — geen ingebouwd objectief voor "kortste rit per kind". Daarom voorlopig niet gebruikt als solver. Wel genoteerd om apart te verkennen via hun open-source GUI-demo ([js-route-optimization-app](https://github.com/googlemaps/js-route-optimization-app)), zelf te deployen op een eigen Google Cloud-project.
@@ -171,9 +186,9 @@ Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's
 
 ## Volgende stappen
 
-1. TomTom Maps-connector activeren voor deze sessie/organisatie.
-2. Fictieve testset opbouwen: schoollocatie "de pass" Hoegaarden + verzonnen leerlingadressen in de regio + 7 fictieve buscapaciteiten (20/bus).
-3. Eerste versie van de "scenario-evaluator"-skill bouwen: agent stelt een indeling voor, TomTom berekent km/reistijd/bezetting/aankomsttijd per scenario, resultaat op een Leaflet-kaart.
+1. ~~TomTom REST-toegang~~ ✅ 14/09/2026 (key in `.env`, Matrix v2 smoke-test OK). **Nog te doen door Mark**: TomTom Maps MCP-connector activeren — via de connectorinstellingen op claude.ai, of lokaal met `claude mcp add tomtom -e TOMTOM_API_KEY=... -- npx @tomtom-org/tomtom-mcp@latest` (zie [quick-setup](https://docs.tomtom.com/tomtom-maps-mcp/documentation/quick-setup)).
+2. Fictieve testset opbouwen: schoollocatie "de pass" Hoegaarden + verzonnen leerlingpunten in de regio + 7 fictieve buscapaciteiten (20/bus). → plan `.agent/plans/2026-09-14-testset-en-evaluator-v1.md`
+3. Eerste versie van de "scenario-evaluator"-skill bouwen: agent stelt een indeling voor, Python/REST berekent km/reistijd/bezetting/aankomsttijd per scenario, resultaat op een Leaflet-kaart. → zelfde plan
 4. Optioneel uitbreiden met OR-Tools voor het "volledig geoptimaliseerde" scenario ter vergelijking.
 5. (Apart spoor, optioneel) Google's js-route-optimization-app deployen op een eigen GCP-project om de API zelf te verkennen via de GUI.
 6. Zodra de echte leerlingdata beschikbaar is: adres, school, gewenste aankomsttijd, evt. vaste opstapplaats + buscapaciteiten per bus aanleveren.
