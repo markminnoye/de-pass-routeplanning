@@ -119,3 +119,24 @@ def test_load_samples_reads_repo_samples(tmp_path):
     assert students["s001"].zone == "z"
     assert buses["bus1"].start == school.point
     assert buses["bus2"].start == Point(1.5, 2.5)
+
+
+def test_bus_level_ordering_overrides_scenario(students, buses):
+    d = scenario_dict(ordering="auto")
+    d["buses"][0]["ordering"] = "given"
+    scenario = load_scenario(d, students, buses)
+    assert scenario.buses[0].ordering == "given"
+    assert scenario.buses[1].ordering == "auto"
+
+
+def test_bus_level_ordering_validated(students, buses):
+    d = scenario_dict()
+    d["buses"][0]["ordering"] = "whatever"
+    with pytest.raises(ScenarioError, match="ordering"):
+        load_scenario(d, students, buses)
+
+
+def test_ordering_defaults_to_auto(students, buses):
+    d = scenario_dict()
+    del d["ordering"]
+    assert load_scenario(d, students, buses).ordering == "auto"

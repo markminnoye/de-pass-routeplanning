@@ -1,6 +1,6 @@
 ---
 title: Testset + scenario-evaluator v1
-status: "🔄"
+status: "✅"
 date: 2026-09-14
 ---
 
@@ -117,3 +117,21 @@ Na goedkeuring opslaan:
 - OR-Tools voor het "volledig geoptimaliseerde" scenario (doelfunctie: minimaliseer langste rittijd), zelfde datamodel en evaluator; Python pinnen op een versie met ortools-wheels.
 - Tiles inbedden voor artifact-publicatie.
 - Geocoding-stap + privacybeslissing zodra echte leerlingdata komt.
+
+## Status: ✅ Klaar (14/09/2026)
+
+Uitgevoerd zoals gepland, met deze afwijkingen/aanvullingen:
+
+- Scenario-namen: `spreiding-gemengd` (negatieve referentie), `regiobus-per-zone`, `opstapplaatsen` (i.p.v. baseline-zones / regiobus-leuven / opstapplaatsen-tienen).
+- Testset-punten worden op de dichtstbijzijnde straat gesnapt (TomTom reverse geocoding, gecachet) — willekeurige punten in velden gaven onzinnige reistijden.
+- Matrix synchroon: max. 100 cellen bij concrete `departAt`, 200 bij `any`/historical → matrix enkel tijdsonafhankelijk voor de ordening, in blokken ≤ 200.
+- TomTom rekent U-turn-penalty's (~2 min) in multi-waypoint-routes; gedocumenteerd, niet "weggewerkt".
+- Uit de skill-tests (baseline/GREEN/refactor met subagents) toegevoegd: `ordering` per bus overschrijfbaar, metrieken `rides_over_60_min`/`rides_over_90_min`/`to_stop_km`/`max_to_stop_km`, `docs/samples/pickup_points.json`, `scenarios/` voor ad-hoc scenario's, opt-in regressietest (`BUSROUTES_REGRESSION=1`).
+- Python gepind op 3.13 (OR-Tools-wheels beschikbaar).
+- **Open voor Mark**: TomTom MCP-connector activeren (verificatiestap 7 nog niet gedaan); `map.html` visueel nakijken in de browser (niet mogelijk vanuit de sessie).
+
+Vervolgwensen uit de skill-tests (niet gedaan, kandidaat voor een volgend plan):
+- Gedeeltelijke ordening ("stop X gepind als eerste, rest auto").
+- `busroutes compare --bus <id>` / per-stop-vergelijking in de CLI.
+- Wacht-/instaptijd aan opstapplaatsen als expliciet criterium; thuis→opstapplaats via TomTom i.p.v. hemelsbreed.
+- Tiles inbedden voor artifact-publicatie; OR-Tools voor het volledig geoptimaliseerde scenario.

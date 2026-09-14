@@ -61,6 +61,7 @@ class Stop:
 class BusPlan:
     bus_id: str
     stops: list[Stop]
+    ordering: Ordering = "auto"  # resolved: bus-level override, else the scenario's
 
     @property
     def student_ids(self) -> list[str]:
@@ -133,7 +134,7 @@ def _parse_stop(raw: str | dict, students: dict[str, Student], where: str) -> St
 
 def load_scenario(data: dict, students: dict[str, Student], buses: dict[str, Bus]) -> Scenario:
     """Build and validate a Scenario from its JSON form. Raises ScenarioError on any violation."""
-    ordering = data.get("ordering", "given")
+    ordering = data.get("ordering", "auto")
     if ordering not in ("given", "auto"):
         raise ScenarioError(f"ordering moet 'given' of 'auto' zijn, niet '{ordering}'")
 
@@ -147,7 +148,12 @@ def load_scenario(data: dict, students: dict[str, Student], buses: dict[str, Bus
             _parse_stop(raw, students, f"{bus_id} stop {j + 1}")
             for j, raw in enumerate(raw_bus.get("stops", []))
         ]
-        plan = BusPlan(bus_id=bus_id, stops=stops)
+        bus_ordering = raw_bus.get("ordering", ordering)
+        if bus_ordering not in ("given", "auto"):
+            raise ScenarioError(
+                f"{bus_id}: ordering moet 'given' of 'auto' zijn, niet '{bus_ordering}'"
+            )
+        plan = BusPlan(bus_id=bus_id, stops=stops, ordering=bus_ordering)
         for sid in plan.student_ids:
             if sid in seen:
                 raise ScenarioError(f"leerling {sid} zit op {seen[sid]} én op {bus_id}")

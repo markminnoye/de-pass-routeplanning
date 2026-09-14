@@ -192,6 +192,7 @@ def main() -> int:
     dump(SAMPLES_DIR / "school.json", SCHOOL)
     dump(SAMPLES_DIR / "students.json", students)
     dump(SAMPLES_DIR / "buses.json", generate_buses())
+    dump(SAMPLES_DIR / "pickup_points.json", [{"id": k, **v} for k, v in pickup_points.items()])
     for scenario in (
         scenario_spreiding_gemengd(students),
         scenario_regiobus_per_zone(students),

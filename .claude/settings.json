@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(BUSROUTES_REFERENCE_DATE=2026-09-15 uv run busroutes evaluate /private/tmp/claude-501/-Users-markminnoye-git-routeplanning-skill/ec4e8484-1fe4-4ccb-858c-dd4400bb158c/scratchpad/variant-b.json --out /private/tmp/claude-501/-Users-markminnoye-git-routeplanning-skill/ec4e8484-1fe4-4ccb-858c-dd4400bb158c/scratchpad/out-b)"
+    ]
+  }
+}

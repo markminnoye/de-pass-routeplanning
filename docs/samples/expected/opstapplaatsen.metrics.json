@@ -16,6 +16,10 @@
     "max_ride_min": 127.7,
     "avg_ride_min": 40.7,
     "median_ride_min": 28.6,
+    "rides_over_60_min": 34,
+    "rides_over_90_min": 11,
+    "max_to_stop_km": 2.43,
+    "students_with_to_stop_over_1km": 23,
     "total_drive_min": 534.1,
     "total_km": 262.5,
     "avg_occupancy_pct": 100.0,
@@ -1460,980 +1464,1120 @@
       "bus_id": "bus1",
       "stop_id": "s015",
       "pickup": "07:22",
-      "ride_min": 56.9
+      "ride_min": 56.9,
+      "to_stop_km": 0.0
     },
     {
       "id": "s009",
       "bus_id": "bus1",
       "stop_id": "s009",
       "pickup": "07:27",
-      "ride_min": 51.9
+      "ride_min": 51.9,
+      "to_stop_km": 0.0
     },
     {
       "id": "s011",
       "bus_id": "bus1",
       "stop_id": "s011",
       "pickup": "07:33",
-      "ride_min": 45.6
+      "ride_min": 45.6,
+      "to_stop_km": 0.0
     },
     {
       "id": "s008",
       "bus_id": "bus1",
       "stop_id": "s008",
       "pickup": "07:37",
-      "ride_min": 42.0
+      "ride_min": 42.0,
+      "to_stop_km": 0.0
     },
     {
       "id": "s017",
       "bus_id": "bus1",
       "stop_id": "s017",
       "pickup": "07:42",
-      "ride_min": 37.0
+      "ride_min": 37.0,
+      "to_stop_km": 0.0
     },
     {
       "id": "s006",
       "bus_id": "bus1",
       "stop_id": "s006",
       "pickup": "07:48",
-      "ride_min": 30.9
+      "ride_min": 30.9,
+      "to_stop_km": 0.0
     },
     {
       "id": "s003",
       "bus_id": "bus1",
       "stop_id": "s003",
       "pickup": "07:50",
-      "ride_min": 28.8
+      "ride_min": 28.8,
+      "to_stop_km": 0.0
     },
     {
       "id": "s012",
       "bus_id": "bus1",
       "stop_id": "s012",
       "pickup": "07:53",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 0.0
     },
     {
       "id": "s010",
       "bus_id": "bus1",
       "stop_id": "s010",
       "pickup": "07:54",
-      "ride_min": 25.0
+      "ride_min": 25.0,
+      "to_stop_km": 0.0
     },
     {
       "id": "s018",
       "bus_id": "bus1",
       "stop_id": "s018",
       "pickup": "07:56",
-      "ride_min": 23.2
+      "ride_min": 23.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s007",
       "bus_id": "bus1",
       "stop_id": "s007",
       "pickup": "07:59",
-      "ride_min": 20.0
+      "ride_min": 20.0,
+      "to_stop_km": 0.0
     },
     {
       "id": "s004",
       "bus_id": "bus1",
       "stop_id": "s004",
       "pickup": "08:01",
-      "ride_min": 17.6
+      "ride_min": 17.6,
+      "to_stop_km": 0.0
     },
     {
       "id": "s002",
       "bus_id": "bus1",
       "stop_id": "s002",
       "pickup": "08:05",
-      "ride_min": 14.3
+      "ride_min": 14.3,
+      "to_stop_km": 0.0
     },
     {
       "id": "s001",
       "bus_id": "bus1",
       "stop_id": "s001",
       "pickup": "08:05",
-      "ride_min": 13.7
+      "ride_min": 13.7,
+      "to_stop_km": 0.0
     },
     {
       "id": "s014",
       "bus_id": "bus1",
       "stop_id": "s014",
       "pickup": "08:07",
-      "ride_min": 12.2
+      "ride_min": 12.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s005",
       "bus_id": "bus1",
       "stop_id": "s005",
       "pickup": "08:08",
-      "ride_min": 11.2
+      "ride_min": 11.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s019",
       "bus_id": "bus1",
       "stop_id": "s019",
       "pickup": "08:08",
-      "ride_min": 10.5
+      "ride_min": 10.5,
+      "to_stop_km": 0.0
     },
     {
       "id": "s013",
       "bus_id": "bus1",
       "stop_id": "s013",
       "pickup": "08:12",
-      "ride_min": 6.7
+      "ride_min": 6.7,
+      "to_stop_km": 0.0
     },
     {
       "id": "s020",
       "bus_id": "bus1",
       "stop_id": "s020",
       "pickup": "08:14",
-      "ride_min": 5.2
+      "ride_min": 5.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s016",
       "bus_id": "bus1",
       "stop_id": "s016",
       "pickup": "08:15",
-      "ride_min": 3.5
+      "ride_min": 3.5,
+      "to_stop_km": 0.0
     },
     {
       "id": "s024",
       "bus_id": "bus2",
       "stop_id": "s024",
       "pickup": "07:08",
-      "ride_min": 70.5
+      "ride_min": 70.5,
+      "to_stop_km": 0.0
     },
     {
       "id": "s033",
       "bus_id": "bus2",
       "stop_id": "s033",
       "pickup": "07:16",
-      "ride_min": 62.9
+      "ride_min": 62.9,
+      "to_stop_km": 0.0
     },
     {
       "id": "s032",
       "bus_id": "bus2",
       "stop_id": "s032",
       "pickup": "07:19",
-      "ride_min": 59.5
+      "ride_min": 59.5,
+      "to_stop_km": 0.0
     },
     {
       "id": "s031",
       "bus_id": "bus2",
       "stop_id": "s031",
       "pickup": "07:22",
-      "ride_min": 56.7
+      "ride_min": 56.7,
+      "to_stop_km": 0.0
     },
     {
       "id": "s037",
       "bus_id": "bus2",
       "stop_id": "s037",
       "pickup": "07:23",
-      "ride_min": 55.8
+      "ride_min": 55.8,
+      "to_stop_km": 0.0
     },
     {
       "id": "s040",
       "bus_id": "bus2",
       "stop_id": "s040",
       "pickup": "07:27",
-      "ride_min": 51.8
+      "ride_min": 51.8,
+      "to_stop_km": 0.0
     },
     {
       "id": "s039",
       "bus_id": "bus2",
       "stop_id": "s039",
       "pickup": "07:28",
-      "ride_min": 50.8
+      "ride_min": 50.8,
+      "to_stop_km": 0.0
     },
     {
       "id": "s036",
       "bus_id": "bus2",
       "stop_id": "s036",
       "pickup": "07:31",
-      "ride_min": 47.6
+      "ride_min": 47.6,
+      "to_stop_km": 0.0
     },
     {
       "id": "s034",
       "bus_id": "bus2",
       "stop_id": "s034",
       "pickup": "07:32",
-      "ride_min": 46.5
+      "ride_min": 46.5,
+      "to_stop_km": 0.0
     },
     {
       "id": "s038",
       "bus_id": "bus2",
       "stop_id": "s038",
       "pickup": "07:36",
-      "ride_min": 42.8
+      "ride_min": 42.8,
+      "to_stop_km": 0.0
     },
     {
       "id": "s035",
       "bus_id": "bus2",
       "stop_id": "s035",
       "pickup": "07:37",
-      "ride_min": 42.1
+      "ride_min": 42.1,
+      "to_stop_km": 0.0
     },
     {
       "id": "s029",
       "bus_id": "bus2",
       "stop_id": "s029",
       "pickup": "07:38",
-      "ride_min": 40.8
+      "ride_min": 40.8,
+      "to_stop_km": 0.0
     },
     {
       "id": "s025",
       "bus_id": "bus2",
       "stop_id": "s025",
       "pickup": "07:41",
-      "ride_min": 38.1
+      "ride_min": 38.1,
+      "to_stop_km": 0.0
     },
     {
       "id": "s030",
       "bus_id": "bus2",
       "stop_id": "s030",
       "pickup": "07:45",
-      "ride_min": 33.9
+      "ride_min": 33.9,
+      "to_stop_km": 0.0
     },
     {
       "id": "s027",
       "bus_id": "bus2",
       "stop_id": "s027",
       "pickup": "07:54",
-      "ride_min": 25.0
+      "ride_min": 25.0,
+      "to_stop_km": 0.0
     },
     {
       "id": "s021",
       "bus_id": "bus2",
       "stop_id": "s021",
       "pickup": "07:59",
-      "ride_min": 19.8
+      "ride_min": 19.8,
+      "to_stop_km": 0.0
     },
     {
       "id": "s026",
       "bus_id": "bus2",
       "stop_id": "s026",
       "pickup": "08:04",
-      "ride_min": 15.0
+      "ride_min": 15.0,
+      "to_stop_km": 0.0
     },
     {
       "id": "s023",
       "bus_id": "bus2",
       "stop_id": "s023",
       "pickup": "08:08",
-      "ride_min": 11.3
+      "ride_min": 11.3,
+      "to_stop_km": 0.0
     },
     {
       "id": "s022",
       "bus_id": "bus2",
       "stop_id": "s022",
       "pickup": "08:11",
-      "ride_min": 8.0
+      "ride_min": 8.0,
+      "to_stop_km": 0.0
     },
     {
       "id": "s028",
       "bus_id": "bus2",
       "stop_id": "s028",
       "pickup": "08:14",
-      "ride_min": 4.4
+      "ride_min": 4.4,
+      "to_stop_km": 0.0
     },
     {
       "id": "s049",
       "bus_id": "bus3",
       "stop_id": "s049",
       "pickup": "06:42",
-      "ride_min": 97.2
+      "ride_min": 97.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s051",
       "bus_id": "bus3",
       "stop_id": "s051",
       "pickup": "06:43",
-      "ride_min": 95.4
+      "ride_min": 95.4,
+      "to_stop_km": 0.0
     },
     {
       "id": "s054",
       "bus_id": "bus3",
       "stop_id": "s054",
       "pickup": "06:50",
-      "ride_min": 89.0
+      "ride_min": 89.0,
+      "to_stop_km": 0.0
     },
     {
       "id": "s053",
       "bus_id": "bus3",
       "stop_id": "s053",
       "pickup": "06:54",
-      "ride_min": 84.5
+      "ride_min": 84.5,
+      "to_stop_km": 0.0
     },
     {
       "id": "s055",
       "bus_id": "bus3",
       "stop_id": "s055",
       "pickup": "07:15",
-      "ride_min": 64.3
+      "ride_min": 64.3,
+      "to_stop_km": 0.0
     },
     {
       "id": "s059",
       "bus_id": "bus3",
       "stop_id": "s059",
       "pickup": "07:18",
-      "ride_min": 60.7
+      "ride_min": 60.7,
+      "to_stop_km": 0.0
     },
     {
       "id": "s057",
       "bus_id": "bus3",
       "stop_id": "s057",
       "pickup": "07:23",
-      "ride_min": 55.8
+      "ride_min": 55.8,
+      "to_stop_km": 0.0
     },
     {
       "id": "s060",
       "bus_id": "bus3",
       "stop_id": "s060",
       "pickup": "07:30",
-      "ride_min": 48.4
+      "ride_min": 48.4,
+      "to_stop_km": 0.0
     },
     {
       "id": "s058",
       "bus_id": "bus3",
       "stop_id": "s058",
       "pickup": "07:35",
-      "ride_min": 43.6
+      "ride_min": 43.6,
+      "to_stop_km": 0.0
     },
     {
       "id": "s056",
       "bus_id": "bus3",
       "stop_id": "s056",
       "pickup": "07:41",
-      "ride_min": 38.3
+      "ride_min": 38.3,
+      "to_stop_km": 0.0
     },
     {
       "id": "s041",
       "bus_id": "bus3",
       "stop_id": "s041",
       "pickup": "07:54",
-      "ride_min": 25.2
+      "ride_min": 25.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s042",
       "bus_id": "bus3",
       "stop_id": "s042",
       "pickup": "07:54",
-      "ride_min": 24.6
+      "ride_min": 24.6,
+      "to_stop_km": 0.0
     },
     {
       "id": "s043",
       "bus_id": "bus3",
       "stop_id": "s043",
       "pickup": "07:55",
-      "ride_min": 23.9
+      "ride_min": 23.9,
+      "to_stop_km": 0.0
     },
     {
       "id": "s047",
       "bus_id": "bus3",
       "stop_id": "s047",
       "pickup": "07:56",
-      "ride_min": 23.2
+      "ride_min": 23.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s048",
       "bus_id": "bus3",
       "stop_id": "s048",
       "pickup": "07:58",
-      "ride_min": 20.9
+      "ride_min": 20.9,
+      "to_stop_km": 0.0
     },
     {
       "id": "s046",
       "bus_id": "bus3",
       "stop_id": "s046",
       "pickup": "08:00",
-      "ride_min": 18.8
+      "ride_min": 18.8,
+      "to_stop_km": 0.0
     },
     {
       "id": "s045",
       "bus_id": "bus3",
       "stop_id": "s045",
       "pickup": "08:05",
-      "ride_min": 14.3
+      "ride_min": 14.3,
+      "to_stop_km": 0.0
     },
     {
       "id": "s044",
       "bus_id": "bus3",
       "stop_id": "s044",
       "pickup": "08:05",
-      "ride_min": 13.6
+      "ride_min": 13.6,
+      "to_stop_km": 0.0
     },
     {
       "id": "s050",
       "bus_id": "bus3",
       "stop_id": "s050",
       "pickup": "08:15",
-      "ride_min": 4.2
+      "ride_min": 4.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s052",
       "bus_id": "bus3",
       "stop_id": "s052",
       "pickup": "08:16",
-      "ride_min": 3.2
+      "ride_min": 3.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s071",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-markt",
       "pickup": "08:02",
-      "ride_min": 15.6
+      "ride_min": 15.6,
+      "to_stop_km": 0.97
     },
     {
       "id": "s072",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-markt",
       "pickup": "08:02",
-      "ride_min": 15.6
+      "ride_min": 15.6,
+      "to_stop_km": 1.18
     },
     {
       "id": "s073",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-markt",
       "pickup": "08:02",
-      "ride_min": 15.6
+      "ride_min": 15.6,
+      "to_stop_km": 1.2
     },
     {
       "id": "s074",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-markt",
       "pickup": "08:02",
-      "ride_min": 15.6
+      "ride_min": 15.6,
+      "to_stop_km": 0.87
     },
     {
       "id": "s075",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-markt",
       "pickup": "08:02",
-      "ride_min": 15.6
+      "ride_min": 15.6,
+      "to_stop_km": 0.5
     },
     {
       "id": "s076",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-markt",
       "pickup": "08:02",
-      "ride_min": 15.6
+      "ride_min": 15.6,
+      "to_stop_km": 1.25
     },
     {
       "id": "s077",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-markt",
       "pickup": "08:02",
-      "ride_min": 15.6
+      "ride_min": 15.6,
+      "to_stop_km": 1.31
     },
     {
       "id": "s078",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-markt",
       "pickup": "08:02",
-      "ride_min": 15.6
+      "ride_min": 15.6,
+      "to_stop_km": 0.27
     },
     {
       "id": "s079",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-markt",
       "pickup": "08:02",
-      "ride_min": 15.6
+      "ride_min": 15.6,
+      "to_stop_km": 1.26
     },
     {
       "id": "s080",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-markt",
       "pickup": "08:02",
-      "ride_min": 15.6
+      "ride_min": 15.6,
+      "to_stop_km": 1.03
     },
     {
       "id": "s061",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-station",
       "pickup": "08:10",
-      "ride_min": 7.3
+      "ride_min": 7.3,
+      "to_stop_km": 1.28
     },
     {
       "id": "s062",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-station",
       "pickup": "08:10",
-      "ride_min": 7.3
+      "ride_min": 7.3,
+      "to_stop_km": 1.09
     },
     {
       "id": "s063",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-station",
       "pickup": "08:10",
-      "ride_min": 7.3
+      "ride_min": 7.3,
+      "to_stop_km": 1.82
     },
     {
       "id": "s064",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-station",
       "pickup": "08:10",
-      "ride_min": 7.3
+      "ride_min": 7.3,
+      "to_stop_km": 0.94
     },
     {
       "id": "s065",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-station",
       "pickup": "08:10",
-      "ride_min": 7.3
+      "ride_min": 7.3,
+      "to_stop_km": 1.41
     },
     {
       "id": "s066",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-station",
       "pickup": "08:10",
-      "ride_min": 7.3
+      "ride_min": 7.3,
+      "to_stop_km": 1.4
     },
     {
       "id": "s067",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-station",
       "pickup": "08:10",
-      "ride_min": 7.3
+      "ride_min": 7.3,
+      "to_stop_km": 0.32
     },
     {
       "id": "s068",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-station",
       "pickup": "08:10",
-      "ride_min": 7.3
+      "ride_min": 7.3,
+      "to_stop_km": 0.4
     },
     {
       "id": "s069",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-station",
       "pickup": "08:10",
-      "ride_min": 7.3
+      "ride_min": 7.3,
+      "to_stop_km": 1.9
     },
     {
       "id": "s070",
       "bus_id": "bus4",
       "stop_id": "pp-tienen-station",
       "pickup": "08:10",
-      "ride_min": 7.3
+      "ride_min": 7.3,
+      "to_stop_km": 1.94
     },
     {
       "id": "s092",
       "bus_id": "bus5",
       "stop_id": "s092",
       "pickup": "06:38",
-      "ride_min": 100.7
+      "ride_min": 100.7,
+      "to_stop_km": 0.0
     },
     {
       "id": "s091",
       "bus_id": "bus5",
       "stop_id": "s091",
       "pickup": "06:45",
-      "ride_min": 93.4
+      "ride_min": 93.4,
+      "to_stop_km": 0.0
     },
     {
       "id": "s100",
       "bus_id": "bus5",
       "stop_id": "s100",
       "pickup": "06:52",
-      "ride_min": 87.2
+      "ride_min": 87.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s096",
       "bus_id": "bus5",
       "stop_id": "s096",
       "pickup": "06:56",
-      "ride_min": 83.2
+      "ride_min": 83.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s098",
       "bus_id": "bus5",
       "stop_id": "s098",
       "pickup": "06:57",
-      "ride_min": 82.1
+      "ride_min": 82.1,
+      "to_stop_km": 0.0
     },
     {
       "id": "s094",
       "bus_id": "bus5",
       "stop_id": "s094",
       "pickup": "06:58",
-      "ride_min": 81.3
+      "ride_min": 81.3,
+      "to_stop_km": 0.0
     },
     {
       "id": "s099",
       "bus_id": "bus5",
       "stop_id": "s099",
       "pickup": "07:02",
-      "ride_min": 76.5
+      "ride_min": 76.5,
+      "to_stop_km": 0.0
     },
     {
       "id": "s093",
       "bus_id": "bus5",
       "stop_id": "s093",
       "pickup": "07:07",
-      "ride_min": 72.2
+      "ride_min": 72.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s097",
       "bus_id": "bus5",
       "stop_id": "s097",
       "pickup": "07:08",
-      "ride_min": 71.2
+      "ride_min": 71.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s095",
       "bus_id": "bus5",
       "stop_id": "s095",
       "pickup": "07:08",
-      "ride_min": 70.4
+      "ride_min": 70.4,
+      "to_stop_km": 0.0
     },
     {
       "id": "s087",
       "bus_id": "bus5",
       "stop_id": "s087",
       "pickup": "07:17",
-      "ride_min": 61.8
+      "ride_min": 61.8,
+      "to_stop_km": 0.0
     },
     {
       "id": "s089",
       "bus_id": "bus5",
       "stop_id": "s089",
       "pickup": "07:20",
-      "ride_min": 58.9
+      "ride_min": 58.9,
+      "to_stop_km": 0.0
     },
     {
       "id": "s086",
       "bus_id": "bus5",
       "stop_id": "s086",
       "pickup": "07:25",
-      "ride_min": 53.5
+      "ride_min": 53.5,
+      "to_stop_km": 0.0
     },
     {
       "id": "s090",
       "bus_id": "bus5",
       "stop_id": "s090",
       "pickup": "07:29",
-      "ride_min": 49.7
+      "ride_min": 49.7,
+      "to_stop_km": 0.0
     },
     {
       "id": "s085",
       "bus_id": "bus5",
       "stop_id": "s085",
       "pickup": "07:33",
-      "ride_min": 46.3
+      "ride_min": 46.3,
+      "to_stop_km": 0.0
     },
     {
       "id": "s088",
       "bus_id": "bus5",
       "stop_id": "s088",
       "pickup": "07:36",
-      "ride_min": 43.1
+      "ride_min": 43.1,
+      "to_stop_km": 0.0
     },
     {
       "id": "s084",
       "bus_id": "bus5",
       "stop_id": "s084",
       "pickup": "07:50",
-      "ride_min": 28.5
+      "ride_min": 28.5,
+      "to_stop_km": 0.0
     },
     {
       "id": "s082",
       "bus_id": "bus5",
       "stop_id": "s082",
       "pickup": "07:58",
-      "ride_min": 21.2
+      "ride_min": 21.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s081",
       "bus_id": "bus5",
       "stop_id": "s081",
       "pickup": "08:05",
-      "ride_min": 13.5
+      "ride_min": 13.5,
+      "to_stop_km": 0.0
     },
     {
       "id": "s083",
       "bus_id": "bus5",
       "stop_id": "s083",
       "pickup": "08:07",
-      "ride_min": 12.1
+      "ride_min": 12.1,
+      "to_stop_km": 0.0
     },
     {
       "id": "s106",
       "bus_id": "bus6",
       "stop_id": "s106",
       "pickup": "07:13",
-      "ride_min": 66.3
+      "ride_min": 66.3,
+      "to_stop_km": 0.0
     },
     {
       "id": "s103",
       "bus_id": "bus6",
       "stop_id": "s103",
       "pickup": "07:13",
-      "ride_min": 65.5
+      "ride_min": 65.5,
+      "to_stop_km": 0.0
     },
     {
       "id": "s104",
       "bus_id": "bus6",
       "stop_id": "s104",
       "pickup": "07:15",
-      "ride_min": 64.2
+      "ride_min": 64.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s101",
       "bus_id": "bus6",
       "stop_id": "s101",
       "pickup": "07:17",
-      "ride_min": 62.3
+      "ride_min": 62.3,
+      "to_stop_km": 0.0
     },
     {
       "id": "s102",
       "bus_id": "bus6",
       "stop_id": "s102",
       "pickup": "07:23",
-      "ride_min": 56.2
+      "ride_min": 56.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s105",
       "bus_id": "bus6",
       "stop_id": "s105",
       "pickup": "07:28",
-      "ride_min": 50.4
+      "ride_min": 50.4,
+      "to_stop_km": 0.0
     },
     {
       "id": "s107",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 2.24
     },
     {
       "id": "s108",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 1.03
     },
     {
       "id": "s109",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 1.47
     },
     {
       "id": "s110",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 0.95
     },
     {
       "id": "s111",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 1.59
     },
     {
       "id": "s112",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 1.04
     },
     {
       "id": "s113",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 0.49
     },
     {
       "id": "s114",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 0.9
     },
     {
       "id": "s115",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 1.87
     },
     {
       "id": "s116",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 1.23
     },
     {
       "id": "s117",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 1.49
     },
     {
       "id": "s118",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 0.35
     },
     {
       "id": "s119",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 2.43
     },
     {
       "id": "s120",
       "bus_id": "bus6",
       "stop_id": "pp-leuven-station",
       "pickup": "07:51",
-      "ride_min": 25.7
+      "ride_min": 25.7,
+      "to_stop_km": 1.47
     },
     {
       "id": "s133",
       "bus_id": "bus7",
       "stop_id": "s133",
       "pickup": "06:11",
-      "ride_min": 127.7
+      "ride_min": 127.7,
+      "to_stop_km": 0.0
     },
     {
       "id": "s131",
       "bus_id": "bus7",
       "stop_id": "s131",
       "pickup": "06:15",
-      "ride_min": 123.5
+      "ride_min": 123.5,
+      "to_stop_km": 0.0
     },
     {
       "id": "s132",
       "bus_id": "bus7",
       "stop_id": "s132",
       "pickup": "06:20",
-      "ride_min": 119.1
+      "ride_min": 119.1,
+      "to_stop_km": 0.0
     },
     {
       "id": "s134",
       "bus_id": "bus7",
       "stop_id": "s134",
       "pickup": "06:22",
-      "ride_min": 116.7
+      "ride_min": 116.7,
+      "to_stop_km": 0.0
     },
     {
       "id": "s135",
       "bus_id": "bus7",
       "stop_id": "s135",
       "pickup": "06:29",
-      "ride_min": 110.1
+      "ride_min": 110.1,
+      "to_stop_km": 0.0
     },
     {
       "id": "s136",
       "bus_id": "bus7",
       "stop_id": "s136",
       "pickup": "06:33",
-      "ride_min": 106.0
+      "ride_min": 106.0,
+      "to_stop_km": 0.0
     },
     {
       "id": "s140",
       "bus_id": "bus7",
       "stop_id": "s140",
       "pickup": "06:47",
-      "ride_min": 91.5
+      "ride_min": 91.5,
+      "to_stop_km": 0.0
     },
     {
       "id": "s138",
       "bus_id": "bus7",
       "stop_id": "s138",
       "pickup": "06:50",
-      "ride_min": 88.6
+      "ride_min": 88.6,
+      "to_stop_km": 0.0
     },
     {
       "id": "s139",
       "bus_id": "bus7",
       "stop_id": "s139",
       "pickup": "06:59",
-      "ride_min": 80.0
+      "ride_min": 80.0,
+      "to_stop_km": 0.0
     },
     {
       "id": "s137",
       "bus_id": "bus7",
       "stop_id": "s137",
       "pickup": "07:04",
-      "ride_min": 75.3
+      "ride_min": 75.3,
+      "to_stop_km": 0.0
     },
     {
       "id": "s128",
       "bus_id": "bus7",
       "stop_id": "s128",
       "pickup": "07:19",
-      "ride_min": 60.1
+      "ride_min": 60.1,
+      "to_stop_km": 0.0
     },
     {
       "id": "s130",
       "bus_id": "bus7",
       "stop_id": "s130",
       "pickup": "07:25",
-      "ride_min": 54.1
+      "ride_min": 54.1,
+      "to_stop_km": 0.0
     },
     {
       "id": "s129",
       "bus_id": "bus7",
       "stop_id": "s129",
       "pickup": "07:28",
-      "ride_min": 51.2
+      "ride_min": 51.2,
+      "to_stop_km": 0.0
     },
     {
       "id": "s121",
       "bus_id": "bus7",
       "stop_id": "s121",
       "pickup": "07:32",
-      "ride_min": 46.7
+      "ride_min": 46.7,
+      "to_stop_km": 0.0
     },
     {
       "id": "s126",
       "bus_id": "bus7",
       "stop_id": "s126",
       "pickup": "07:40",
-      "ride_min": 38.8
+      "ride_min": 38.8,
+      "to_stop_km": 0.0
     },
     {
       "id": "s123",
       "bus_id": "bus7",
       "stop_id": "s123",
       "pickup": "07:46",
-      "ride_min": 32.6
+      "ride_min": 32.6,
+      "to_stop_km": 0.0
     },
     {
       "id": "s125",
       "bus_id": "bus7",
       "stop_id": "s125",
       "pickup": "07:49",
-      "ride_min": 29.7
+      "ride_min": 29.7,
+      "to_stop_km": 0.0
     },
     {
       "id": "s124",
       "bus_id": "bus7",
       "stop_id": "s124",
       "pickup": "07:53",
-      "ride_min": 25.8
+      "ride_min": 25.8,
+      "to_stop_km": 0.0
     },
     {
       "id": "s127",
       "bus_id": "bus7",
       "stop_id": "s127",
       "pickup": "07:56",
-      "ride_min": 22.8
+      "ride_min": 22.8,
+      "to_stop_km": 0.0
     },
     {
       "id": "s122",
       "bus_id": "bus7",
       "stop_id": "s122",
       "pickup": "08:01",
-      "ride_min": 18.1
+      "ride_min": 18.1,
+      "to_stop_km": 0.0
     }
   ]
 }

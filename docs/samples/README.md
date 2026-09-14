@@ -42,6 +42,19 @@ Lijst van `{"id": "bus1", "capacity": 20, "start": "school"}`. `start` is waar d
 rit begint: `"school"` of `{"lat": ..., "lon": ...}` (bv. een stelplaats). Rittijd per kind
 hangt hier niet van af, totale rijtijd/km wel.
 
+### `pickup_points.json`
+
+Vaste opstapplaatsen die in de voorbeeldscenario's gebruikt worden (`id`, `lat`, `lon`,
+`name`), al op de straat gesnapt. Hergebruik deze coördinaten in eigen scenario's zodat
+resultaten vergelijkbaar blijven.
+
+### Output (`out/<naam>/metrics.json`)
+
+`summary` bevat de criteria uit de brief plus `rides_over_60_min`, `rides_over_90_min`,
+`max_to_stop_km` en `students_with_to_stop_over_1km`; `students[]` heeft per kind
+`ride_min` (van instappen tot school) en `to_stop_km` (hemelsbreed thuis→stop, 0 bij een
+thuisstop — die verplaatsing zit **niet** in `ride_min`).
+
 ### `scenarios/*.json` — scenario-formaat
 
 ```json
@@ -65,9 +78,10 @@ hangt hier niet van af, totale rijtijd/km wel.
 - Een **stop** is een locatie plus de leerlingen die daar instappen.
   - Een string (`"s041"`) is een thuisstop: locatie = het punt van die leerling, één instapper.
   - Een object is een **vaste opstapplaats** met eigen coördinaten en een lijst `students`.
-- `ordering`:
+- `ordering` (scenario-breed, per bus te overschrijven met `"ordering"` in het bus-object):
   - `"given"` — de bus rijdt de stops exact in de opgegeven volgorde.
-  - `"auto"` — de evaluator bepaalt zelf een volgorde per bus (heuristiek op de TomTom-matrix).
+  - `"auto"` — de evaluator bepaalt zelf een volgorde per bus (heuristiek op de TomTom-matrix;
+    minimaliseert routelengte, niet rittijd per kind).
 - Regels die de evaluator afdwingt: elke leerling exact één keer toegewezen, aantal instappers
   per bus ≤ `capacity`, elke `bus_id` bestaat in `buses.json`. Overtreding = foutmelding.
 

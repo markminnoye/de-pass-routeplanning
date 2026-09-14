@@ -27,7 +27,7 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     scenario = load_scenario_file(args.scenario, students, buses)
     client = TomTomClient(settings.api_key, settings.cache_dir, settings.traffic)
 
-    result = evaluate(scenario, school, buses, client, settings)
+    result = evaluate(scenario, school, students, buses, client, settings)
     metrics = result.to_dict()
     geojson = to_geojson(result)
 

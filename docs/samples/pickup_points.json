@@ -1,0 +1,20 @@
+[
+  {
+    "id": "pp-tienen-station",
+    "lat": 50.807728,
+    "lon": 4.922851,
+    "name": "Tienen station"
+  },
+  {
+    "id": "pp-tienen-markt",
+    "lat": 50.807041,
+    "lon": 4.937605,
+    "name": "Tienen Grote Markt"
+  },
+  {
+    "id": "pp-leuven-station",
+    "lat": 50.881271,
+    "lon": 4.715373,
+    "name": "Leuven station"
+  }
+]

@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 from statistics import mean, median
 
 from busroutes.config import Settings
-from busroutes.models import Bus, BusPlan, Scenario, School, Stop
+from busroutes.geo import haversine_m
+from busroutes.models import Bus, BusPlan, Scenario, School, Stop, Student
 from busroutes.ordering import order_stops
 from busroutes.tomtom import GeoClient, RouteResult
 
@@ -52,15 +53,26 @@ class ScenarioResult:
     school: School
     settings: Settings
     depart_at_reference: datetime
+    students: dict[str, Student]
     buses: list[BusResult] = field(default_factory=list)
     unused_buses: list[str] = field(default_factory=list)
 
     def ride_times_s(self) -> list[int]:
         return [s.ride_s for b in self.buses for s in b.stops for _ in s.stop.students]
 
+    def to_stop_km(self, student_id: str, stop: Stop) -> float:
+        """Straight-line distance from the student's home to the stop (0 for a home stop)."""
+        return round(haversine_m(self.students[student_id].point, stop.point) / 1000, 2)
+
     def to_dict(self) -> dict:
         rides = self.ride_times_s()
         used = [b for b in self.buses if b.stops]
+        to_stop = [
+            self.to_stop_km(sid, s.stop)
+            for b in self.buses
+            for s in b.stops
+            for sid in s.stop.students
+        ]
         return {
             "scenario": self.scenario.name,
             "description": self.scenario.description,
@@ -79,6 +91,10 @@ class ScenarioResult:
                 "max_ride_min": _minutes(max(rides)) if rides else 0.0,
                 "avg_ride_min": _minutes(mean(rides)) if rides else 0.0,
                 "median_ride_min": _minutes(median(rides)) if rides else 0.0,
+                "rides_over_60_min": sum(r > 60 * 60 for r in rides),
+                "rides_over_90_min": sum(r > 90 * 60 for r in rides),
+                "max_to_stop_km": max(to_stop, default=0.0),
+                "students_with_to_stop_over_1km": sum(d > 1.0 for d in to_stop),
                 "total_drive_min": _minutes(sum(b.drive_s for b in used)),
                 "total_km": round(sum(b.length_m for b in used) / 1000, 1),
                 "avg_occupancy_pct": round(100 * mean(b.occupancy for b in used), 1)
@@ -121,6 +137,7 @@ class ScenarioResult:
                     "stop_id": s.stop.id,
                     "pickup": _hhmm(s.arrival),
                     "ride_min": _minutes(s.ride_s),
+                    "to_stop_km": self.to_stop_km(sid, s.stop),
                 }
                 for b in self.buses
                 for s in b.stops
@@ -143,10 +160,8 @@ def _dwell(stop: Stop, settings: Settings) -> timedelta:
     )
 
 
-def _ordered_stops(
-    plan: BusPlan, bus: Bus, school: School, scenario: Scenario, client: GeoClient
-) -> list[Stop]:
-    if scenario.ordering == "given" or len(plan.stops) <= 1:
+def _ordered_stops(plan: BusPlan, bus: Bus, school: School, client: GeoClient) -> list[Stop]:
+    if plan.ordering == "given" or len(plan.stops) <= 1:
         return list(plan.stops)
     points = [bus.start, *[s.point for s in plan.stops], school.point]
     matrix = client.matrix(points, points)
@@ -165,7 +180,7 @@ def evaluate_bus(
     arrival: datetime,
     depart_at: datetime,
 ) -> BusResult:
-    stops = _ordered_stops(plan, bus, school, scenario, client)
+    stops = _ordered_stops(plan, bus, school, client)
     if not stops:
         return BusResult(
             bus=bus, route=RouteResult(legs=[]), stops=[], departure=arrival, arrival=arrival
@@ -202,6 +217,7 @@ def evaluate_bus(
 def evaluate(
     scenario: Scenario,
     school: School,
+    students: dict[str, Student],
     buses: dict[str, Bus],
     client: GeoClient,
     settings: Settings,
@@ -209,7 +225,11 @@ def evaluate(
     arrival = settings.reference_arrival(school.target_arrival)
     depart_at = settings.reference_departure(school.target_arrival)
     result = ScenarioResult(
-        scenario=scenario, school=school, settings=settings, depart_at_reference=depart_at
+        scenario=scenario,
+        school=school,
+        settings=settings,
+        depart_at_reference=depart_at,
+        students=students,
     )
     for plan in scenario.buses:
         result.buses.append(

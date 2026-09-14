@@ -30,7 +30,9 @@ def given_scenario(students, buses):
 
 
 def test_schedule_is_backwards_from_target_arrival(school, students, buses, fake_client):
-    result = evaluate(given_scenario(students, buses), school, buses, fake_client, SETTINGS)
+    result = evaluate(
+        given_scenario(students, buses), school, students, buses, fake_client, SETTINGS
+    )
     bus1 = result.buses[0]
     arrival = datetime(2026, 9, 15, 8, 20, tzinfo=BRUSSELS)
     assert bus1.arrival == arrival
@@ -56,7 +58,9 @@ def test_schedule_is_backwards_from_target_arrival(school, students, buses, fake
 
 
 def test_summary_metrics(school, students, buses, fake_client):
-    result = evaluate(given_scenario(students, buses), school, buses, fake_client, SETTINGS)
+    result = evaluate(
+        given_scenario(students, buses), school, students, buses, fake_client, SETTINGS
+    )
     rides = sorted(result.ride_times_s())
     assert len(rides) == 4
     d = result.to_dict()
@@ -69,7 +73,7 @@ def test_summary_metrics(school, students, buses, fake_client):
 
 
 def test_given_ordering_does_not_touch_matrix(school, students, buses, fake_client):
-    evaluate(given_scenario(students, buses), school, buses, fake_client, SETTINGS)
+    evaluate(given_scenario(students, buses), school, students, buses, fake_client, SETTINGS)
     assert fake_client.matrix_calls == []
     assert len(fake_client.route_calls) == 2
 
@@ -87,7 +91,7 @@ def test_auto_ordering_uses_matrix_and_visits_far_stop_first(school, students, b
         students,
         buses,
     )
-    result = evaluate(scenario, school, buses, fake_client, SETTINGS)
+    result = evaluate(scenario, school, students, buses, fake_client, SETTINGS)
     assert len(fake_client.matrix_calls) == 2
     assert [s.stop.id for s in result.buses[0].stops] == ["s002", "s001"]
     assert [s.stop.id for s in result.buses[1].stops] == ["s004", "s003"]
@@ -117,7 +121,7 @@ def test_pickup_point_ride_times_apply_to_all_riders(school, students, buses, fa
         students,
         buses,
     )
-    result = evaluate(scenario, school, buses, fake_client, SETTINGS)
+    result = evaluate(scenario, school, students, buses, fake_client, SETTINGS)
     d = result.to_dict()
     rides = {s["id"]: s["ride_min"] for s in d["students"]}
     assert rides["s001"] == rides["s002"]
@@ -129,5 +133,54 @@ def test_pickup_point_ride_times_apply_to_all_riders(school, students, buses, fa
 
 def test_unused_bus_is_reported(school, students, buses, fake_client):
     buses["bus3"] = type(buses["bus1"])(id="bus3", capacity=2, start=school.point)
-    result = evaluate(given_scenario(students, buses), school, buses, fake_client, SETTINGS)
+    result = evaluate(
+        given_scenario(students, buses), school, students, buses, fake_client, SETTINGS
+    )
     assert result.to_dict()["summary"]["buses_unused"] == ["bus3"]
+
+
+def test_bus_level_ordering_given_keeps_order_while_others_auto(
+    school, students, buses, fake_client
+):
+    scenario = load_scenario(
+        {
+            "name": "mixed",
+            "ordering": "auto",
+            "buses": [
+                {"bus_id": "bus1", "stops": ["s001", "s002"], "ordering": "given"},
+                {"bus_id": "bus2", "stops": ["s003", "s004"]},
+            ],
+        },
+        students,
+        buses,
+    )
+    result = evaluate(scenario, school, students, buses, fake_client, SETTINGS)
+    assert [s.stop.id for s in result.buses[0].stops] == ["s001", "s002"]  # kept
+    assert [s.stop.id for s in result.buses[1].stops] == ["s004", "s003"]  # auto
+    assert len(fake_client.matrix_calls) == 1
+
+
+def test_distance_home_to_stop_and_long_ride_counts(school, students, buses, fake_client):
+    scenario = load_scenario(
+        {
+            "name": "pp",
+            "ordering": "given",
+            "buses": [
+                {
+                    "bus_id": "bus1",
+                    "stops": [{"id": "pp", "lat": 50.79, "lon": 4.9, "students": ["s001", "s002"]}],
+                },
+                {"bus_id": "bus2", "stops": ["s004", "s003"]},
+            ],
+        },
+        students,
+        buses,
+    )
+    d = evaluate(scenario, school, students, buses, fake_client, SETTINGS).to_dict()
+    by_id = {s["id"]: s for s in d["students"]}
+    assert by_id["s003"]["to_stop_km"] == 0.0  # home stop
+    assert 1.0 < by_id["s002"]["to_stop_km"] < 1.5  # s002 is ~1.3 km from the pickup point
+    assert d["summary"]["max_to_stop_km"] == by_id["s002"]["to_stop_km"]
+    assert d["summary"]["students_with_to_stop_over_1km"] == 1
+    assert d["summary"]["rides_over_60_min"] == 0
+    assert d["summary"]["rides_over_90_min"] == 0

@@ -34,5 +34,5 @@ def test_scenario_matches_expected(expected_path: Path):
         SAMPLES / "scenarios" / f"{expected['scenario']}.json", students, buses
     )
     client = TomTomClient(settings.api_key, settings.cache_dir, settings.traffic)
-    actual = evaluate(scenario, school, buses, client, settings).to_dict()
+    actual = evaluate(scenario, school, students, buses, client, settings).to_dict()
     assert actual == expected

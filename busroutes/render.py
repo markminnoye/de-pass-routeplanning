@@ -18,6 +18,8 @@ COMPARE_COLUMNS = [
     ("max_ride_min", "Langste rit (min)"),
     ("avg_ride_min", "Gem. rit (min)"),
     ("median_ride_min", "Mediaan rit (min)"),
+    ("rides_over_60_min", "Ritten > 60 min"),
+    ("max_to_stop_km", "Max. thuis→stop (km)"),
     ("total_drive_min", "Totale rijtijd (min)"),
     ("total_km", "Km"),
     ("avg_occupancy_pct", "Bezetting (%)"),

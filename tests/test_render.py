@@ -19,7 +19,7 @@ def result_for(school, students, buses, fake_client):
         students,
         buses,
     )
-    return evaluate(scenario, school, buses, fake_client, SETTINGS)
+    return evaluate(scenario, school, students, buses, fake_client, SETTINGS)
 
 
 def test_geojson_has_route_lines_stops_and_school(school, students, buses, fake_client):

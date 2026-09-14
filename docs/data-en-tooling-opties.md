@@ -195,8 +195,8 @@ Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's
 ## Volgende stappen
 
 1. ~~TomTom REST-toegang~~ ✅ 14/09/2026 (key in `.env`, Matrix v2 smoke-test OK). **Nog te doen door Mark**: TomTom Maps MCP-connector activeren — via de connectorinstellingen op claude.ai, of lokaal met `claude mcp add tomtom -e TOMTOM_API_KEY=... -- npx @tomtom-org/tomtom-mcp@latest` (zie [quick-setup](https://docs.tomtom.com/tomtom-maps-mcp/documentation/quick-setup)).
-2. Fictieve testset opbouwen: schoollocatie "de pass" Hoegaarden + verzonnen leerlingpunten in de regio + 7 fictieve buscapaciteiten (20/bus). → plan `.agent/plans/2026-09-14-testset-en-evaluator-v1.md`
-3. Eerste versie van de "scenario-evaluator"-skill bouwen: agent stelt een indeling voor, Python/REST berekent km/reistijd/bezetting/aankomsttijd per scenario, resultaat op een Leaflet-kaart. → zelfde plan
+2. ~~Fictieve testset opbouwen~~ ✅ 14/09/2026 — `docs/samples/` (140 leerlingpunten, 7 bussen, 3 referentiescenario's, `expected/`).
+3. ~~Eerste versie van de scenario-evaluator~~ ✅ 14/09/2026 — `busroutes` CLI (`evaluate`/`compare`) + skill `.claude/skills/scenario-evaluator/`. Vervolgwensen staan onderaan `.agent/plans/2026-09-14-testset-en-evaluator-v1.md`.
 4. Optioneel uitbreiden met OR-Tools voor het "volledig geoptimaliseerde" scenario ter vergelijking.
 5. (Apart spoor, optioneel) Google's js-route-optimization-app deployen op een eigen GCP-project om de API zelf te verkennen via de GUI.
 6. Zodra de echte leerlingdata beschikbaar is: adres, school, gewenste aankomsttijd, evt. vaste opstapplaats + buscapaciteiten per bus aanleveren.

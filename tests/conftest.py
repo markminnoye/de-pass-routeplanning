@@ -2,24 +2,15 @@
 
 from __future__ import annotations
 
-import math
 from datetime import datetime, time
 
 import pytest
 
+from busroutes.geo import haversine_m
 from busroutes.models import Bus, Point, School, Student
 from busroutes.tomtom import RouteLeg, RouteResult
 
 SCHOOL = Point(50.7782, 4.8960)
-
-
-def haversine_m(a: Point, b: Point) -> float:
-    r = 6371000.0
-    p1, p2 = math.radians(a.lat), math.radians(b.lat)
-    dphi = p2 - p1
-    dl = math.radians(b.lon - a.lon)
-    h = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
-    return 2 * r * math.asin(math.sqrt(h))
 
 
 class FakeGeoClient:
