@@ -1,0 +1,179 @@
+---
+title: Data- en tooling-opties voor routeoptimalisatie
+description: Vergelijking van kaart/geodata-MCP's, VRP-solvers en visualisatie-opties voor het schoolbus-project van "de pass"
+date: 2026-09-14
+---
+
+# Data- en tooling-opties voor routeoptimalisatie
+
+Uitgangspunt: we hebben drie losse lagen nodig, en dat is meteen de belangrijkste correctie op het eerste voorstel — een "Maps MCP" (Google/TomTom/Mapbox) lost vooral laag 1 op, niet laag 2.
+
+1. **Geodata**: adressen omzetten naar coördinaten (geocoding) en reistijden/afstanden tussen punten berekenen — bij voorkeur verkeersbewust voor de ochtendspits.
+2. **Optimalisatie**: met die reistijden de eigenlijke toewijzing maken — welk kind op welke bus, in welke volgorde, gegeven buscapaciteit en aankomstvenster op school.
+3. **Visualisatie**: scenario's op een kaart tonen en routes kunnen uittekenen.
+
+**Schaal van het project**: 7 bussen × ±20 kinderen/bus → tot ±140 leerlingen in totaal. Dat is klein voor een echte solver (OR-Tools/VROOM verwerken probleemloos duizenden stops), maar te groot voor een aantal gratis/lichte API's die we hieronder tegenkomen (bv. TomTom Waypoint Optimization: max. 12 stops; OpenRouteService gratis tier: max. 3 voertuigen).
+
+## 1. Geodata — wat is er echt beschikbaar
+
+| Optie | Status in Claude registry | Wat het levert | Link |
+|---|---|---|---|
+| **TomTom Maps** | ✅ Installeerbare connector | Geocoding, routing, **verkeersdata** | [developer.tomtom.com](https://developer.tomtom.com/) |
+| Google Maps / Routes API | ❌ Geen connector | Rechtstreeks aan te roepen met eigen API-key (zie onder) | [developers.google.com/maps](https://developers.google.com/maps) |
+| Mapbox | ❌ Geen connector | Idem | [docs.mapbox.com](https://docs.mapbox.com/api/navigation/) |
+| OpenRouteService (OSM-based) | ❌ Geen connector, wel gratis publieke API | Geocoding + matrix bruikbaar; optimalisatie zwaar gelimiteerd | [openrouteservice.org](https://openrouteservice.org/) |
+
+Van de vier genoemde kandidaten is **enkel TomTom nu als connector te activeren** in Claude.
+
+### Bestaat er een (open source) Google Maps MCP?
+
+Ja, maar met een belangrijke kanttekening: de **officiële referentie-server van Anthropic/MCP zelf is gearchiveerd en niet meer onderhouden** — ze staat nu in de [servers-archived repository](https://github.com/modelcontextprotocol/servers-archived/tree/main/src/google-maps) en is uit de actieve MCP-referentie-implementaties gehaald.
+
+Er bestaan wel community-forks die het gat opvullen, bv.:
+- [david-pivonka/google-maps-mcp-server](https://mcpservers.org/servers/github-com-david-pivonka-google-maps-mcp-server)
+- [ArtixZ/MCP-Google-Maps](https://glama.ai/mcp/servers/@ArtixZ/MCP-Google-Maps)
+- [BACH-AI-Tools/MCP-Google-Maps](https://glama.ai/mcp/servers/@BACH-AI-Tools/MCP-Google-Maps)
+
+Dit zijn ongeverifieerde, door individuen onderhouden projecten — geen officiële Google- of Anthropic-connector, en ze staan niet in de Claude-connectorregistry. Voor de eigenlijke *Route Optimization API* (het fleet-routing-product) bestaat sowieso geen community-MCP — dat is een gespecialiseerd product waar ik geen open-source wrapper voor terugvind.
+
+**Belangrijke nuance nu jij zelf developer bent en een eigen key wil gebruiken**: een volledige MCP-server hosten voor "Google Maps" in het algemeen is hier waarschijnlijk overkill. Een MCP-server is nuttig als je een brede, herbruikbare toolset permanent aan een Claude-sessie wil koppelen (zodat je conversational allerlei Maps-functies kan aanroepen). Voor dit project heb je maar één specifieke capability nodig — de Route Optimization-call. Die kan je (of ik, in een skill) gewoon **rechtstreeks als REST-call** aanspreken vanuit Python, met jouw eigen Google Cloud API-key/service account — geen aparte MCP-server nodig, geen extra onderhoud. Een MCP heeft pas meerwaarde als je deze capability breder herbruikbaar wil maken over meerdere projecten/agents heen.
+
+## Kan TomTom de optimalisatie zelf doen?
+
+Gedeeltelijk, maar met twee harde beperkingen die het ongeschikt maken voor dit project:
+
+- TomTom heeft een aparte **[Waypoint Optimization API](https://docs.tomtom.com/waypoint-optimization/documentation/waypoint-optimization-service)**. Die herschikt de volgorde van stops voor **één voertuig** (een "traveling salesman"-achtige optimalisatie, geen verdeling over meerdere bussen), ondersteunt tijdvensters, maar is **beperkt tot 12 waypoints per aanvraag** (hogere limiet enkel via een apart contract met sales) — te weinig voor een bus met ~20 kinderen.
+- Belangrijker: TomTom kondigt aan dat deze API **op 31 mei 2027 volledig wordt stopgezet**, zonder aangeboden migratiepad. Daar zou ik dus sowieso niet op bouwen.
+
+TomTom's **[Matrix Routing API](https://developer.tomtom.com/matrix-routing-api/documentation)** (reistijd/afstand tussen elk paar punten, verkeersbewust) blijft wel prima bruikbaar — dat is exact de data die een solver (of een agent die scenario's evalueert) nodig heeft als invoer. TomTom levert dus betrouwbaar **laag 1** (de reistijden), maar niet laag 2 (de verdeling over 7 bussen).
+
+## 2. Optimalisatie
+
+- **Google Route Optimization API** ([documentatie-hub](https://developers.google.com/maps/documentation/route-optimization) / [overview](https://developers.google.com/maps/documentation/route-optimization/overview), voorheen Cloud Fleet Routing): capaciteit + tijdvensters + meerdere voertuigen, in één API die zowel de reistijden als de oplossing berekent (op Google's eigen wegennetwerk). **Prijs: ±$30 per 1000 "shipments" bij meerdere voertuigen** (single-vehicle tier goedkoper: $10/1000). Voor 140 kinderen = ±140 shipments per volledige herberekening → **ruwweg €4 per keer dat je het scenario volledig laat heroptimaliseren**. Vergt een Google Cloud-project + billing account + service-account-authenticatie, geen aparte MCP nodig (zie hierboven) — rechtstreeks als REST-call bruikbaar in een skill. Zie hieronder voor waarom we dit **voorlopig niet gebruiken**, en hoe je het zelf snel kan uittesten.
+- **[Mapbox Optimization API v2](https://docs.mapbox.com/api/navigation/optimization/)**: tot 1000 locaties, capaciteit + tijdvensters, $2/1000 na 100.000 gratis/maand. Geen connector.
+
+Open-source solvers:
+
+| Solver | Karakter | Snelheid | Licentie | Link |
+|---|---|---|---|---|
+| **VROOM** | Lichte C++ REST-service | Milliseconden | BSD-2 (gratis) | [github.com/VROOM-Project/vroom](https://github.com/VROOM-Project/vroom) |
+| **Google OR-Tools** | Python/C++ bibliotheek | Seconden | Apache 2.0 (gratis) | [github.com/google/or-tools](https://github.com/google/or-tools) |
+| JSprit | Java-bibliotheek | Seconden | Apache 2.0 (gratis) | [github.com/graphhopper/jsprit](https://github.com/graphhopper/jsprit) |
+
+Kanttekening bij VROOM: de oorspronkelijke makers hebben er ondertussen ook een commercieel product rond gebouwd, **Verso** ([vroom-project.org](http://vroom-project.org/)) — de open-source engine zelf blijft gratis op GitHub staan, maar wie liever een kant-en-klare hosted service wil, kan ook bij Verso terecht (tegen betaling).
+
+OpenRouteService's eigen [optimalisatie-endpoint](https://openrouteservice.org/dev/#/api-docs/optimization) wrapt trouwens intern ook VROOM, maar de gratis publieke API is er hard gelimiteerd op **max. 3 voertuigen en 50 stops per request** — te klein voor 7 bussen.
+
+### Waarom we Google Route Optimization API voorlopig NIET gebruiken
+
+**Geverifieerd, niet enkel een vermoeden**: ik heb Google's eigen [cost-model-documentatie](https://developers.google.com/maps/documentation/route-optimization/concepts/costs) nagekeken. Het bevestigt exact het onderscheid dat je zelf aanhaalde. De API optimaliseert uitsluitend op basis van deze kostencomponenten:
+
+- `fixedCost` — vaste kost als een bus wordt ingezet
+- `costPerHour` — kost per uur inzet (rijden + wachten + stops + pauzes)
+- `costPerTraveledHour` — kost per uur, enkel tijdens het rijden zelf
+- `costPerKilometer` — kost per gereden kilometer
+- `penaltyCost` — boete als een shipment (kind) wordt overgeslagen
+
+**Er bestaat geen ingebouwd objectief om de individuele rittijd van één passagier/kind te minimaliseren.** De documentatie omschrijft het doel expliciet als het vinden van "routes with the lowest cost" — bedoeld voor vlootefficiëntie (brandstof, arbeidsuren, aantal voertuigen), niet voor het comfort/de ritduur van een individuele passagier. Dat is ook precies hoe Google het product zelf positioneert in hun [aankondiging](https://mapsplatform.google.com/resources/blog/plan-efficient-routes-for-your-fleet-route-optimization-api-is-now-generally/): gericht op logistiek, leveringen, technici en on-demand bezorging — operationele kostenefficiëntie, niet passagierservaring. Er is geen native constraint voor "maximale rittijd per passagier" zoals je in ride-pooling-systemen soms tegenkomt.
+
+**Conclusie**: jouw vermoeden klopt. Google Route Optimization is gebouwd om de *kost van de vloot* te minimaliseren (aantal voertuigen, gereden km, gewerkte uren) — niet om de *rit van elk kind* zo kort mogelijk te maken. Je zou het objectief kunnen "misbruiken" (bv. door elke bus zijn eigen fixed cost te geven en te hopen dat kortere routes daar toevallig uit rollen), maar dat is indirect en onbetrouwbaar t.o.v. wat je eigenlijk wil. Daarom gebruiken we dit **voorlopig niet** als primaire solver — OR-Tools, waar je de doelfunctie zelf schrijft (bv. minimaliseer de langste individuele rittijd), blijft de eerste keuze voor dit project. We houden Google Route Optimization wel genoteerd als optie mocht de doelstelling ooit verschuiven naar "zo weinig mogelijk bussen/kilometers" (een kostenvraag) in plaats van "zo kort mogelijke rit per kind" (een comfortvraag).
+
+### Hoe kan je dit zelf snel uittesten? Is er een GUI?
+
+Ja — Google heeft een **open-source, deploybare demo-applicatie met GUI**: [googlemaps/js-route-optimization-app](https://github.com/googlemaps/js-route-optimization-app). Wat die biedt:
+
+- Een web-interface met **formulieren, tabellen én een kaart** om scenario's (voertuigen, shipments, capaciteit, tijdvensters) samen te stellen zonder zelf JSON te schrijven.
+- Visualisatie van de berekende routes op de kaart — precies het soort snelle feedback dat je zoekt.
+- Door Google zelf omschreven als een **"exploratory tool"** — nadrukkelijk niet bedoeld voor productie, wel ideaal om te begrijpen wat de API wel/niet doet voor je er verder in investeert.
+
+**Belangrijk**: dit is geen live publieke demo die je zomaar in de browser opent. Je moet de app zelf deployen naar een eigen Google Cloud-project (met billing account en Route Optimization API ingeschakeld) — de repo bevat een project-setup-gids en een deployment-gids (Cloud Run/Artifact Registry) plus een gids om ze lokaal te draaien. Voor jou als developer is dat een kwestie van een uurtje volgens hun documentatie, geen zware klus.
+
+Over kosten om te testen: Google's eigen aankondiging vermeldt "tot 10.000 gratis calls per SKU per maand" voor Maps Platform-diensten in het algemeen, maar de specifieke Route Optimization-pricing-pagina beschrijft een shipment-gebaseerd model zonder expliciete gratis staffel voor die SKU. Die twee bronnen zijn niet helemaal consistent — check dus zeker de prijscalculator in de Google Cloud Console vóór je test, maar met de scenario's van deze omvang (140 shipments) praat je hoe dan ook over een paar euro per testrun, geen grote uitgave.
+
+### En die YouTube-video over Gemini + route-optimalisatie?
+
+Mark vond ["Intelligent Route Optimization Using Google Maps and Gemini"](https://www.youtube.com/watch?v=V8iEt4lK3cQ). **Eerlijkheidshalve: ik kon de video zelf niet bekijken** (geen toegang tot video/transcript vanuit hier, enkel de titel via zoeken), dus onderstaande is afgeleid uit Google's eigen documentatie over hetzelfde patroon — check de video zelf voor het volledige verhaal.
+
+Wat ik wel kon vinden: Google's eigen materiaal over "Gemini + Maps" (bv. ["Grounding with Google Maps" in het Gemini Enterprise Agent Platform](https://mapsplatform.google.com/resources/blog/introducing-new-routing-features-in-grounding-with-google-maps/)) beschrijft **niet** dat Gemini zelf een routing-/optimalisatieprobleem oplost. Gemini is een taalmodel, geen solver. Wat er in die demo's typisch gebeurt: Gemini treedt op als **agent/orchestrator** die natuurlijke taal omzet naar gestructureerde aanroepen van bestaande Google Maps-API's (Directions, Places, eventueel Route Optimization) via function calling — bijvoorbeeld "vind cocktailbars met een bepaalde sfeer langs mijn traject" wordt vertaald naar een reeks API-calls. Die specifieke "Grounding with Google Maps"-routingfunctie ondersteunt trouwens maximaal 13 tussenstops voor één route — dus ook weer een single-route-tool, geen multi-voertuig-VRP-oplosser.
+
+**Concreet betekent dit**: als de video toont dat Gemini "het schoolbusprobleem" oplost, doet het dat vermoedelijk op dezelfde manier als wat wij hier al aan het opzetten zijn — een LLM-agent (Gemini in plaats van Claude) die de onderliggende Maps-/Route Optimization-API als *tool* aanroept. Het verandert niets aan de kern van het probleem: als die demo onder de motorkap de Route Optimization API gebruikt, geldt exact dezelfde beperking die we hierboven bespraken (kostenmodel, geen "kortste rit per kind"-objectief). Gemini "toveren" er geen VRP-oplossing bij die de onderliggende API niet al had. Mocht de video toch iets tonen dat hiermee in tegenspraak is (bv. een expliciete per-passagier-rittijd-constraint), hoor ik dat graag — dan neem ik dat er alsnog bij.
+
+### Google Route Optimization API vs. zelf OR-Tools draaien — samengevat
+
+| | Google Route Optimization API | OR-Tools (zelf draaien) |
+|---|---|---|
+| Doelfunctie | Vlootkost (vaste kost, uren, km, boetes) — **geen** ingebouwd "kortste rit per kind"-objectief | Volledig zelf te coderen — kan expliciet "minimaliseer de langste rittijd van eender welk kind" |
+| Kost | ±€4 per volledige herberekening (140 kinderen), geen bevestigde gratis staffel | Gratis |
+| Setup | Google Cloud-project, billing, service account | `pip install ortools`, direct bruikbaar in deze sessie |
+| Reistijddata | Ingebouwd (Google's eigen wegennetwerk + verkeer) | Moet je apart aanleveren (bv. via TomTom-matrix) |
+| GUI om te verkennen | Ja — [js-route-optimization-app](https://github.com/googlemaps/js-route-optimization-app) (zelf te deployen) | Nee — puur programmatisch |
+| Onderhoud | Geen — Google host en beheert de solver | Jij (of ik) beheert de code, maar het is een stabiele, veelgebruikte bibliotheek |
+| Snelheid | Zeer snel (volgens Google's documentatie: 2000 shipments/10 voertuigen in <30s) | Snel genoeg op deze schaal (seconden) |
+
+**Beslissing**: voor de kernvraag van dit project (kortste rit per kind) gebruiken we voorlopig OR-Tools. Google Route Optimization staat genoteerd als iets om apart te verkennen via hun GUI-demo-app — nuttig om te begrijpen wat het product wel/niet kan, maar niet ingezet als primaire solver zolang het doel "kortste individuele rit" blijft in plaats van "laagste vlootkost".
+
+### Wat is nu precies het verschil tussen laag 1 (TomTom/Google Maps) en laag 2 (OR-Tools)? Wat kan de solver dat de kaarten-API niet kan?
+
+Dit is de kernvraag, dus even expliciet:
+
+Een routing-/kaarten-API zoals TomTom of Google Maps Directions beantwoordt de vraag *"wat is de snelste route/tijd tussen deze punten"* — en bij een beperkte variant (zoals TomTom's Waypoint Optimization of Google's `optimizeWaypointOrder`) ook *"in welke volgorde bezoekt één voertuig deze paar stops het snelst"*. Dat is één route, al gegeven welke stops erop staan.
+
+Wat het project vraagt is iets fundamenteel anders: **welke 20 van de 140 kinderen gaan op bus 1, welke 20 op bus 2, enzovoort — én in welke volgorde per bus — zodat de rit voor élk kind zo kort mogelijk is, binnen de capaciteit en het aankomstvenster.** Dat is een *toewijzingsprobleem* (partitie van 140 kinderen over 7 bussen) gecombineerd met een *volgordeprobleem* per bus, tegelijk opgelost. Het aantal mogelijke combinaties is astronomisch groot — dit is een klassiek NP-hard combinatorisch probleem, geen simpele routeberekening.
+
+Een kaarten-API "weet" niets over die andere 6 bussen of over capaciteitsgrenzen — hij berekent gewoon een route voor de stops die je hem geeft. OR-Tools (of VROOM) is specifiek gebouwd om zo'n combinatorisch zoekprobleem slim te doorzoeken en een bijna-optimale verdeling + volgorde te vinden, gegeven een kostenmatrix (reistijden) als invoer. Concreet kan een solver dus:
+
+- de knip maken over welke kinderen bij welke bus horen (Google Maps/TomTom doen dit niet — jij zou dat zelf/manueel moeten beslissen);
+- die knip herhaaldelijk herzien en duizenden alternatieve verdelingen aftoetsen op een paar seconden tijd;
+- een aangepaste doelfunctie gebruiken — bv. **minimaliseer de langste rittijd van eender welk kind**, in plaats van gewoon totale afstand;
+- dit alles combineren met capaciteit (max. 20/bus) én het aankomstvenster op school.
+
+TomTom/Google Maps blijven wél noodzakelijk als **databron**: een solver kent zelf geen wegen of verkeer, hij heeft de reistijdmatrix nodig. De twee lagen zijn dus complementair, niet vervangend.
+
+## Alternatief: scenario's testen met enkel de AI-agent + TomTom (geen solver)
+
+Dit is een heel legitieme, lichtere aanpak — en sluit trouwens goed aan bij de voorbeelden uit de projectbeschrijving ("een bus naar Leuven inleggen", "vaste opstapplaatsen per zone"). Die scenario's zijn namelijk **door een mens (of agent) manueel bedachte indelingen**, geen door een solver berekende optimale verdeling. Voor zo'n manueel scenario is geen VRP-solver nodig: de agent stelt een indeling voor (bv. "deze 20 kinderen uit zone Leuven op bus 3, in deze volgorde"), en TomTom's Matrix/Routing API berekent gewoon de resulterende rittijden, afstanden, bezetting en aankomsttijden om dat scenario te *evalueren*. Dat is precies genoeg voor een skill die vooraf-gedefinieerde scenario's doorrekent en vergelijkt — en dat kan ik nu al bouwen, zonder solver.
+
+De grens ligt bij het woord "geoptimaliseerd" in de projectbeschrijving: een agent die met de hand een handvol scenario's aftoetst, zal zelden de écht kortste rit per kind vinden — daarvoor is de zoekruimte te groot om manueel/intuïtief te doorzoeken (zie hierboven). Dus:
+
+- **Wil je vooraf-bedachte scenario's (per zone, met vaste opstapplaatsen, "bus naar Leuven") laten doorrekenen en vergelijken?** → agent + TomTom volstaat, geen solver nodig. Dit kan een skill worden die je aan de school bezorgt.
+- **Wil je ook weten wat de best mogelijke verdeling is (het "volledig geoptimaliseerde" scenario uit je eigen projectbeschrijving)?** → daarvoor blijft OR-Tools nuttig, gevoed met dezelfde TomTom-data.
+
+Beide kunnen naast elkaar bestaan in dezelfde skill: TomTom voor de reistijden, optioneel OR-Tools erbij voor het scenario "volledig geoptimaliseerd".
+
+## 3. Visualisatie
+
+- **[Leaflet.js](https://leafletjs.com/)** + OpenStreetMap-tiles in een zelfgebouwde HTML-pagina: gratis, geen API-key, interactief per scenario. Sluit goed aan bij wat ik als Artifact kan publiceren.
+- **Mapbox GL**: mooiere styling, vergt een token/quota.
+- **Google My Maps**: handig om manueel te verfijnen, niet automatiseerbaar.
+- **QGIS**: volwaardige desktop-GIS, overkill voor scenario-presentatie.
+
+→ Voorstel: routes/scenario's als GeoJSON laten genereren, gerenderd in een Leaflet-artifact.
+
+## Aandachtspunt: privacy van kinderdata
+
+Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's (TomTom, Google, Mapbox) verlaten die adressen de eigen infrastructuur als geocoding-requests. Geen juridisch advies, maar wel een factor om in het achterhoofd te houden zodra er met échte adressen gewerkt wordt.
+
+## Beslissingen (14/09/2026)
+
+- **Geodata-bron: TomTom** (cloud, verkeersbewust) — connector moet nog geactiveerd worden.
+- **Schaal: 7 bussen, ±20 kinderen/bus (±140 leerlingen totaal).**
+- **Leerlingdata/buscapaciteiten: nog niet beschikbaar.** Eerste iteratie start met een klein fictief/steekproef-voorbeeld rond Hoegaarden.
+- **Optimalisatie-laag: OR-Tools, niet Google Route Optimization.** Geverifieerd dat Google's API optimaliseert op vlootkost (vaste kost, uren, km, boetes), niet op individuele rittijd — geen ingebouwd objectief voor "kortste rit per kind". Daarom voorlopig niet gebruikt als solver. Wel genoteerd om apart te verkennen via hun open-source GUI-demo ([js-route-optimization-app](https://github.com/googlemaps/js-route-optimization-app)), zelf te deployen op een eigen Google Cloud-project.
+- **Gemini/"Grounding with Google Maps"**: vermoedelijk hetzelfde agent-over-Maps-API-patroon als wat wij met Claude opzetten, geen aparte VRP-oplosser — niet bevestigd via de video zelf (kon niet bekeken worden), wel via Google's eigen documentatie over dat patroon.
+- Een aparte MCP-server voor Google Maps hosten is voor dit project waarschijnlijk niet nodig — één REST-call rechtstreeks vanuit de skill volstaat.
+
+## Voorgestelde stack
+
+1. **Geocoding + verkeersbewuste reistijdmatrix**: TomTom-connector.
+2. **Scenario-evaluatie (licht, direct bruikbaar)**: agent + TomTom Matrix Routing, voor manueel gedefinieerde indelingen (zones, vaste opstapplaatsen, "bus naar Leuven").
+3. **Volledige optimalisatie (optioneel, voor het "beste" scenario)**: OR-Tools (Python, direct bruikbaar in deze sessie), met een doelfunctie gericht op kortste rit per kind.
+4. **Visualisatie**: Leaflet-artifact per scenario, gevoed met GeoJSON.
+
+## Volgende stappen
+
+1. TomTom Maps-connector activeren voor deze sessie/organisatie.
+2. Fictieve testset opbouwen: schoollocatie "de pass" Hoegaarden + verzonnen leerlingadressen in de regio + 7 fictieve buscapaciteiten (20/bus).
+3. Eerste versie van de "scenario-evaluator"-skill bouwen: agent stelt een indeling voor, TomTom berekent km/reistijd/bezetting/aankomsttijd per scenario, resultaat op een Leaflet-kaart.
+4. Optioneel uitbreiden met OR-Tools voor het "volledig geoptimaliseerde" scenario ter vergelijking.
+5. (Apart spoor, optioneel) Google's js-route-optimization-app deployen op een eigen GCP-project om de API zelf te verkennen via de GUI.
+6. Zodra de echte leerlingdata beschikbaar is: adres, school, gewenste aankomsttijd, evt. vaste opstapplaats + buscapaciteiten per bus aanleveren.
