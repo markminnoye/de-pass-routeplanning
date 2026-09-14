@@ -1,0 +1,222 @@
+"""Evaluate a scenario: order stops (optionally), fetch routes, schedule backwards
+from the target arrival and compute the metrics from the project brief."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from statistics import mean, median
+
+from busroutes.config import Settings
+from busroutes.models import Bus, BusPlan, Scenario, School, Stop
+from busroutes.ordering import order_stops
+from busroutes.tomtom import GeoClient, RouteResult
+
+
+@dataclass
+class StopResult:
+    stop: Stop
+    arrival: datetime  # bus arrives at the stop
+    departure: datetime  # bus leaves the stop (after dwell)
+    ride_s: int  # from departure until arrival at school, for every rider at this stop
+
+
+@dataclass
+class BusResult:
+    bus: Bus
+    route: RouteResult
+    stops: list[StopResult]
+    departure: datetime
+    arrival: datetime
+
+    @property
+    def drive_s(self) -> int:
+        return self.route.travel_time_s
+
+    @property
+    def length_m(self) -> int:
+        return self.route.length_m
+
+    @property
+    def student_count(self) -> int:
+        return sum(len(s.stop.students) for s in self.stops)
+
+    @property
+    def occupancy(self) -> float:
+        return self.student_count / self.bus.capacity if self.bus.capacity else 0.0
+
+
+@dataclass
+class ScenarioResult:
+    scenario: Scenario
+    school: School
+    settings: Settings
+    depart_at_reference: datetime
+    buses: list[BusResult] = field(default_factory=list)
+    unused_buses: list[str] = field(default_factory=list)
+
+    def ride_times_s(self) -> list[int]:
+        return [s.ride_s for b in self.buses for s in b.stops for _ in s.stop.students]
+
+    def to_dict(self) -> dict:
+        rides = self.ride_times_s()
+        used = [b for b in self.buses if b.stops]
+        return {
+            "scenario": self.scenario.name,
+            "description": self.scenario.description,
+            "ordering": self.scenario.ordering,
+            "settings": {
+                "traffic": self.settings.traffic,
+                "depart_at_reference": self.depart_at_reference.isoformat(timespec="minutes"),
+                "target_arrival": _hhmm(self.school.target_arrival),
+                "dwell_base_s": self.settings.dwell_base_s,
+                "dwell_per_student_s": self.settings.dwell_per_student_s,
+            },
+            "summary": {
+                "students": len(rides),
+                "buses_used": len(used),
+                "buses_unused": list(self.unused_buses),
+                "max_ride_min": _minutes(max(rides)) if rides else 0.0,
+                "avg_ride_min": _minutes(mean(rides)) if rides else 0.0,
+                "median_ride_min": _minutes(median(rides)) if rides else 0.0,
+                "total_drive_min": _minutes(sum(b.drive_s for b in used)),
+                "total_km": round(sum(b.length_m for b in used) / 1000, 1),
+                "avg_occupancy_pct": round(100 * mean(b.occupancy for b in used), 1)
+                if used
+                else 0.0,
+                "earliest_departure": _hhmm(min(b.departure for b in used)) if used else None,
+                "arrival": _hhmm(self.school.target_arrival),
+            },
+            "buses": [
+                {
+                    "bus_id": b.bus.id,
+                    "students": b.student_count,
+                    "capacity": b.bus.capacity,
+                    "occupancy_pct": round(100 * b.occupancy, 1),
+                    "departure": _hhmm(b.departure),
+                    "arrival": _hhmm(b.arrival),
+                    "drive_min": _minutes(b.drive_s),
+                    "km": round(b.length_m / 1000, 1),
+                    "max_ride_min": _minutes(max((s.ride_s for s in b.stops), default=0)),
+                    "stops": [
+                        {
+                            "id": s.stop.id,
+                            "name": s.stop.name,
+                            "lat": s.stop.point.lat,
+                            "lon": s.stop.point.lon,
+                            "students": list(s.stop.students),
+                            "arrival": _hhmm(s.arrival),
+                            "departure": _hhmm(s.departure),
+                            "ride_min": _minutes(s.ride_s),
+                        }
+                        for s in b.stops
+                    ],
+                }
+                for b in self.buses
+            ],
+            "students": [
+                {
+                    "id": sid,
+                    "bus_id": b.bus.id,
+                    "stop_id": s.stop.id,
+                    "pickup": _hhmm(s.arrival),
+                    "ride_min": _minutes(s.ride_s),
+                }
+                for b in self.buses
+                for s in b.stops
+                for sid in s.stop.students
+            ],
+        }
+
+
+def _minutes(seconds: float) -> float:
+    return round(seconds / 60, 1)
+
+
+def _hhmm(t) -> str:
+    return t.strftime("%H:%M")
+
+
+def _dwell(stop: Stop, settings: Settings) -> timedelta:
+    return timedelta(
+        seconds=settings.dwell_base_s + settings.dwell_per_student_s * len(stop.students)
+    )
+
+
+def _ordered_stops(
+    plan: BusPlan, bus: Bus, school: School, scenario: Scenario, client: GeoClient
+) -> list[Stop]:
+    if scenario.ordering == "given" or len(plan.stops) <= 1:
+        return list(plan.stops)
+    points = [bus.start, *[s.point for s in plan.stops], school.point]
+    matrix = client.matrix(points, points)
+    start, end = 0, len(points) - 1
+    order = order_stops(list(range(1, end)), start, end, matrix)
+    return [plan.stops[i - 1] for i in order]
+
+
+def evaluate_bus(
+    plan: BusPlan,
+    bus: Bus,
+    school: School,
+    scenario: Scenario,
+    client: GeoClient,
+    settings: Settings,
+    arrival: datetime,
+    depart_at: datetime,
+) -> BusResult:
+    stops = _ordered_stops(plan, bus, school, scenario, client)
+    if not stops:
+        return BusResult(
+            bus=bus, route=RouteResult(legs=[]), stops=[], departure=arrival, arrival=arrival
+        )
+    points = [bus.start, *[s.point for s in stops], school.point]
+    route = client.route(points, depart_at)
+    if len(route.legs) != len(points) - 1:
+        raise RuntimeError(
+            f"{bus.id}: {len(route.legs)} legs voor {len(points)} punten "
+            f"(verwacht {len(points) - 1})"
+        )
+
+    # walk backwards from the school: leg k connects points[k] -> points[k+1]
+    results: list[StopResult] = []
+    t = arrival
+    for k in range(len(stops) - 1, -1, -1):
+        leg_after = route.legs[k + 1]
+        departure = t - timedelta(seconds=leg_after.travel_time_s)
+        stop_arrival = departure - _dwell(stops[k], settings)
+        results.append(
+            StopResult(
+                stop=stops[k],
+                arrival=stop_arrival,
+                departure=departure,
+                ride_s=int((arrival - departure).total_seconds()),
+            )
+        )
+        t = stop_arrival
+    results.reverse()
+    bus_departure = results[0].arrival - timedelta(seconds=route.legs[0].travel_time_s)
+    return BusResult(bus=bus, route=route, stops=results, departure=bus_departure, arrival=arrival)
+
+
+def evaluate(
+    scenario: Scenario,
+    school: School,
+    buses: dict[str, Bus],
+    client: GeoClient,
+    settings: Settings,
+) -> ScenarioResult:
+    arrival = settings.reference_arrival(school.target_arrival)
+    depart_at = settings.reference_departure(school.target_arrival)
+    result = ScenarioResult(
+        scenario=scenario, school=school, settings=settings, depart_at_reference=depart_at
+    )
+    for plan in scenario.buses:
+        result.buses.append(
+            evaluate_bus(
+                plan, buses[plan.bus_id], school, scenario, client, settings, arrival, depart_at
+            )
+        )
+    used = {plan.bus_id for plan in scenario.buses}
+    result.unused_buses = sorted(b for b in buses if b not in used)
+    return result

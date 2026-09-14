@@ -3,7 +3,11 @@
 
 Deterministic (fixed seed): the same script always produces the same files, so
 scenario results stay reproducible. Points are scattered around real village
-centres in the region, but none of them is a real address and there are no names.
+centres in the region and then snapped to the nearest normal street with TomTom
+reverse geocoding (otherwise routing snaps them to footpaths/field tracks and the
+travel times become nonsense). Snapping is cached in .cache/tomtom, so rerunning
+is free; it needs TOMTOM_API_KEY only the first time. No point is a real address
+and there are no names.
 """
 
 from __future__ import annotations
@@ -11,7 +15,12 @@ from __future__ import annotations
 import json
 import math
 import random
+import sys
 from pathlib import Path
+
+from busroutes.config import DEFAULT_CACHE_DIR, ConfigError, load_key
+from busroutes.models import Point
+from busroutes.tomtom import TomTomClient
 
 SEED = 20260914
 SAMPLES_DIR = Path(__file__).resolve().parents[1] / "docs" / "samples"
@@ -60,15 +69,31 @@ def scatter(rng: random.Random, lat: float, lon: float, radius_km: float) -> tup
     return round(lat + dlat, 6), round(lon + dlon, 6)
 
 
-def generate_students() -> list[dict]:
+def snap(client: TomTomClient, lat: float, lon: float, label: str) -> tuple[float, float]:
+    snapped = client.snap_to_street(Point(lat, lon))
+    if snapped is None:
+        print(f"waarschuwing: geen straat binnen 1 km van {label}; punt blijft ongewijzigd")
+        return lat, lon
+    return round(snapped.lat, 6), round(snapped.lon, 6)
+
+
+def generate_students(client: TomTomClient) -> list[dict]:
     rng = random.Random(SEED)
     students = []
     for zone, (lat, lon, radius, count) in ZONES.items():
         for _ in range(count):
-            plat, plon = scatter(rng, lat, lon, radius)
             sid = f"s{len(students) + 1:03d}"
+            plat, plon = snap(client, *scatter(rng, lat, lon, radius), sid)
             students.append({"id": sid, "lat": plat, "lon": plon, "zone": zone})
     return students
+
+
+def snapped_pickup_points(client: TomTomClient) -> dict[str, dict]:
+    result = {}
+    for pp_id, pp in PICKUP_POINTS.items():
+        lat, lon = snap(client, pp["lat"], pp["lon"], pp_id)
+        result[pp_id] = {**pp, "lat": lat, "lon": lon}
+    return result
 
 
 def generate_buses() -> list[dict]:
@@ -128,14 +153,14 @@ def scenario_regiobus_per_zone(students: list[dict]) -> dict:
     }
 
 
-def scenario_opstapplaatsen(students: list[dict]) -> dict:
+def scenario_opstapplaatsen(students: list[dict], pickup_points: dict[str, dict]) -> dict:
     z = by_zone(students)
     clusters = zone_clusters(z)
     tienen = z["tienen"]
     leuven = z["leuven"]
 
     def pp(pp_id: str, riders: list[str]) -> dict:
-        return {"id": pp_id, **PICKUP_POINTS[pp_id], "students": riders}
+        return {"id": pp_id, **pickup_points[pp_id], "students": riders}
 
     buses = [{"bus_id": f"bus{i + 1}", "stops": cluster} for i, cluster in enumerate(clusters)]
     # bus4: the first 20 Tienen students board at two fixed pickup points
@@ -156,19 +181,26 @@ def dump(path: Path, data: object) -> None:
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
 
 
-def main() -> None:
-    students = generate_students()
+def main() -> int:
+    try:
+        client = TomTomClient(load_key(), DEFAULT_CACHE_DIR)
+    except ConfigError as exc:
+        print(exc, file=sys.stderr)
+        return 1
+    students = generate_students(client)
+    pickup_points = snapped_pickup_points(client)
     dump(SAMPLES_DIR / "school.json", SCHOOL)
     dump(SAMPLES_DIR / "students.json", students)
     dump(SAMPLES_DIR / "buses.json", generate_buses())
     for scenario in (
         scenario_spreiding_gemengd(students),
         scenario_regiobus_per_zone(students),
-        scenario_opstapplaatsen(students),
+        scenario_opstapplaatsen(students, pickup_points),
     ):
         dump(SAMPLES_DIR / "scenarios" / f"{scenario['name']}.json", scenario)
     print(f"{len(students)} students, {BUS_COUNT} buses, 3 scenarios -> {SAMPLES_DIR}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -8,36 +8,17 @@ Does not print the key.
 from __future__ import annotations
 
 import json
-import os
 import sys
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta
-from pathlib import Path
 from zoneinfo import ZoneInfo
+
+from busroutes.config import ConfigError, load_key
 
 SCHOOL = {"latitude": 50.77815986077964, "longitude": 4.8959997390197705}
 HOEGAARDEN_CENTRE = {"latitude": 50.7756, "longitude": 4.8894}
 MATRIX_URL = "https://api.tomtom.com/routing/matrix/2"
-
-
-def load_key() -> str:
-    env_path = Path(__file__).resolve().parents[1] / ".env"
-    if env_path.exists():
-        for line in env_path.read_text().splitlines():
-            line = line.strip()
-            if line.startswith("TOMTOM_API_KEY=") and not line.startswith("#"):
-                value = line.split("=", 1)[1].strip().strip('"').strip("'")
-                if value:
-                    os.environ.setdefault("TOMTOM_API_KEY", value)
-    key = os.environ.get("TOMTOM_API_KEY", "").strip()
-    if not key:
-        print(
-            "Missing TOMTOM_API_KEY. Copy .env.example to .env and set the key.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-    return key
 
 
 def next_weekday_morning(hour: int, minute: int) -> str:
@@ -52,7 +33,11 @@ def next_weekday_morning(hour: int, minute: int) -> str:
 
 
 def main() -> int:
-    key = load_key()
+    try:
+        key = load_key()
+    except ConfigError as exc:
+        print(exc, file=sys.stderr)
+        return 1
     depart_at = next_weekday_morning(7, 15)
     body = {
         "origins": [{"point": SCHOOL}],

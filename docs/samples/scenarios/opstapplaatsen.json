@@ -83,8 +83,8 @@
       "stops": [
         {
           "id": "pp-tienen-station",
-          "lat": 50.8085,
-          "lon": 4.9245,
+          "lat": 50.807728,
+          "lon": 4.922851,
           "name": "Tienen station",
           "students": [
             "s061",
@@ -101,8 +101,8 @@
         },
         {
           "id": "pp-tienen-markt",
-          "lat": 50.8071,
-          "lon": 4.9376,
+          "lat": 50.807041,
+          "lon": 4.937605,
           "name": "Tienen Grote Markt",
           "students": [
             "s071",
@@ -155,8 +155,8 @@
         "s106",
         {
           "id": "pp-leuven-station",
-          "lat": 50.8813,
-          "lon": 4.7156,
+          "lat": 50.881271,
+          "lon": 4.715373,
           "name": "Leuven station",
           "students": [
             "s107",
