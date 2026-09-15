@@ -164,7 +164,7 @@ def test_plugin_json_name_and_version():
     data = json.loads((ROOT / "plugin" / ".claude-plugin" / "plugin.json").read_text())
     assert bp.is_kebab_case(data["name"])
     assert data["version"] == bp.read_project_version(bp.Paths(ROOT))
-    assert "repository" not in data
+    assert data["repository"] == "https://github.com/markminnoye/de-pass-routeplanning"
 
 
 def test_generic_skill_has_version_check_repo_skill_does_not():

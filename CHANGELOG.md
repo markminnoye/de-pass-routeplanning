@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Overlay van De Lijn-, TEC- en NMBS-haltes op `map.html` via Overpass (gecached in `.cache/overpass/`, uitzetbaar in Leaflet)
 - Esri World Street Map als tweede basemap in de layer control
+- GitHub als canonieke remote (`repository` in `plugin.json`) zodat de versie-check Releases kan zien
 - Gratis default-ordening `haversine` naast TomTom-`matrix`; CLI `--ordering` en `BUSROUTES_ORDERING`
 - `--dry-run` en verbruiksrapport (TomTom-transacties) na een run
 - Matrix-facturatieformule en goedkoopste blokvorm (`matrix_transactions` / `plan_blocks`)
