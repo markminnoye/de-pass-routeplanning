@@ -1,0 +1,49 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - run: uv sync --dev
+      - run: uv run ruff check . && uv run ruff format --check .
+      - run: uv run pytest
+      - run: uv run python scripts/build_plugin.py --check
+      - run: uv run python scripts/build_plugin.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: de-pass-routeplanning.plugin
+          path: dist/de-pass-routeplanning.plugin
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - run: uv sync --dev
+      - name: Verify tag matches pyproject version
+        run: uv run python scripts/build_plugin.py --verify-tag "${GITHUB_REF_NAME}"
+      - run: uv run python scripts/build_plugin.py
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            dist/de-pass-routeplanning.plugin \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes

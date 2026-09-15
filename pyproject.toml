@@ -24,6 +24,7 @@ packages = ["busroutes"]
 [tool.ruff]
 line-length = 100
 target-version = "py313"
+extend-exclude = ["plugin"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

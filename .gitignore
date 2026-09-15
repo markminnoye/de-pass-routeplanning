@@ -7,5 +7,6 @@ out/
 .DS_Store
 .pytest_cache/
 .ruff_cache/
+dist/
 .claude/settings.local.json
 .claude/settings.json

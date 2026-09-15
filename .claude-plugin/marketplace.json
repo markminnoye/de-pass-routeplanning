@@ -1,0 +1,13 @@
+{
+  "name": "de-pass-routeplanning",
+  "owner": {
+    "name": "Mark Minnoye"
+  },
+  "plugins": [
+    {
+      "name": "de-pass-routeplanning",
+      "source": "./plugin",
+      "description": "Schoolbus-scenario's voor \"de pass\" (Hoegaarden) doorrekenen en vergelijken: rittijd per kind, kilometers, bezetting, aankomsttijden en een kaart per scenario."
+    }
+  ]
+}
