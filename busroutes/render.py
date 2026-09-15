@@ -1,7 +1,10 @@
 """Output: GeoJSON, a self-contained Leaflet map per scenario, and comparison tables.
 
-The map uses OpenStreetMap tiles, so it needs internet access when opened; it is
-meant to be opened locally in a browser (a Claude artifact blocks external tiles).
+The map uses OpenStreetMap.de tiles plus an overlay of De Lijn / TEC / NMBS
+stops fetched via Overpass. tile.openstreetmap.org is not used: a local
+file:// map.html sends no Referer, and OSMF volunteer tiles then return 403.
+It needs internet access when opened and is meant to be opened locally in a
+browser (a Claude artifact blocks external tiles).
 """
 
 from __future__ import annotations
@@ -147,7 +150,9 @@ def _bus_rows(d: dict, colours: dict[str, str]) -> str:
     return "".join(rows)
 
 
-def render_map_html(result: ScenarioResult, geojson: dict) -> str:
+def render_map_html(
+    result: ScenarioResult, geojson: dict, transit_geojson: dict | None = None
+) -> str:
     d = result.to_dict()
     colours = {
         f["properties"]["bus_id"]: f["properties"]["colour"]
@@ -157,6 +162,9 @@ def render_map_html(result: ScenarioResult, geojson: dict) -> str:
     title = html.escape(f"Scenario {d['scenario']}")
     description = html.escape(d.get("description", ""))
     data = json.dumps(geojson).replace("</", "<\\/")
+    transit = json.dumps(transit_geojson or {"type": "FeatureCollection", "features": []}).replace(
+        "</", "<\\/"
+    )
     return f"""<!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -196,10 +204,18 @@ def render_map_html(result: ScenarioResult, geojson: dict) -> str:
 </div>
 <script>
 const data = {data};
+const transitData = {transit};
 const map = L.map('map');
-L.tileLayer('https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
-  maxZoom: 19, attribution: '&copy; OpenStreetMap'
-}}).addTo(map);
+const osmAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+const osmDe = L.tileLayer('https://tile.openstreetmap.de/{{z}}/{{x}}/{{y}}.png', {{
+  maxZoom: 18,
+  attribution: osmAttr
+}});
+const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{{z}}/{{y}}/{{x}}', {{
+  maxZoom: 19,
+  attribution: 'Tiles &copy; Esri'
+}});
+osmDe.addTo(map);
 const layer = L.geoJSON(data, {{
   style: f => ({{ color: f.properties.colour, weight: 4, opacity: 0.85 }}),
   pointToLayer: (f, latlng) => {{
@@ -221,6 +237,31 @@ const layer = L.geoJSON(data, {{
       l.bindPopup(`<b>${{p.name}}</b><br>aankomst ${{p.arrival}}`);
     }}
   }}
+}}).addTo(map);
+const transitColours = {{ delijn: '#ffdd00', tec: '#e30613', nmbs: '#003d6b' }};
+const transitLabels = {{ delijn: 'De Lijn', tec: 'TEC', nmbs: 'NMBS' }};
+const transitLayer = L.geoJSON(transitData, {{
+  attribution: 'OV-haltes &copy; OpenStreetMap-bijdragers',
+  pointToLayer: (f, latlng) => {{
+    const p = f.properties;
+    return L.circleMarker(latlng, {{
+      radius: 4, color: '#fff', fillColor: transitColours[p.operator_kind] || '#666',
+      fillOpacity: 0.9, weight: 1
+    }});
+  }},
+  onEachFeature: (f, l) => {{
+    const p = f.properties;
+    const op = transitLabels[p.operator_kind] || p.operator_kind;
+    const ref = p.ref ? ' · ' + p.ref : '';
+    l.bindPopup(`<b>${{p.name}}</b><br>${{op}}${{ref}}`);
+  }}
+}}).addTo(map);
+L.control.layers({{
+  'OpenStreetMap': osmDe,
+  'Esri straten': esri
+}}, {{
+  'Schoolbusroutes': layer,
+  'OV-haltes (De Lijn, TEC, NMBS)': transitLayer
 }}).addTo(map);
 map.fitBounds(layer.getBounds().pad(0.05));
 </script>

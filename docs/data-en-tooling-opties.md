@@ -197,7 +197,7 @@ Beide kunnen naast elkaar bestaan in dezelfde skill: TomTom voor de reistijden, 
 
 ## 3. Visualisatie
 
-- **[Leaflet.js](https://leafletjs.com/)** + OpenStreetMap-tiles in een zelfgebouwde HTML-pagina: gratis, geen API-key, interactief per scenario. Sluit goed aan bij wat ik als Artifact kan publiceren.
+- **[Leaflet.js](https://leafletjs.com/)** + OpenStreetMap.de-tiles in een zelfgebouwde HTML-pagina: gratis, geen API-key. `tile.openstreetmap.org` is onbruikbaar voor lokaal `map.html`: OSMF eist een HTTP-Referer, `file://` stuurt die niet, resultaat is 403 "Access blocked". Esri World Street Map zit als tweede basemap in de layer control. Publieke bushaltes en stations (De Lijn, TEC, NMBS) komen als overlay via de [Overpass API](https://overpass-api.de/) (OSM-data, disk-cache in `.cache/overpass/`), uitzetbaar in de kaart.
 - **Mapbox GL**: mooiere styling, vergt een token/quota.
 - **Google My Maps**: handig om manueel te verfijnen, niet automatiseerbaar.
 - **QGIS**: volwaardige desktop-GIS, overkill voor scenario-presentatie.
@@ -206,7 +206,7 @@ Beide kunnen naast elkaar bestaan in dezelfde skill: TomTom voor de reistijden, 
 
 ## Aandachtspunt: privacy van kinderdata
 
-Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's (TomTom, Google, Mapbox) verlaten die adressen de eigen infrastructuur als geocoding-requests. Geen juridisch advies, maar wel een factor om in het achterhoofd te houden zodra er met échte adressen gewerkt wordt.
+Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's (TomTom, Google, Mapbox) verlaten die adressen de eigen infrastructuur als geocoding-requests. Overpass krijgt alleen een bounding box rond de scenario-geometrie (geen adressenlijst). Geen juridisch advies, maar wel een factor om in het achterhoofd te houden zodra er met échte adressen gewerkt wordt.
 
 ## Beslissingen (14/09/2026)
 
@@ -217,12 +217,17 @@ Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's
 - **Gemini/"Grounding with Google Maps"**: vermoedelijk hetzelfde agent-over-Maps-API-patroon als wat wij met Claude opzetten, geen aparte VRP-oplosser — niet bevestigd via de video zelf (kon niet bekeken worden), wel via Google's eigen documentatie over dat patroon.
 - Een aparte MCP-server voor Google Maps hosten is voor dit project waarschijnlijk niet nodig — één REST-call rechtstreeks vanuit de skill volstaat.
 
+## Beslissingen (15/09/2026)
+
+- **Kaart-basemap: OpenStreetMap.de**, met Esri straten als tweede laag. Niet `tile.openstreetmap.org`: lokaal geopende `map.html` heeft geen HTTP-Referer en OSMF blokkeert die requests (403). CARTO Voyager toont zonder key een "API KEY REQUIRED"-watermerk.
+- **Publieke OV-haltes als overlay**: De Lijn, TEC en NMBS via Overpass API, gefilterd op Belgische operator-tags (`ref:De_Lijn`, `ref:TEC` / `network=TEC*`, `railway=station|halt` + NMBS/SNCB of `uic_ref` 88…). Resultaat gecachet in `.cache/overpass/`. Mislukte fetch → waarschuwing, scenario gaat door, kaart zonder overlay. In `map.html` uitzetbaar via Leaflet layer control.
+
 ## Voorgestelde stack
 
 1. **Geocoding + verkeersbewuste reistijdmatrix**: TomTom-connector.
 2. **Scenario-evaluatie (licht, direct bruikbaar)**: agent + TomTom Matrix Routing, voor manueel gedefinieerde indelingen (zones, vaste opstapplaatsen, "bus naar Leuven").
 3. **Volledige optimalisatie (optioneel, voor het "beste" scenario)**: OR-Tools (Python, direct bruikbaar in deze sessie), met een doelfunctie gericht op kortste rit per kind.
-4. **Visualisatie**: Leaflet-artifact per scenario, gevoed met GeoJSON.
+4. **Visualisatie**: Leaflet-artifact per scenario, gevoed met GeoJSON; OSM-basemap plus Overpass-overlay voor De Lijn / TEC / NMBS.
 
 ## Volgende stappen
 

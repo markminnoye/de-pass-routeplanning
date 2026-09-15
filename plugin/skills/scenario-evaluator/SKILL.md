@@ -46,10 +46,10 @@ gebruiker naar de versie of een update vraagt. Niet bij elke follow-up.
    ├── docs/samples/        (school.json, students.json, buses.json — zie hieronder)
    ├── scenarios/           (scenario-json's)
    ├── out/                 (wordt aangemaakt bij het doorrekenen)
-   └── .cache/tomtom/       (wordt automatisch aangemaakt)
+   └── .cache/               (tomtom/ en overpass/, wordt automatisch aangemaakt)
    ```
    Bestaat de werkmap al (van een vorige beurt in dezelfde sessie)? Hergebruik ze — niet
-   opnieuw kopiëren, en zeker de `.cache/tomtom/` en `.env` niet overschrijven.
+   opnieuw kopiëren, en zeker de `.cache/` (TomTom én Overpass) en `.env` niet overschrijven.
 
 2. **TomTom-sleutel.** Vraag de gebruiker om hun eigen `TOMTOM_API_KEY` als die nog niet in
    `<werkmap>/.env` staat (gratis aan te maken op developer.tomtom.com). Schrijf hem naar
@@ -81,8 +81,11 @@ gebruiker naar de versie of een update vraagt. Niet bij elke follow-up.
    cd <werkmap>
    BUSROUTES_REFERENCE_DATE=<YYYY-MM-DD> python3 -m busroutes.cli evaluate scenarios/<naam>.json
    ```
-   Output: `out/<naam>/metrics.json`, `routes.geojson`, `map.html`. Onderaan meldt de CLI
-   het TomTom-verbruik van deze run en wat de cache uitspaarde.
+   Output: `out/<naam>/metrics.json`, `routes.geojson`, `transit.geojson`, `map.html`. Onderaan meldt de CLI
+   het TomTom-verbruik van deze run en wat de cache uitspaarde. `map.html` toont OSM-tegels plus
+   publieke OV-haltes (De Lijn, TEC, NMBS) als laag die je in de kaart aan/uit kunt zetten;
+   die overlay komt uit Overpass en staat in `.cache/overpass/`. Faalt Overpass, dan gaat de
+   evaluatie gewoon door (waarschuwing op stderr, kaart zonder overlay).
 
    Twijfel je of een run duur wordt? `--dry-run` haalt niets op en telt alleen:
    ```bash
@@ -105,8 +108,8 @@ gebruiker naar de versie of een update vraagt. Niet bij elke follow-up.
    (de ene groep korter, de andere langer), toon dan de betrokken bus per stop
    (`buses[].stops[]`: `ride_min`, `arrival` = instaptijd).
    Bied `map.html` aan de gebruiker aan (bv. met een bestand-tool) om lokaal in de browser
-   te openen — de kaart gebruikt OpenStreetMap-tiles die niet laden in een ingebed
-   voorbeeld/artifact.
+   te openen — de kaart gebruikt OpenStreetMap.de-tiles en een Overpass-overlay; die laden niet
+   in een ingebed voorbeeld/artifact.
 
 ## Interpretatie — vermeld dit waar het speelt
 
@@ -137,13 +140,14 @@ gebruiker naar de versie of een update vraagt. Niet bij elke follow-up.
 
 De gebruiker betaalt zelf per TomTom-request, dus:
 
-- **Bewaar `.cache/tomtom/`.** Kies een werkmap die de sessie overleeft en wijs de gebruiker
-  erop dat wegwerpen van die map alles opnieuw laat afrekenen. Een tijdelijke map zoals
+- **Bewaar `.cache/`.** Kies een werkmap die de sessie overleeft en wijs de gebruiker
+  erop dat wegwerpen van `.cache/tomtom/` alles opnieuw laat afrekenen bij TomTom. `.cache/overpass/`
+  is gratis om opnieuw te vullen maar scheelt Overpass-calls. Een tijdelijke map zoals
   `/tmp/...` is prima binnen één sessie, niet als blijvende keuze — vraag bij een tweede
   sessie of de vorige werkmap er nog is.
 - **Laat `--ordering` op de default staan** tenzij er een concrete aanleiding is (zie
   "Interpretatie").
-- **Gebruik `--no-cache` niet** om iets te "verversen"; dat rekent de hele run opnieuw aan.
+- **Gebruik `--no-cache` niet** om iets te "verversen"; dat rekent TomTom opnieuw aan én haalt Overpass opnieuw op.
   Wil je andere verkeersomstandigheden, verander dan de referentiedatum of `--traffic`.
 - Bij twijfel eerst `--dry-run`, en meld de raming aan de gebruiker voor je een dure run doet.
 

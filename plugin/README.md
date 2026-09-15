@@ -28,7 +28,10 @@ Vraag Claude gewoon om een scenario door te rekenen of te vergelijken, bijvoorbe
 
 Claude schrijft het scenario, rekent het door met verkeersbewuste TomTom-reistijden, en
 rapporteert de langste/gemiddelde rit per kind, kilometers, bezetting en aankomsttijden,
-plus een kaart (`map.html`) die je lokaal in de browser kan openen.
+plus een kaart (`map.html`) die je lokaal in de browser kan openen. Op die kaart staan
+naast de schoolbusroutes ook publieke De Lijn-, TEC- en NMBS-haltes (aan/uit te zetten).
+De stratenkaart komt van OpenStreetMap.de; OpenStreetMap.org-tegels werken niet in een
+lokaal HTML-bestand (403 zonder HTTP-Referer).
 
 ## Updates
 

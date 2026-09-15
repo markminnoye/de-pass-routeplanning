@@ -42,7 +42,8 @@ bezetting, vertrek- en aankomsttijden, plus een kaart. Geen solver: de indeling 
    stop (`buses[].stops[]`: `ride_min`, `arrival` = instaptijd — bij een opstapplaats is
    "hoe vroeg moet je er staan" net zo relevant als de rittijd). Doorslaggevend is de
    kernvraag uit AGENTS.md: langste en gemiddelde rit per kind, niet km of totale rijtijd.
-   `map.html` aanbieden (lokaal openen in de browser; tiles laden niet in een artifact).
+  `map.html` aanbieden (lokaal openen in de browser; tiles en OV-overlay laden niet in een artifact).
+  De kaart heeft een laag "OV-haltes (De Lijn, TEC, NMBS)" die je kunt uitzetten.
 
 ## Interpretatie — vermeld dit waar het speelt
 

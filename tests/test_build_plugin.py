@@ -163,7 +163,7 @@ def test_plugin_json_name_and_version():
     bp = load_build_plugin()
     data = json.loads((ROOT / "plugin" / ".claude-plugin" / "plugin.json").read_text())
     assert bp.is_kebab_case(data["name"])
-    assert data["version"] == "0.1.0"
+    assert data["version"] == bp.read_project_version(bp.Paths(ROOT))
     assert "repository" not in data
 
 

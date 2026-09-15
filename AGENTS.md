@@ -15,7 +15,7 @@
 
 1. **Geodata** (geocoding + verkeersbewuste reistijdmatrix) → TomTom, **hybride**: de MCP-connector voor interactief verkennen (geocoden, snelle routecheck, kaartbeeld), Python/REST (`busroutes/tomtom.py`: Matrix Routing v2 + `calculateRoute`, met disk-cache) voor de batch-evaluatie. Nooit een volledig scenario (7 routes) via de connector doorrekenen.
 2. **Optimalisatie** (toewijzing kinderen→bus + volgorde per bus) → OR-Tools, doelfunctie = kortste individuele rittijd. Zie `@docs/data-en-tooling-opties.md` voor waarom niet Google Route Optimization (die optimaliseert op vlootkost, geen ingebouwd per-passagier-objectief).
-3. **Visualisatie** → Leaflet.js + OpenStreetMap-tiles, gevoed met GeoJSON, als lokaal `map.html` per scenario. Let op: een Claude-artifact blokkeert externe afbeeldingen, dus OSM-tiles laden daar niet — artifact-publicatie vergt ingebedde tiles (later).
+3. **Visualisatie** → Leaflet.js + OpenStreetMap.de-tiles (niet tile.openstreetmap.org, die 403 geeft op lokaal `file://`), gevoed met GeoJSON, als lokaal `map.html` per scenario, met een togglebare overlay van De Lijn / TEC / NMBS-haltes (Overpass). Let op: een Claude-artifact blokkeert externe afbeeldingen, dus tiles laden daar niet — artifact-publicatie vergt ingebedde tiles (later).
 
 Deze lagen zijn complementair: laag 1 levert data, laag 2 lost het combinatorische toewijzingsprobleem op, laag 3 toont het resultaat. Een kaarten-API (TomTom/Google Maps) lost nooit laag 2 op.
 

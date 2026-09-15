@@ -46,6 +46,36 @@ def test_map_html_embeds_data_and_leaflet(school, students, buses, fake_client):
     assert "bus1" in html and "bus2" in html
     assert "max_ride_min" not in html  # metrics rendered as a table, not raw keys
     assert "Langste rit" in html
+    assert "L.control.layers" in html
+    assert "OV-haltes (De Lijn, TEC, NMBS)" in html
+    assert "tile.openstreetmap.de" in html
+    assert "World_Street_Map" in html
+    assert "tile.openstreetmap.org" not in html
+
+
+def test_map_html_embeds_transit_stops(school, students, buses, fake_client):
+    result = result_for(school, students, buses, fake_client)
+    transit = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [4.90, 50.78]},
+                "properties": {
+                    "kind": "transit",
+                    "name": "Tienen Station",
+                    "operator_kind": "nmbs",
+                    "ref": "8832000",
+                    "osm_id": "node/3",
+                },
+            }
+        ],
+    }
+    html = render_map_html(result, to_geojson(result), transit_geojson=transit)
+    assert "Tienen Station" in html
+    assert "8832000" in html
+    assert "transitLayer" in html
+    assert "OV-haltes &copy; OpenStreetMap-bijdragers" in html
 
 
 def test_compare_markdown_table(school, students, buses, fake_client):

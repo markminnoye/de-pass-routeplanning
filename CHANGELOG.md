@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2026-09-15
 
 ### Added
+- Overlay van De Lijn-, TEC- en NMBS-haltes op `map.html` via Overpass (gecached in `.cache/overpass/`, uitzetbaar in Leaflet)
+- Esri World Street Map als tweede basemap in de layer control
 - Gratis default-ordening `haversine` naast TomTom-`matrix`; CLI `--ordering` en `BUSROUTES_ORDERING`
 - `--dry-run` en verbruiksrapport (TomTom-transacties) na een run
 - Matrix-facturatieformule en goedkoopste blokvorm (`matrix_transactions` / `plan_blocks`)
@@ -19,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scenario-evaluator v1: TomTom-client, stopordening, metrics, Leaflet-kaart, CLI, fictieve testset
 
 ### Changed
+- Basemap: OpenStreetMap.de i.p.v. `tile.openstreetmap.org` (Chrome op lokaal `file://` stuurt geen HTTP-Referer; OSMF geeft dan 403)
 - Default ordening: `haversine` i.p.v. matrix → ~21 i.p.v. ~5.900 transacties voor de drie samples (koude cache)
 - Buscapaciteit 30; compare toont `buses-used`
 - Docs: TomTom-facturatiemodel en aanbevolen werkwijze in `docs/data-en-tooling-opties.md` en skill

@@ -11,6 +11,7 @@ from pathlib import Path
 from busroutes.config import REPO_ROOT, ConfigError, load_settings
 from busroutes.evaluate import evaluate
 from busroutes.models import ScenarioError, load_samples, load_scenario_file
+from busroutes.overpass import load_transit_overlay
 from busroutes.render import compare_markdown, render_map_html, to_geojson
 from busroutes.tomtom import TomTomClient, TomTomError, usage_report
 
@@ -29,7 +30,7 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     if args.no_cache:
         overrides["cache_dir"] = None
         print(
-            "Let op: --no-cache negeert de cache, dus TomTom rekent alles opnieuw aan.",
+            "Let op: --no-cache negeert de cache, dus TomTom én Overpass worden opnieuw opgehaald.",
             file=sys.stderr,
         )
     settings = load_settings(**overrides)
@@ -49,9 +50,16 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     geojson = to_geojson(result)
     out_dir = Path(args.out) if args.out else DEFAULT_OUT / scenario.name
     out_dir.mkdir(parents=True, exist_ok=True)
+    transit, transit_warning = load_transit_overlay(geojson, settings.cache_dir)
+    if transit_warning:
+        print(
+            f"Waarschuwing: OV-haltes niet geladen ({transit_warning}). Kaart zonder overlay.",
+            file=sys.stderr,
+        )
     (out_dir / "metrics.json").write_text(json.dumps(metrics, indent=2, ensure_ascii=False) + "\n")
     (out_dir / "routes.geojson").write_text(json.dumps(geojson) + "\n")
-    (out_dir / "map.html").write_text(render_map_html(result, geojson))
+    (out_dir / "transit.geojson").write_text(json.dumps(transit, ensure_ascii=False) + "\n")
+    (out_dir / "map.html").write_text(render_map_html(result, geojson, transit_geojson=transit))
 
     print(compare_markdown([metrics]), end="")
     print()
@@ -63,7 +71,7 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
             f"{b['drive_min']} | {b['km']} | {b['max_ride_min']} |"
         )
     print(f"\n{usage_report(client.usage)}")
-    print(f"Output: {out_dir}/metrics.json, routes.geojson, map.html")
+    print(f"Output: {out_dir}/metrics.json, routes.geojson, transit.geojson, map.html")
     return 0
 
 
@@ -106,7 +114,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="niets ophalen, alleen tellen wat deze run aan TomTom-transacties zou kosten",
     )
-    ev.add_argument("--no-cache", action="store_true", help="TomTom-cache negeren")
+    ev.add_argument("--no-cache", action="store_true", help="TomTom- en Overpass-cache negeren")
     ev.set_defaults(func=cmd_evaluate)
 
     cp = sub.add_parser("compare", help="vergelijk metrics.json-bestanden")
