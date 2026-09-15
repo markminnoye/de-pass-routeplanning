@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Basemap: OpenStreetMap.de i.p.v. `tile.openstreetmap.org` (Chrome op lokaal `file://` stuurt geen HTTP-Referer; OSMF geeft dan 403)
+- Plugin-pakket voor Desktop/Cowork-upload is `de-pass-routeplanning.zip` (geen `.plugin`-extensie)
 - Default ordening: `haversine` i.p.v. matrix → ~21 i.p.v. ~5.900 transacties voor de drie samples (koude cache)
 - Buscapaciteit 30; compare toont `buses-used`
 - Docs: TomTom-facturatiemodel en aanbevolen werkwijze in `docs/data-en-tooling-opties.md` en skill

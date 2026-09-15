@@ -36,7 +36,7 @@ lokaal HTML-bestand (403 zonder HTTP-Referer).
 ## Updates
 
 Bij het doorrekenen checkt Claude of GitHub Releases een nieuwere versie heeft. Is dat
-zo, dan krijg je de downloadlink van `de-pass-routeplanning.plugin`. Verwijder de oude
+zo, dan krijg je de downloadlink van `de-pass-routeplanning.zip`. Verwijder de oude
 plugin in Cowork en installeer het nieuwe bestand. Cowork werkt de plugin niet zelf bij.
 
 Zolang er nog geen GitHub Release is, zegt Claude niets en werkt de plugin gewoon.

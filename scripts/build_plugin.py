@@ -70,7 +70,7 @@ class Paths:
 
     @property
     def default_zip(self) -> Path:
-        return self.root / "dist" / f"{PLUGIN_NAME}.plugin"
+        return self.root / "dist" / f"{PLUGIN_NAME}.zip"
 
 
 def read_project_version(paths: Paths) -> str:
@@ -181,7 +181,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--out",
         type=Path,
-        help="zip destination (default: dist/de-pass-routeplanning.plugin)",
+        help="zip destination (default: dist/de-pass-routeplanning.zip)",
     )
     parser.add_argument(
         "--verify-tag",

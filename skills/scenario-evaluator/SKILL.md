@@ -30,7 +30,7 @@ gebruiker naar de versie of een update vraagt. Niet bij elke follow-up.
 4. Vergelijk semver: tag `v0.1.0` = `0.1.0`. Alleen een **nieuwere** Release is een
    update. Bij gelijk of geen Release: niets zeggen, doorwerken.
 5. Is er een nieuwere versie: één alinea met het versienummer, de download
-   `https://github.com/<owner>/<repo>/releases/latest/download/de-pass-routeplanning.plugin`,
+   `https://github.com/<owner>/<repo>/releases/latest/download/de-pass-routeplanning.zip`,
    en de instructie de oude plugin in Cowork te verwijderen en dit bestand te
    installeren. Overschrijf de geïnstalleerde plugin niet zelf. Daarna pas het scenario.
 

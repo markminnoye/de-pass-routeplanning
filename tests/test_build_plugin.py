@@ -125,7 +125,7 @@ def test_zip_contains_plugin_layout_not_samples(tmp_path: Path):
     bp.sync(paths)
     bp.stamp_version(paths)
     zpath = bp.zip_plugin(paths)
-    assert zpath == tmp_path / "dist" / "de-pass-routeplanning.plugin"
+    assert zpath == tmp_path / "dist" / "de-pass-routeplanning.zip"
     with zipfile.ZipFile(zpath) as zf:
         names = zf.namelist()
     assert ".claude-plugin/plugin.json" in names
