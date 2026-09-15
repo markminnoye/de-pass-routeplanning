@@ -73,14 +73,21 @@ gebruiker naar de versie of een update vraagt. Niet bij elke follow-up.
    instappers per bus ≤ capaciteit, `ordering: "auto"` (evaluator bepaalt volgorde) of
    `"given"` (jij/gebruiker bepaalt volgorde) — per bus overschrijfbaar.
 
-2. **Doorrekenen**, telkens met dezelfde referentiedatum binnen één vergelijking (anders
-   vergelijk je verschillende verkeersdagen — kies één representatieve schooldag, bv.
-   eerstvolgende maandag, en hergebruik die datum voor de hele sessie):
+2. **Doorrekenen.** De referentiedatum is **verplicht** — zonder vaste datum schuift
+   `departAt` elke dag mee, vervalt de TomTom-cache dagelijks en zijn scenario's niet
+   vergelijkbaar. Kies één representatieve schooldag (bv. de eerstvolgende maandag) en
+   hergebruik die voor de hele sessie:
    ```bash
    cd <werkmap>
    BUSROUTES_REFERENCE_DATE=<YYYY-MM-DD> python3 -m busroutes.cli evaluate scenarios/<naam>.json
    ```
-   Output: `out/<naam>/metrics.json`, `routes.geojson`, `map.html`.
+   Output: `out/<naam>/metrics.json`, `routes.geojson`, `map.html`. Onderaan meldt de CLI
+   het TomTom-verbruik van deze run en wat de cache uitspaarde.
+
+   Twijfel je of een run duur wordt? `--dry-run` haalt niets op en telt alleen:
+   ```bash
+   BUSROUTES_REFERENCE_DATE=<YYYY-MM-DD> python3 -m busroutes.cli evaluate scenarios/<naam>.json --dry-run
+   ```
 
 3. **Vergelijken** van meerdere scenario's:
    ```bash
@@ -110,14 +117,42 @@ gebruiker naar de versie of een update vraagt. Niet bij elke follow-up.
 - `"ordering": "auto"` minimaliseert routelengte per bus, niet rittijd per kind: kinderen
   die vroeg instappen en daarna ver meerijden krijgen lange ritten. Kijk naar `ride_min`
   per stop; wil je een andere volgorde, geef die bus `"ordering": "given"`.
+- De volgorde bij `"auto"` komt standaard uit **hemelsbrede afstanden** (gratis). Dat is
+  goed genoeg om varianten tegen elkaar af te wegen, maar het ziet geen eenrichtingsstraten
+  of omwegen: op de eigen testset geeft het 4 tot 13 % meer rijtijd dan de volgorde uit
+  TomTom-reistijden, tot +20 min op één bus. Werkwijze dus: **verkennen met de default**, en
+  het scenario dat de eindkeuze wordt **overrekenen met `--ordering matrix`** (~1500
+  transacties per scenario in plaats van 7) voor je cijfers aan de school rapporteert.
+  Zeg altijd welke van de twee je gebruikt hebt. `metrics.json` →
+  `settings.ordering_strategy` houdt het bij; vergelijk nooit een `haversine`-scenario met
+  een `matrix`-scenario.
 - TomTom rekent forse keer-penalty's (U-turns) bij deur-aan-deur ophalen in dorpsstraten;
   dat kan ritten onnodig langer maken t.o.v. opstapplaatsen op een doorgaande weg.
-- Nieuwe routes/matrixcellen vragen een TomTom-call (antwoorden worden gecachet in
-  `.cache/tomtom/` — herhaalde runs met dezelfde punten zijn gratis en snel).
+- Nieuwe routes/matrixcellen vragen een TomTom-call. Antwoorden worden gecachet in
+  `.cache/tomtom/` (routes per aanvraag, matrixcellen per punt-paar), dus een scenario dat
+  dezelfde punten anders over de bussen verdeelt is gratis. Een gratis TomTom-sleutel geeft
+  2.500 requests per dag; met de standaardinstellingen kost een scenario 7 transacties.
+
+## Kosten laag houden
+
+De gebruiker betaalt zelf per TomTom-request, dus:
+
+- **Bewaar `.cache/tomtom/`.** Kies een werkmap die de sessie overleeft en wijs de gebruiker
+  erop dat wegwerpen van die map alles opnieuw laat afrekenen. Een tijdelijke map zoals
+  `/tmp/...` is prima binnen één sessie, niet als blijvende keuze — vraag bij een tweede
+  sessie of de vorige werkmap er nog is.
+- **Laat `--ordering` op de default staan** tenzij er een concrete aanleiding is (zie
+  "Interpretatie").
+- **Gebruik `--no-cache` niet** om iets te "verversen"; dat rekent de hele run opnieuw aan.
+  Wil je andere verkeersomstandigheden, verander dan de referentiedatum of `--traffic`.
+- Bij twijfel eerst `--dry-run`, en meld de raming aan de gebruiker voor je een dure run doet.
 
 ## Veelgemaakte fouten
 
-- Vergelijken zonder dezelfde `BUSROUTES_REFERENCE_DATE` → cijfers niet vergelijkbaar.
+- Geen referentiedatum meegeven → de CLI stopt met een fout en een voorstel; kies één datum
+  en hergebruik die voor de hele vergelijking.
+- Vergelijken met verschillende `BUSROUTES_REFERENCE_DATE` of `ordering_strategy` → cijfers
+  niet vergelijkbaar.
 - `ScenarioError: niet toegewezen: ...` → elke leerling moet op precies één bus staan.
 - Meerdere bussen tegelijk veranderd en dan het totaal vergeleken in plaats van de
   betrokken bussen apart te bekijken.

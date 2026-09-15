@@ -6,7 +6,14 @@ this once the fully optimised scenario is built.
 
 from __future__ import annotations
 
+from typing import Literal
+
 Matrix = list[list[int]]
+
+# Where the cost matrix behind `ordering: "auto"` comes from. "haversine" is free
+# (straight-line metres); "matrix" buys real travel times from TomTom and is the
+# most expensive thing the evaluator can do — see busroutes/tomtom.py.
+OrderingStrategy = Literal["haversine", "matrix"]
 
 
 def path_cost(path: list[int], matrix: Matrix) -> int:

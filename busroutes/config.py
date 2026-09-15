@@ -11,6 +11,7 @@ from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from busroutes.ordering import OrderingStrategy
 from busroutes.tomtom import Traffic
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -51,19 +52,19 @@ def load_key(env_path: Path = DEFAULT_ENV_PATH) -> str:
 @dataclass(frozen=True)
 class Settings:
     api_key: str
+    reference_date: date  # the school day departAt is anchored to; never "today"
     traffic: Traffic = "historical"
+    ordering: OrderingStrategy = "haversine"
     dwell_base_s: int = 30
     dwell_per_student_s: int = 10
     cache_dir: Path | None = DEFAULT_CACHE_DIR
-    reference_date: date | None = None  # weekday used for departAt; None = next weekday
     lead_time_min: int = 60  # departAt = target_arrival - lead_time (only for traffic profile)
 
     def reference_arrival(self, target_arrival: time) -> datetime:
         """Timezone-aware datetime of the school arrival on the reference weekday."""
-        day = self.reference_date or next_weekday(datetime.now(BRUSSELS).date())
-        if day.weekday() >= 5:
-            raise ConfigError(f"referentiedatum {day} valt in het weekend")
-        return datetime.combine(day, target_arrival, tzinfo=BRUSSELS)
+        if self.reference_date.weekday() >= 5:
+            raise ConfigError(f"referentiedatum {self.reference_date} valt in het weekend")
+        return datetime.combine(self.reference_date, target_arrival, tzinfo=BRUSSELS)
 
     def reference_departure(self, target_arrival: time) -> datetime:
         return self.reference_arrival(target_arrival) - timedelta(minutes=self.lead_time_min)
@@ -81,17 +82,36 @@ def load_settings(env_path: Path = DEFAULT_ENV_PATH, **overrides) -> Settings:
     traffic = env.get("BUSROUTES_TRAFFIC", "historical")
     if traffic not in ("historical", "live"):
         raise ConfigError(f"BUSROUTES_TRAFFIC moet 'historical' of 'live' zijn, niet '{traffic}'")
-    ref = env.get("BUSROUTES_REFERENCE_DATE")
-    try:
-        reference_date = date.fromisoformat(ref) if ref else None
-    except ValueError as exc:
-        raise ConfigError(f"BUSROUTES_REFERENCE_DATE ongeldig: {ref}") from exc
+    ordering = env.get("BUSROUTES_ORDERING", "haversine")
+    if ordering not in ("haversine", "matrix"):
+        raise ConfigError(
+            f"BUSROUTES_ORDERING moet 'haversine' of 'matrix' zijn, niet '{ordering}'"
+        )
+    cache_dir_raw = env.get("BUSROUTES_CACHE_DIR", "").strip()
     values = {
         "api_key": load_key(env_path),
+        "reference_date": _reference_date(env.get("BUSROUTES_REFERENCE_DATE")),
         "traffic": traffic,
+        "ordering": ordering,
         "dwell_base_s": int(env.get("BUSROUTES_DWELL_BASE_S", 30)),
         "dwell_per_student_s": int(env.get("BUSROUTES_DWELL_PER_STUDENT_S", 10)),
-        "reference_date": reference_date,
+        "cache_dir": Path(cache_dir_raw) if cache_dir_raw else DEFAULT_CACHE_DIR,
     }
     values.update(overrides)
+    if values.get("reference_date") is None:
+        raise ConfigError(
+            "referentiedatum ontbreekt: zet BUSROUTES_REFERENCE_DATE=YYYY-MM-DD of geef "
+            "--reference-date mee. Zonder vaste datum schuift departAt elke dag mee, "
+            "vervalt de TomTom-cache dagelijks en zijn scenario's niet vergelijkbaar. "
+            f"Voorstel: {next_weekday(datetime.now(BRUSSELS).date())}."
+        )
     return Settings(**values)
+
+
+def _reference_date(raw: str | None) -> date | None:
+    if not raw:
+        return None
+    try:
+        return date.fromisoformat(raw)
+    except ValueError as exc:
+        raise ConfigError(f"BUSROUTES_REFERENCE_DATE ongeldig: {raw}") from exc

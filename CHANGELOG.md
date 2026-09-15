@@ -1,0 +1,36 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.2.0] - 2026-09-15
+
+### Added
+- Gratis default-ordening `haversine` naast TomTom-`matrix`; CLI `--ordering` en `BUSROUTES_ORDERING`
+- `--dry-run` en verbruiksrapport (TomTom-transacties) na een run
+- Matrix-facturatieformule en goedkoopste blokvorm (`matrix_transactions` / `plan_blocks`)
+- Cache per punt-paar (`.cache/tomtom/cells/`), legacy matrix-harvest, atomische cache-writes
+- Verplichte referentiedatum (`BUSROUTES_REFERENCE_DATE` / `--reference-date`) voor reproduceerbare `departAt`
+- Cowork-plugin packaging (`plugin/`, `scripts/build_plugin.py`, GitHub Actions release-op-tag)
+- Scenario-evaluator v1: TomTom-client, stopordening, metrics, Leaflet-kaart, CLI, fictieve testset
+
+### Changed
+- Default ordening: `haversine` i.p.v. matrix → ~21 i.p.v. ~5.900 transacties voor de drie samples (koude cache)
+- Buscapaciteit 30; compare toont `buses-used`
+- Docs: TomTom-facturatiemodel en aanbevolen werkwijze in `docs/data-en-tooling-opties.md` en skill
+
+### Fixed
+- Cache sleutel schoof dagelijks mee zonder vaste referentiedatum (DoD-reproduceerbaarheid)
+- Identieke leerlingpunten krijgen geen aparte stops meer
+
+## [0.1.0] - 2026-09-14
+
+Initiële evaluator- en plugin-basis (nog niet als GitHub Release gepubliceerd).
+
+[Unreleased]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/markminnoye/de-pass-routeplanning/releases/tag/v0.1.0

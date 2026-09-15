@@ -28,7 +28,11 @@ pytestmark = pytest.mark.skipif(
 def test_scenario_matches_expected(expected_path: Path):
     expected = json.loads(expected_path.read_text())
     reference = date.fromisoformat(expected["settings"]["depart_at_reference"][:10])
-    settings = load_settings(reference_date=reference, traffic=expected["settings"]["traffic"])
+    settings = load_settings(
+        reference_date=reference,
+        traffic=expected["settings"]["traffic"],
+        ordering=expected["settings"]["ordering_strategy"],
+    )
     school, students, buses = load_samples(SAMPLES)
     scenario = load_scenario_file(
         SAMPLES / "scenarios" / f"{expected['scenario']}.json", students, buses

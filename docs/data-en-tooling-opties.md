@@ -70,6 +70,38 @@ TomTom's **[Matrix Routing API](https://developer.tomtom.com/matrix-routing-api/
 - **U-turn-penalty**: in een multi-waypoint-route rekent TomTom een forse straf (orde 2 minuten) als de bus na een stop moet keren om naar de volgende te rijden — een leg van 140 m kan zo 153 s duren waar hij los berekend 33 s duurt. Dat is realistisch voor deur-aan-deur ophalen in dorpsstraten en verklaart deels de lange rittijden; het is meteen een argument voor vaste opstapplaatsen. De eenvoudige ordeningsheuristiek (matrix + 2-opt) ziet die penalty niet; OR-Tools straks ook niet zonder extra modellering.
 - **Willekeurige punten moeten op een straat liggen**: routering klikt een punt in een veld vast aan het dichtstbijzijnde segment, ook voetpaden of "service vehicles only" — vandaar de snapping in de testset-generator.
 
+### Wat matrixcellen echt kosten (15/09/2026)
+
+Aanleiding: de gratis TomTom-credits waren op na een handvol doorrekeningen. De oorzaak stond niet in de limieten hierboven maar in het **facturatiemodel**, dat we eerst niet hadden nagekeken. Volgens [Discounted Transaction Billing](https://developer.tomtom.com/matrix-routing-v2-api/documentation/discounted-transaction-billing) rekent Matrix Routing v2 **niet per cel** maar per aanvraag, op basis van de dimensies:
+
+- zijn origins **én** destinations groter dan 5 → `5 × max(origins, destinations)` transacties;
+- anders → `origins × destinations` transacties.
+
+Eén cel kost in een grote aanvraag dus `5 / min(origins, destinations)` transacties. Gevolgen die de implementatie veranderd hebben:
+
+- **Vierkante blokken zijn spotgoedkoop, rijstroken zijn duur.** De eerste versie sneed de matrix in stroken van `200 // aantal_destinations` rijen: voor een bus met 20 kinderen (22 punten) 3 aanvragen van 9×22 = 308 transacties, waar 4 blokken van 11×11 hetzelfde werk voor 220 doen. Bij 30 kinderen (32 punten) is het verschil 864 tegenover 480. De blokvorm wordt nu per geval uitgerekend (`_cheapest_split` in `busroutes/tomtom.py`).
+- **Cachen per aanvraag was verkeerd; het moet per punt-paar.** Eén kind van bus3 naar bus5 verplaatsen veranderde de request-body van beide bussen en haalde dus beide matrices volledig opnieuw op (~600 transacties), terwijl bijna alle punt-paren al bekend waren. De cache staat nu in `.cache/tomtom/cells/` met de coördinaten als sleutel: een paar dat één keer betaald is, wordt nooit opnieuw betaald, ook niet als een later scenario dezelfde punten anders over de bussen verdeelt. Samenvallende stops (kinderen op hetzelfde punt) vallen daardoor gratis samen.
+- **De matrix is voor dit project niet nodig.** Hij diende alleen om de stopvolgorde te kiezen; alle gerapporteerde tijden en kilometers komen uit `calculateRoute`. De volgorde uit hemelsbrede afstanden is gratis en voor deze compacte regio goed genoeg, dus `ordering: "auto"` gebruikt nu standaard `haversine`. Een scenario doorrekenen kost daarmee 7 transacties (één route per bus) in plaats van ~1500. Wie de wegennetwerk-volgorde wil, zet `BUSROUTES_ORDERING=matrix` of `--ordering matrix`.
+- **Gemeten op de eigen testset** (koude cache, drie referentiescenario's samen): 5.934 transacties met de eerste versie, 21 met de huidige default. Het Freemium-plafond is 2.500 non-tile requests per dag, dus één volledige pass paste er vroeger niet in.
+- **`departAt` zat in de cachesleutel van `calculateRoute`, zonder vaste referentiedatum.** Daardoor verviel de routecache elke dag en waren dezelfde cijfers morgen niet reproduceerbaar (DoD 4). De referentiedatum is nu verplicht: `BUSROUTES_REFERENCE_DATE` of `--reference-date`, anders een duidelijke fout met een voorstel.
+- **Raming vóór het geld weg is.** `busroutes evaluate --dry-run` haalt niets op en telt exact wat de run zou kosten; na een echte run rapporteert de CLI het verbruik en wat de cache uitspaarde.
+- **Cachebestanden worden atomisch geschreven** en een afgebroken bestand wordt opnieuw opgehaald in plaats van de run te laten crashen — anders is de reflex `rm -rf .cache`, en dat betaal je volledig terug.
+- **Bij een gaten-cache is precies-de-gaten-ophalen soms duurder dan alles opnieuw halen.** Een aanvraag met één origin valt onder `origins × destinations`, dus 1 transactie per cel, terwijl een cel in een blok van 14×14 er 0,36 kost. Voor de eigen testset (139 punten, 5.099 paren al bekend) kostte gaten-vullen 13.694 transacties en één volledige rechthoek 6.995. `plan_blocks()` rekent daarom beide plannen door en neemt het goedkoopste.
+
+### Afweging: gratis ordening tegenover exacte ordening (15/09/2026)
+
+De hemelsbrede ordening is niet gratis in kwaliteit. Gemeten op de drie referentiescenario's, met de **echte** TomTom-reistijden uit de cache als scheidsrechter, geeft ze een langere totale rijtijd:
+
+| Scenario | Volgorde uit TomTom-matrix | Volgorde uit hemelsbrede afstand | Verschil |
+|---|---|---|---|
+| spreiding-gemengd | 1.165 min | 1.210 min | +3,8 % |
+| regiobus-per-zone | 553 min | 612 min | +10,7 % |
+| opstapplaatsen | 437 min | 495 min | +13,3 % |
+
+Per bus loopt het verschil op tot +20 minuten (bus6 in spreiding-gemengd). Voor een project waarvan de kernvraag "zo kort mogelijke individuele rit per kind" is, is 10 % geen ruis. Vandaar de werkwijze: **verkennen met `haversine`** (7 transacties per scenario, dus tientallen varianten per dag mogelijk), en een kandidaat die de eindkeuze wordt **overrekenen met `--ordering matrix`**.
+
+Wie het vaak nodig heeft, kan beter één keer de **volledige puntmatrix** kopen: alle 139 punten van de testset onderling kost 6.995 transacties (~3 dagen Freemium-plafond), en daarna is elk scenario met `--ordering matrix` gratis én exact, omdat elk punt-paar dan in de cache zit. Dat is de aanbevolen route zodra de leerlingenlijst stabiel is.
+
 ## 2. Optimalisatie
 
 - **Google Route Optimization API** ([documentatie-hub](https://developers.google.com/maps/documentation/route-optimization) / [overview](https://developers.google.com/maps/documentation/route-optimization/overview), voorheen Cloud Fleet Routing): capaciteit + tijdvensters + meerdere voertuigen, in één API die zowel de reistijden als de oplossing berekent (op Google's eigen wegennetwerk). **Prijs: ±$30 per 1000 "shipments" bij meerdere voertuigen** (single-vehicle tier goedkoper: $10/1000). Voor 140 kinderen = ±140 shipments per volledige herberekening → **ruwweg €4 per keer dat je het scenario volledig laat heroptimaliseren**. Vergt een Google Cloud-project + billing account + service-account-authenticatie, geen aparte MCP nodig (zie hierboven) — rechtstreeks als REST-call bruikbaar in een skill. Zie hieronder voor waarom we dit **voorlopig niet gebruiken**, en hoe je het zelf snel kan uittesten.

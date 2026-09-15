@@ -5,32 +5,48 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import date
 from pathlib import Path
 
 from busroutes.config import REPO_ROOT, ConfigError, load_settings
 from busroutes.evaluate import evaluate
 from busroutes.models import ScenarioError, load_samples, load_scenario_file
 from busroutes.render import compare_markdown, render_map_html, to_geojson
-from busroutes.tomtom import TomTomClient, TomTomError
+from busroutes.tomtom import TomTomClient, TomTomError, usage_report
 
 DEFAULT_SAMPLES = REPO_ROOT / "docs" / "samples"
 DEFAULT_OUT = REPO_ROOT / "out"
 
 
 def cmd_evaluate(args: argparse.Namespace) -> int:
-    settings = load_settings(**({"traffic": args.traffic} if args.traffic else {}))
+    overrides: dict[str, object] = {}
+    if args.traffic:
+        overrides["traffic"] = args.traffic
+    if args.ordering:
+        overrides["ordering"] = args.ordering
+    if args.reference_date:
+        overrides["reference_date"] = args.reference_date
     if args.no_cache:
-        settings = load_settings(
-            cache_dir=None, **({"traffic": args.traffic} if args.traffic else {})
+        overrides["cache_dir"] = None
+        print(
+            "Let op: --no-cache negeert de cache, dus TomTom rekent alles opnieuw aan.",
+            file=sys.stderr,
         )
+    settings = load_settings(**overrides)
     school, students, buses = load_samples(args.samples)
     scenario = load_scenario_file(args.scenario, students, buses)
-    client = TomTomClient(settings.api_key, settings.cache_dir, settings.traffic)
+    client = TomTomClient(
+        settings.api_key, settings.cache_dir, settings.traffic, dry_run=args.dry_run
+    )
 
     result = evaluate(scenario, school, students, buses, client, settings)
+    print(f"Referentiedatum {settings.reference_date} · ordening '{settings.ordering}'")
+    if args.dry_run:
+        print(usage_report(client.usage, dry_run=True))
+        return 0
+
     metrics = result.to_dict()
     geojson = to_geojson(result)
-
     out_dir = Path(args.out) if args.out else DEFAULT_OUT / scenario.name
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "metrics.json").write_text(json.dumps(metrics, indent=2, ensure_ascii=False) + "\n")
@@ -46,7 +62,8 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
             f"| {b['bus_id']} | {b['students']}/{b['capacity']} | {b['departure']} | "
             f"{b['drive_min']} | {b['km']} | {b['max_ride_min']} |"
         )
-    print(f"\nOutput: {out_dir}/metrics.json, routes.geojson, map.html")
+    print(f"\n{usage_report(client.usage)}")
+    print(f"Output: {out_dir}/metrics.json, routes.geojson, map.html")
     return 0
 
 
@@ -71,6 +88,23 @@ def build_parser() -> argparse.ArgumentParser:
     ev.add_argument("--out", type=Path, help="outputmap (default: out/<scenario-naam>)")
     ev.add_argument(
         "--traffic", choices=["historical", "live"], help="overschrijft BUSROUTES_TRAFFIC"
+    )
+    ev.add_argument(
+        "--ordering",
+        choices=["haversine", "matrix"],
+        help="kostenmatrix voor 'auto'-volgorde; overschrijft BUSROUTES_ORDERING "
+        "(default haversine, gratis; 'matrix' koopt TomTom-reistijden)",
+    )
+    ev.add_argument(
+        "--reference-date",
+        type=date.fromisoformat,
+        metavar="YYYY-MM-DD",
+        help="schooldag waarop departAt vastligt; overschrijft BUSROUTES_REFERENCE_DATE",
+    )
+    ev.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="niets ophalen, alleen tellen wat deze run aan TomTom-transacties zou kosten",
     )
     ev.add_argument("--no-cache", action="store_true", help="TomTom-cache negeren")
     ev.set_defaults(func=cmd_evaluate)

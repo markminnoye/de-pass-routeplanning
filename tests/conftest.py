@@ -8,7 +8,7 @@ import pytest
 
 from busroutes.geo import haversine_m
 from busroutes.models import Bus, Point, School, Student
-from busroutes.tomtom import RouteLeg, RouteResult
+from busroutes.tomtom import RouteLeg, RouteResult, Usage
 
 SCHOOL = Point(50.7782, 4.8960)
 
@@ -21,6 +21,7 @@ class FakeGeoClient:
     def __init__(self) -> None:
         self.route_calls: list[list[Point]] = []
         self.matrix_calls: list[tuple[list[Point], list[Point]]] = []
+        self.usage = Usage()
 
     def route(self, points: list[Point], depart_at: datetime) -> RouteResult:
         self.route_calls.append(list(points))

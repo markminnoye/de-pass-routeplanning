@@ -75,14 +75,20 @@ van af, totale rijtijd/km wel.
 - `ordering` (scenario-breed, per bus te overschrijven met `"ordering"` in het
   bus-object):
   - `"given"` — de bus rijdt de stops exact in de opgegeven volgorde.
-  - `"auto"` — de evaluator bepaalt zelf een volgorde per bus (heuristiek op de
-    TomTom-reistijdmatrix; minimaliseert routelengte, **niet** rittijd per kind).
+  - `"auto"` — de evaluator bepaalt zelf een volgorde per bus (nearest neighbour +
+    2-opt; minimaliseert routelengte, **niet** rittijd per kind). De kostenmatrix
+    daarachter is standaard hemelsbreed en gratis; `--ordering matrix` koopt in de
+    plaats daarvan TomTom-reistijden.
 - Regels die de evaluator afdwingt (foutmelding bij overtreding):
   - elke leerling exact één keer toegewezen,
   - aantal instappers per bus ≤ `capacity`,
   - elke `bus_id` bestaat in `buses.json`.
 
 ## Output (`out/<naam>/metrics.json`)
+
+`settings` legt vast waarmee gerekend is: `traffic`, `ordering_strategy`
+(`haversine` of `matrix`), `depart_at_reference`, `target_arrival` en de dwell-tijden.
+Twee scenario's zijn alleen vergelijkbaar als dit blok identiek is.
 
 `summary` bevat de evaluatiecriteria: `max_ride_min`, `avg_ride_min`, `median_ride_min`,
 `rides_over_60_min`, `rides_over_90_min`, `max_to_stop_km`,

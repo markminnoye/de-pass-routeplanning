@@ -9,8 +9,8 @@ from statistics import mean, median
 
 from busroutes.config import Settings
 from busroutes.geo import haversine_m
-from busroutes.models import Bus, BusPlan, Scenario, School, Stop, Student
-from busroutes.ordering import order_stops
+from busroutes.models import Bus, BusPlan, Point, Scenario, School, Stop, Student
+from busroutes.ordering import Matrix, OrderingStrategy, order_stops
 from busroutes.tomtom import GeoClient, RouteResult
 
 
@@ -79,6 +79,7 @@ class ScenarioResult:
             "ordering": self.scenario.ordering,
             "settings": {
                 "traffic": self.settings.traffic,
+                "ordering_strategy": self.settings.ordering,
                 "depart_at_reference": self.depart_at_reference.isoformat(timespec="minutes"),
                 "target_arrival": _hhmm(self.school.target_arrival),
                 "dwell_base_s": self.settings.dwell_base_s,
@@ -160,11 +161,24 @@ def _dwell(stop: Stop, settings: Settings) -> timedelta:
     )
 
 
-def _ordered_stops(plan: BusPlan, bus: Bus, school: School, client: GeoClient) -> list[Stop]:
+def _cost_matrix(points: list[Point], client: GeoClient, strategy: OrderingStrategy) -> Matrix:
+    """Cost between every pair of points, only ever used to pick a visiting order.
+
+    "haversine" is straight-line metres and free; "matrix" buys TomTom travel times,
+    which is by far the most expensive call the evaluator makes.
+    """
+    if strategy == "matrix":
+        return client.matrix(points, points)
+    return [[round(haversine_m(a, b)) for b in points] for a in points]
+
+
+def _ordered_stops(
+    plan: BusPlan, bus: Bus, school: School, client: GeoClient, strategy: OrderingStrategy
+) -> list[Stop]:
     if plan.ordering == "given" or len(plan.stops) <= 1:
         return list(plan.stops)
     points = [bus.start, *[s.point for s in plan.stops], school.point]
-    matrix = client.matrix(points, points)
+    matrix = _cost_matrix(points, client, strategy)
     start, end = 0, len(points) - 1
     order = order_stops(list(range(1, end)), start, end, matrix)
     return [plan.stops[i - 1] for i in order]
@@ -180,7 +194,7 @@ def evaluate_bus(
     arrival: datetime,
     depart_at: datetime,
 ) -> BusResult:
-    stops = _ordered_stops(plan, bus, school, client)
+    stops = _ordered_stops(plan, bus, school, client, settings.ordering)
     if not stops:
         return BusResult(
             bus=bus, route=RouteResult(legs=[]), stops=[], departure=arrival, arrival=arrival
