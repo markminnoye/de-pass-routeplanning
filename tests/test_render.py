@@ -59,6 +59,16 @@ def test_map_html_embeds_data_and_leaflet(school, students, buses, fake_client):
     assert '<link rel="stylesheet"' not in html
 
 
+def test_map_html_puts_stop_order_inside_the_marker(school, students, buses, fake_client):
+    result = result_for(school, students, buses, fake_client)
+    html = render_map_html(result, to_geojson(result))
+    assert "L.divIcon" in html
+    assert "stop-pin" in html
+    assert "stopTextColour" in html
+    assert "permanent: true" not in html  # no floating label duplicating the number
+    assert "stop-label" not in html
+
+
 def test_map_html_embeds_transit_stops(school, students, buses, fake_client):
     result = result_for(school, students, buses, fake_client)
     transit = {

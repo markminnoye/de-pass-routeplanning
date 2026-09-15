@@ -186,7 +186,8 @@ def render_map_html(
   th, td {{ text-align: left; padding: 3px 6px; border-bottom: 1px solid #eee; vertical-align: top; }}
   th {{ font-weight: 600; color: #333; }}
   .sw {{ display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }}
-  .stop-label {{ background: #fff; border: 1px solid #999; border-radius: 10px; font-size: 10px; padding: 0 4px; }}
+  .stop-pin {{ background: none; border: 0; }}
+  .stop-pin span {{ display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 22px; height: 22px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); font-size: 11px; font-weight: 700; }}
   @media (max-width: 800px) {{ #wrap {{ flex-direction: column; }} #panel {{ width: auto; border-right: 0; border-bottom: 1px solid #ddd; max-height: 45%; }} }}
 </style>
 </head>
@@ -218,12 +219,28 @@ const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/W
   attribution: 'Tiles &copy; Esri'
 }});
 osmDe.addTo(map);
+// Dark digits on light bus colours, white on dark ones (perceived brightness).
+const stopTextColour = hex => {{
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+  return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? '#1a1a1a' : '#fff';
+}};
 const layer = L.geoJSON(data, {{
   style: f => ({{ color: f.properties.colour, weight: 4, opacity: 0.85 }}),
   pointToLayer: (f, latlng) => {{
     const p = f.properties;
     if (p.kind === 'school') {{
       return L.circleMarker(latlng, {{ radius: 10, color: '#000', fillColor: '#fff', fillOpacity: 1, weight: 3 }});
+    }}
+    if (p.kind === 'stop') {{
+      return L.marker(latlng, {{
+        icon: L.divIcon({{
+          className: 'stop-pin',
+          html: `<span style="background:${{p.colour}};color:${{stopTextColour(p.colour)}}">${{p.order}}</span>`,
+          iconSize: [22, 22],
+          iconAnchor: [11, 11],
+          popupAnchor: [0, -12]
+        }})
+      }});
     }}
     return L.circleMarker(latlng, {{ radius: 6, color: '#fff', fillColor: p.colour, fillOpacity: 1, weight: 1.5 }});
   }},
@@ -234,7 +251,6 @@ const layer = L.geoJSON(data, {{
     }} else if (p.kind === 'stop') {{
       const who = p.students.length === 1 ? p.students[0] : p.students.length + ' leerlingen';
       l.bindPopup(`<b>${{p.name || p.id}}</b> (${{p.bus_id}}, stop ${{p.order}})<br>${{who}}<br>ophalen ${{p.arrival}}, rit ${{p.ride_min}} min`);
-      l.bindTooltip(String(p.order), {{ permanent: true, direction: 'top', className: 'stop-label', offset: [0, -6] }});
     }} else {{
       l.bindPopup(`<b>${{p.name}}</b><br>aankomst ${{p.arrival}}`);
     }}
