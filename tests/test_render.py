@@ -51,6 +51,8 @@ def test_map_html_embeds_data_and_leaflet(school, students, buses, fake_client):
     assert "tile.openstreetmap.de" in html
     assert "World_Street_Map" in html
     assert "tile.openstreetmap.org" not in html
+    assert "cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4" in html
+    assert "unpkg.com" not in html
 
 
 def test_map_html_embeds_transit_stops(school, students, buses, fake_client):

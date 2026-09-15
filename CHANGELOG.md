@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-15
+
+### Changed
+- Leaflet CSS/JS in `map.html` via cdnjs.cloudflare.com (Claude-artifact CSP blokkeert unpkg.com)
+
 ## [0.2.0] - 2026-09-15
 
 ### Added
@@ -36,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initiële evaluator- en plugin-basis (nog niet als GitHub Release gepubliceerd).
 
-[Unreleased]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/markminnoye/de-pass-routeplanning/releases/tag/v0.1.0

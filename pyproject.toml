@@ -1,6 +1,6 @@
 [project]
 name = "busroutes"
-version = "0.2.0"
+version = "0.2.1"
 description = "Scenario-evaluator voor de schoolbusroutes van 'de pass' (Hoegaarden)"
 requires-python = ">=3.13"
 dependencies = []
