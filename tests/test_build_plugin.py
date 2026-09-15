@@ -125,7 +125,7 @@ def test_zip_contains_plugin_layout_not_samples(tmp_path: Path):
     bp.sync(paths)
     bp.stamp_version(paths)
     zpath = bp.zip_plugin(paths)
-    assert zpath == tmp_path / "dist" / "de-pass-routeplanning.zip"
+    assert zpath == tmp_path / "dist" / "de-pass-routeplanning.plugin"
     with zipfile.ZipFile(zpath) as zf:
         names = zf.namelist()
     assert ".claude-plugin/plugin.json" in names
@@ -165,6 +165,17 @@ def test_plugin_json_name_and_version():
     assert bp.is_kebab_case(data["name"])
     assert data["version"] == bp.read_project_version(bp.Paths(ROOT))
     assert data["repository"] == "https://github.com/markminnoye/de-pass-routeplanning"
+
+
+def test_generic_skill_requires_map_as_primary_output():
+    generic = (ROOT / "skills" / "scenario-evaluator" / "SKILL.md").read_text()
+    assert "hoofddeliverable" in generic
+    assert "map.html" in generic
+    assert "HTML-pagina" in generic
+    assert "artifact" in generic
+    assert "vergelijkingstabel" in generic or "compare-tabel" in generic
+    assert "niet in een ingebed voorbeeld" not in generic
+    assert "Kaartbeeld tonen in het gesprek" not in generic
 
 
 def test_generic_skill_has_version_check_repo_skill_does_not():

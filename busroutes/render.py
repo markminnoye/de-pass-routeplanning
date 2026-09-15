@@ -3,8 +3,9 @@
 The map uses OpenStreetMap.de tiles plus an overlay of De Lijn / TEC / NMBS
 stops fetched via Overpass. tile.openstreetmap.org is not used: a local
 file:// map.html sends no Referer, and OSMF volunteer tiles then return 403.
-It needs internet access when opened and is meant to be opened locally in a
-browser (a Claude artifact blocks external tiles).
+Leaflet CSS is inlined (artifact-viewer CSP blocks external stylesheets).
+Leaflet JS comes from cdnjs (unpkg is blocked). OSM tiles may still fail in
+an artifact; routes and stops still draw.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ import html
 import json
 
 from busroutes.evaluate import ScenarioResult
+from busroutes.leaflet_css import LEAFLET_CSS
 
 BUS_COLOURS = ["#d7263d", "#1b7f79", "#f46036", "#2e294e", "#3a86ff", "#8338ec", "#ffbe0b"]
 
@@ -171,9 +173,9 @@ def render_map_html(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
+{LEAFLET_CSS}
   html, body {{ margin: 0; height: 100%; font: 14px/1.4 system-ui, sans-serif; }}
   #wrap {{ display: flex; height: 100%; }}
   #panel {{ width: 360px; overflow: auto; padding: 16px; box-sizing: border-box; border-right: 1px solid #ddd; }}

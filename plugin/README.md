@@ -27,16 +27,15 @@ Vraag Claude gewoon om een scenario door te rekenen of te vergelijken, bijvoorbe
 - "Wat als we bus 6 een vaste opstapplaats in Leuven geven in plaats van deur-aan-deur?"
 
 Claude schrijft het scenario, rekent het door met verkeersbewuste TomTom-reistijden, en
-rapporteert de langste/gemiddelde rit per kind, kilometers, bezetting en aankomsttijden,
-plus een kaart (`map.html`) die je lokaal in de browser kan openen. Op die kaart staan
-naast de schoolbusroutes ook publieke De Lijn-, TEC- en NMBS-haltes (aan/uit te zetten).
-De stratenkaart komt van OpenStreetMap.de; OpenStreetMap.org-tegels werken niet in een
-lokaal HTML-bestand (403 zonder HTTP-Referer).
+toont als hoofdresultaat een HTML-kaart (`map.html`) met de busroutes, stops en tijden
+(in Claude als artifact). Daarna de langste/gemiddelde rit per kind en, bij meerdere
+scenario's, een vergelijkingstabel. Op de kaart staan ook publieke De Lijn-, TEC- en
+NMBS-haltes (aan/uit te zetten). Leaflet-CSS zit in de pagina; JS komt van cdnjs.
 
 ## Updates
 
 Bij het doorrekenen checkt Claude of GitHub Releases een nieuwere versie heeft. Is dat
-zo, dan krijg je de downloadlink van `de-pass-routeplanning.zip`. Verwijder de oude
+zo, dan krijg je de downloadlink van `de-pass-routeplanning.plugin`. Verwijder de oude
 plugin in Cowork en installeer het nieuwe bestand. Cowork werkt de plugin niet zelf bij.
 
 Zolang er nog geen GitHub Release is, zegt Claude niets en werkt de plugin gewoon.

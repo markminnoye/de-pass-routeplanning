@@ -1,15 +1,18 @@
 ---
 name: scenario-evaluator
-description: Use when asked to doorrekenen, simuleren of vergelijken van schoolbus-scenario's voor "de pass" (Hoegaarden) — een bus naar een streek (bv. Leuven), vaste opstapplaatsen, een andere verdeling van kinderen over de bussen, rittijd per kind, kilometers, bezetting, aankomsttijden, of een kaart van de routes.
+description: Use when asked to doorrekenen, simuleren, visualiseren of vergelijken van schoolbus-scenario's voor "de pass" (Hoegaarden) — routes op een kaart zien, HTML-kaart, Leaflet-map, rittijd per kind, kilometers, bezetting, aankomsttijden, een bus naar een streek (bv. Leuven), vaste opstapplaatsen, of een andere verdeling van kinderen over de bussen.
 ---
 
 # Scenario-evaluator — schoolbusroutes "de pass"
 
-Rekent een door een mens (of jou) bedacht scenario door met TomTom-reistijden en levert
-de evaluatiecriteria: langste/gemiddelde/mediaan rittijd per kind, totale rijtijd, km,
-bezetting, vertrek- en aankomsttijden, plus een kaart. Dit is **geen solver** — de
-verdeling van kinderen over bussen bedenkt de gebruiker (of jij, in overleg); deze skill
-rekent een gegeven verdeling door en maakt scenario's onderling vergelijkbaar.
+**Doel:** een HTML-kaart waarop de schoolbusroutes zichtbaar zijn. De gebruiker moet de
+ritten *zien* (lijnen, stops, school, aankomst/instaptijden). Cijfers en een
+vergelijkingstabel horen erbij; de kaart is het hoofddeliverable.
+
+Rekent een door een mens (of jou) bedacht scenario door met TomTom-reistijden. Dit is
+**geen solver** — de verdeling van kinderen over bussen bedenkt de gebruiker (of jij, in
+overleg); deze skill rekent een gegeven verdeling door en maakt scenario's onderling
+vergelijkbaar.
 
 De skill bevat een zelfstandige Python-tool (`references/busroutes/`, geen dependencies
 buiten de standaardbibliotheek — werkt overal waar `python3` beschikbaar is, ook in de
@@ -30,7 +33,7 @@ gebruiker naar de versie of een update vraagt. Niet bij elke follow-up.
 4. Vergelijk semver: tag `v0.1.0` = `0.1.0`. Alleen een **nieuwere** Release is een
    update. Bij gelijk of geen Release: niets zeggen, doorwerken.
 5. Is er een nieuwere versie: één alinea met het versienummer, de download
-   `https://github.com/<owner>/<repo>/releases/latest/download/de-pass-routeplanning.zip`,
+   `https://github.com/<owner>/<repo>/releases/latest/download/de-pass-routeplanning.plugin`,
    en de instructie de oude plugin in Cowork te verwijderen en dit bestand te
    installeren. Overschrijf de geïnstalleerde plugin niet zelf. Daarna pas het scenario.
 
@@ -81,11 +84,11 @@ gebruiker naar de versie of een update vraagt. Niet bij elke follow-up.
    cd <werkmap>
    BUSROUTES_REFERENCE_DATE=<YYYY-MM-DD> python3 -m busroutes.cli evaluate scenarios/<naam>.json
    ```
-   Output: `out/<naam>/metrics.json`, `routes.geojson`, `transit.geojson`, `map.html`. Onderaan meldt de CLI
-   het TomTom-verbruik van deze run en wat de cache uitspaarde. `map.html` toont OSM-tegels plus
-   publieke OV-haltes (De Lijn, TEC, NMBS) als laag die je in de kaart aan/uit kunt zetten;
-   die overlay komt uit Overpass en staat in `.cache/overpass/`. Faalt Overpass, dan gaat de
-   evaluatie gewoon door (waarschuwing op stderr, kaart zonder overlay).
+   Output: `out/<naam>/metrics.json`, `routes.geojson`, `transit.geojson`, **`map.html`**.
+   `map.html` is een volledige HTML-pagina (Leaflet): busroutes, stops met volgnummer,
+   school, zijbalk met tijden, plus een laag OV-haltes (De Lijn, TEC, NMBS) aan/uit.
+   Overlay uit Overpass (`.cache/overpass/`); faalt Overpass, dan gaat de evaluatie door
+   (kaart zonder overlay). Onderaan meldt de CLI het TomTom-verbruik.
 
    Twijfel je of een run duur wordt? `--dry-run` haalt niets op en telt alleen:
    ```bash
@@ -102,14 +105,15 @@ gebruiker naar de versie of een update vraagt. Niet bij elke follow-up.
    vergelijk alleen de gewijzigde bus(sen) (`metrics.json` → `buses[]`) — anders vergelijk
    je appels met peren.
 
-4. **Rapporteren**: de compare-tabel, met als doorslaggevend criterium de langste en
-   gemiddelde rit per kind (niet km of totale rijtijd — dat is de kernvraag van dit
-   project, geen vlootkost-optimalisatie). Verschuift de winst tussen groepen kinderen
-   (de ene groep korter, de andere langer), toon dan de betrokken bus per stop
-   (`buses[].stops[]`: `ride_min`, `arrival` = instaptijd).
-   Bied `map.html` aan de gebruiker aan (bv. met een bestand-tool) om lokaal in de browser
-   te openen — de kaart gebruikt OpenStreetMap.de-tiles en een Overpass-overlay; die laden niet
-   in een ingebed voorbeeld/artifact.
+4. **Rapporteren — in deze volgorde, altijd allebei:**
+   1. **De kaart.** Toon `out/<naam>/map.html` als HTML-pagina (in Claude: artifact). Niet
+      alleen het pad noemen, niet samenvatten als markdown-schets, niet vervangen door de
+      TomTom-connector (dynamic-map/static-map). Leaflet-CSS zit in de pagina; JS komt van
+      cdnjs — de artifact-viewer kan die kaart renderen. Bij meerdere scenario's: de kaart
+      van elk scenario (of minstens van de twee die je vergelijkt).
+   2. **De tijden.** Compare-tabel of samenvatting: langste en gemiddelde rit per kind
+      (doorslaggevend — niet km of totale rijtijd). Verschuift de winst tussen groepen
+      kinderen, toon de betrokken bus per stop (`buses[].stops[]`: `ride_min`, `arrival`).
 
 ## Interpretatie — vermeld dit waar het speelt
 
@@ -162,6 +166,8 @@ De gebruiker betaalt zelf per TomTom-request, dus:
   betrokken bussen apart te bekijken.
 - Een scenario indienen zonder eerst `docs/samples/*.json` (school/leerlingen/bussen) in
   de werkmap te zetten — dat geeft direct een foutmelding bij het inladen.
+- Alleen cijfers of een tabel rapporteren zonder `map.html` als HTML-pagina te tonen.
+- De scenario-kaart vervangen door een TomTom-static-map, markdown-schets of GeoJSON-dump.
 
 ## Optioneel: TomTom Maps-connector
 
@@ -172,7 +178,7 @@ interactieve vragen die niet de hele evaluatie nodig hebben:
 |---|---|
 | Coördinaten van een nieuw adres/opstapplaats opzoeken | connector: geocode/fuzzy-search |
 | "Hoe lang is het van X naar de school om 7u30?" (één route, snel) | connector: routing |
-| Kaartbeeld tonen in het gesprek | connector: dynamic-map / data-viz |
+| Kaart van een doorgerekend scenario | **altijd** `out/<naam>/map.html` — nooit de connector |
 | Een scenario doorrekenen of vergelijken (meerdere bussen) | **altijd** de `busroutes`-CLI hierboven — nooit alle routes van een scenario los via de connector |
 
 Geen connector geïnstalleerd? Geen probleem — de CLI hierboven volstaat voor alles wat
