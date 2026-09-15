@@ -3,8 +3,9 @@
 The map uses OpenStreetMap.de tiles plus an overlay of De Lijn / TEC / NMBS
 stops fetched via Overpass. tile.openstreetmap.org is not used: a local
 file:// map.html sends no Referer, and OSMF volunteer tiles then return 403.
-It needs internet access when opened and is meant to be opened locally in a
-browser (a Claude artifact blocks external tiles).
+Leaflet CSS is inlined (artifact-viewer CSP blocks external stylesheets).
+Leaflet JS comes from cdnjs (unpkg is blocked). OSM tiles may still fail in
+an artifact; routes and stops still draw.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ import html
 import json
 
 from busroutes.evaluate import ScenarioResult
+from busroutes.leaflet_css import LEAFLET_CSS
 
 BUS_COLOURS = ["#d7263d", "#1b7f79", "#f46036", "#2e294e", "#3a86ff", "#8338ec", "#ffbe0b"]
 
@@ -136,10 +138,16 @@ def _summary_rows(d: dict) -> str:
 def _bus_rows(d: dict, colours: dict[str, str]) -> str:
     rows = []
     for b in d["buses"]:
+        bus_id = html.escape(b["bus_id"])
         swatch = f'<span class="sw" style="background:{colours.get(b["bus_id"], "#999")}"></span>'
+        toggle = (
+            '<label class="bus">'
+            f'<input type="checkbox" class="bus-toggle" data-bus="{bus_id}" checked>'
+            f"{swatch}{bus_id}</label>"
+        )
         rows.append(
             "<tr>"
-            f"<td>{swatch}{html.escape(b['bus_id'])}</td>"
+            f"<td>{toggle}</td>"
             f"<td>{b['students']}/{b['capacity']}</td>"
             f"<td>{html.escape(b['departure'])}</td>"
             f"<td>{b['drive_min']}</td>"
@@ -171,9 +179,9 @@ def render_map_html(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
+{LEAFLET_CSS}
   html, body {{ margin: 0; height: 100%; font: 14px/1.4 system-ui, sans-serif; }}
   #wrap {{ display: flex; height: 100%; }}
   #panel {{ width: 360px; overflow: auto; padding: 16px; box-sizing: border-box; border-right: 1px solid #ddd; }}
@@ -183,8 +191,12 @@ def render_map_html(
   table {{ border-collapse: collapse; width: 100%; margin-bottom: 16px; }}
   th, td {{ text-align: left; padding: 3px 6px; border-bottom: 1px solid #eee; vertical-align: top; }}
   th {{ font-weight: 600; color: #333; }}
-  .sw {{ display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }}
-  .stop-label {{ background: #fff; border: 1px solid #999; border-radius: 10px; font-size: 10px; padding: 0 4px; }}
+  .sw {{ display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; }}
+  label.bus {{ display: inline-flex; align-items: center; cursor: pointer; }}
+  .bus-toggle {{ margin: 0 6px 0 0; }}
+  tr.off {{ opacity: 0.45; }}
+  .stop-pin {{ background: none; border: 0; }}
+  .stop-pin span {{ display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 22px; height: 22px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); font-size: 11px; font-weight: 700; }}
   @media (max-width: 800px) {{ #wrap {{ flex-direction: column; }} #panel {{ width: auto; border-right: 0; border-bottom: 1px solid #ddd; max-height: 45%; }} }}
 </style>
 </head>
@@ -216,12 +228,28 @@ const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/W
   attribution: 'Tiles &copy; Esri'
 }});
 osmDe.addTo(map);
+// Dark digits on light bus colours, white on dark ones (perceived brightness).
+const stopTextColour = hex => {{
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+  return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? '#1a1a1a' : '#fff';
+}};
 const layer = L.geoJSON(data, {{
   style: f => ({{ color: f.properties.colour, weight: 4, opacity: 0.85 }}),
   pointToLayer: (f, latlng) => {{
     const p = f.properties;
     if (p.kind === 'school') {{
       return L.circleMarker(latlng, {{ radius: 10, color: '#000', fillColor: '#fff', fillOpacity: 1, weight: 3 }});
+    }}
+    if (p.kind === 'stop') {{
+      return L.marker(latlng, {{
+        icon: L.divIcon({{
+          className: 'stop-pin',
+          html: `<span style="background:${{p.colour}};color:${{stopTextColour(p.colour)}}">${{p.order}}</span>`,
+          iconSize: [22, 22],
+          iconAnchor: [11, 11],
+          popupAnchor: [0, -12]
+        }})
+      }});
     }}
     return L.circleMarker(latlng, {{ radius: 6, color: '#fff', fillColor: p.colour, fillOpacity: 1, weight: 1.5 }});
   }},
@@ -232,7 +260,6 @@ const layer = L.geoJSON(data, {{
     }} else if (p.kind === 'stop') {{
       const who = p.students.length === 1 ? p.students[0] : p.students.length + ' leerlingen';
       l.bindPopup(`<b>${{p.name || p.id}}</b> (${{p.bus_id}}, stop ${{p.order}})<br>${{who}}<br>ophalen ${{p.arrival}}, rit ${{p.ride_min}} min`);
-      l.bindTooltip(String(p.order), {{ permanent: true, direction: 'top', className: 'stop-label', offset: [0, -6] }});
     }} else {{
       l.bindPopup(`<b>${{p.name}}</b><br>aankomst ${{p.arrival}}`);
     }}
@@ -264,6 +291,26 @@ L.control.layers({{
   'OV-haltes (De Lijn, TEC, NMBS)': transitLayer
 }}).addTo(map);
 map.fitBounds(layer.getBounds().pad(0.05));
+// The legend doubles as an on/off switch per bus (route line plus its stops).
+const busLayers = {{}};
+layer.eachLayer(l => {{
+  const id = l.feature && l.feature.properties.bus_id;
+  if (id) {{
+    (busLayers[id] = busLayers[id] || []).push(l);
+  }}
+}});
+document.querySelectorAll('.bus-toggle').forEach(box => {{
+  box.addEventListener('change', () => {{
+    (busLayers[box.dataset.bus] || []).forEach(l => {{
+      if (box.checked) {{
+        layer.addLayer(l);
+      }} else {{
+        layer.removeLayer(l);
+      }}
+    }});
+    box.closest('tr').classList.toggle('off', !box.checked);
+  }});
+}});
 </script>
 </body>
 </html>

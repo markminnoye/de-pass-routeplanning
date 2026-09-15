@@ -51,8 +51,31 @@ def test_map_html_embeds_data_and_leaflet(school, students, buses, fake_client):
     assert "tile.openstreetmap.de" in html
     assert "World_Street_Map" in html
     assert "tile.openstreetmap.org" not in html
-    assert "cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4" in html
+    assert "cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" in html
+    assert ".leaflet-container" in html  # Leaflet CSS inlined (artifact CSP)
+    assert "cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/" in html
     assert "unpkg.com" not in html
+    assert "leaflet.css" not in html
+    assert '<link rel="stylesheet"' not in html
+
+
+def test_map_html_puts_stop_order_inside_the_marker(school, students, buses, fake_client):
+    result = result_for(school, students, buses, fake_client)
+    html = render_map_html(result, to_geojson(result))
+    assert "L.divIcon" in html
+    assert "stop-pin" in html
+    assert "stopTextColour" in html
+    assert "permanent: true" not in html  # no floating label duplicating the number
+    assert "stop-label" not in html
+
+
+def test_map_html_legend_toggles_buses(school, students, buses, fake_client):
+    result = result_for(school, students, buses, fake_client)
+    html = render_map_html(result, to_geojson(result))
+    assert 'class="bus-toggle" data-bus="bus1" checked' in html
+    assert 'class="bus-toggle" data-bus="bus2" checked' in html
+    assert "border-radius: 50%" in html  # round legend swatches, not squares
+    assert "layer.removeLayer(l)" in html
 
 
 def test_map_html_embeds_transit_stops(school, students, buses, fake_client):

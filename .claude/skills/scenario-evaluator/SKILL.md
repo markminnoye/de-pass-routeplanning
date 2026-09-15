@@ -1,13 +1,15 @@
 ---
 name: scenario-evaluator
-description: Use when asked to doorrekenen, simuleren of vergelijken van schoolbus-scenario's voor "de pass" (Hoegaarden) — een bus naar een streek (bv. Leuven), vaste opstapplaatsen, andere verdeling van kinderen over bussen, rittijd per kind, km, bezetting, aankomsttijden, of een kaart van de routes.
+description: Use when asked to doorrekenen, simuleren, visualiseren of vergelijken van schoolbus-scenario's voor "de pass" (Hoegaarden) — routes op een kaart zien, HTML-kaart, Leaflet-map, rittijd per kind, km, bezetting, aankomsttijden, een bus naar een streek (bv. Leuven), vaste opstapplaatsen, of een andere verdeling van kinderen over bussen.
 ---
 
 # Scenario-evaluator
 
-Rekent een door mens of agent bedacht scenario door via TomTom (Python/REST) en levert de
-criteria uit de projectbrief: langste/gemiddelde rittijd per kind, totale rijtijd, km,
-bezetting, vertrek- en aankomsttijden, plus een kaart. Geen solver: de indeling maak jij.
+**Doel:** een HTML-kaart waarop de schoolbusroutes zichtbaar zijn. De gebruiker moet de
+ritten *zien*. Cijfers horen erbij; de kaart is het hoofddeliverable.
+
+Rekent een door mens of agent bedacht scenario door via TomTom (Python/REST). Geen solver:
+de indeling maak jij.
 
 ## Werkwijze
 
@@ -27,7 +29,7 @@ bezetting, vertrek- en aankomsttijden, plus een kaart. Geen solver: de indeling 
    ```bash
    BUSROUTES_REFERENCE_DATE=2026-09-15 uv run busroutes evaluate scenarios/<naam>.json
    ```
-   Output: `out/<naam>/metrics.json`, `routes.geojson`, `map.html`. Ontbreekt
+   Output: `out/<naam>/metrics.json`, `routes.geojson`, **`map.html`**. Ontbreekt
    `out/<referentie>/` of wijkt `summary` af van `docs/samples/expected/<naam>.metrics.json`,
    reken die eerst (opnieuw) door met `... evaluate docs/samples/scenarios/<naam>.json`.
    Probeersels (bv. meerdere handmatige volgordes bij `given` — probeer er minstens twee)
@@ -36,13 +38,14 @@ bezetting, vertrek- en aankomsttijden, plus een kaart. Geen solver: de indeling 
    aantal gebruikte bussen).
    Verander per scenario **één ding** t.o.v. een referentie, of vergelijk alleen de
    gewijzigde bus(sen) (`metrics.json` → `buses[]`); anders vergelijk je appels met peren.
-4. **Rapporteren**: de `compare`-tabel (langste/gem./mediaan rit, ritten > 60 min, max.
-   thuis→stop, totale rijtijd, km, bezetting, vroegste vertrek). Verschuift de winst tussen
-   groepen kinderen (de ene groep korter, de andere langer), toon dan de gewijzigde bus per
-   stop (`buses[].stops[]`: `ride_min`, `arrival` = instaptijd — bij een opstapplaats is
-   "hoe vroeg moet je er staan" net zo relevant als de rittijd). Doorslaggevend is de
-   kernvraag uit AGENTS.md: langste en gemiddelde rit per kind, niet km of totale rijtijd.
-  `map.html` aanbieden (lokaal openen in de browser; tiles en OV-overlay laden niet in een artifact).
+4. **Rapporteren — in deze volgorde, altijd allebei:**
+   1. **De kaart.** Toon `out/<naam>/map.html` als HTML-pagina (lokaal openen / artifact).
+      Niet alleen het pad noemen, niet vervangen door `tomtom-static-map` of een schets.
+   2. **De tijden.** De `compare`-tabel (langste/gem./mediaan rit, ritten > 60 min, max.
+      thuis→stop, totale rijtijd, km, bezetting, vroegste vertrek). Verschuift de winst
+      tussen groepen kinderen, toon de gewijzigde bus per stop (`buses[].stops[]`:
+      `ride_min`, `arrival`). Doorslaggevend: langste en gemiddelde rit per kind, niet km
+      of totale rijtijd.
   De kaart heeft een laag "OV-haltes (De Lijn, TEC, NMBS)" die je kunt uitzetten.
 
 ## Interpretatie — vermeld dit waar het speelt
@@ -67,7 +70,7 @@ bezetting, vertrek- en aankomsttijden, plus een kaart. Geen solver: de indeling 
 |---|---|
 | Coördinaten van een nieuwe opstapplaats | connector `tomtom-geocode` / `tomtom-fuzzy-search` → in het scenario-json |
 | "Hoe lang is het van X naar de school om 7u30?" | connector `tomtom-routing` met `departAt` |
-| Kaartbeeld in het gesprek | connector `tomtom-static-map` |
+| Kaart van een doorgerekend scenario | **altijd** `out/<naam>/map.html` — nooit de connector |
 | Een scenario doorrekenen of vergelijken (meerdere bussen) | **altijd de CLI** — nooit 7 routes via de connector |
 
 Geen connector? Coördinaten uit `docs/samples/pickup_points.json` hergebruiken of vragen.
@@ -78,3 +81,4 @@ Geen connector? Coördinaten uit `docs/samples/pickup_points.json` hergebruiken 
 - `ScenarioError: niet toegewezen: ...` → elke leerling moet op precies één bus.
 - Ad-hoc scenario in `docs/samples/` gezet → referentieset en regressietest vervuild.
 - Meerdere bussen tegelijk veranderd en dan het totaal vergeleken.
+- Alleen cijfers rapporteren zonder `map.html` als HTML-pagina te tonen.
