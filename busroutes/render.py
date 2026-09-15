@@ -138,10 +138,16 @@ def _summary_rows(d: dict) -> str:
 def _bus_rows(d: dict, colours: dict[str, str]) -> str:
     rows = []
     for b in d["buses"]:
+        bus_id = html.escape(b["bus_id"])
         swatch = f'<span class="sw" style="background:{colours.get(b["bus_id"], "#999")}"></span>'
+        toggle = (
+            '<label class="bus">'
+            f'<input type="checkbox" class="bus-toggle" data-bus="{bus_id}" checked>'
+            f"{swatch}{bus_id}</label>"
+        )
         rows.append(
             "<tr>"
-            f"<td>{swatch}{html.escape(b['bus_id'])}</td>"
+            f"<td>{toggle}</td>"
             f"<td>{b['students']}/{b['capacity']}</td>"
             f"<td>{html.escape(b['departure'])}</td>"
             f"<td>{b['drive_min']}</td>"
@@ -185,7 +191,10 @@ def render_map_html(
   table {{ border-collapse: collapse; width: 100%; margin-bottom: 16px; }}
   th, td {{ text-align: left; padding: 3px 6px; border-bottom: 1px solid #eee; vertical-align: top; }}
   th {{ font-weight: 600; color: #333; }}
-  .sw {{ display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }}
+  .sw {{ display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; }}
+  label.bus {{ display: inline-flex; align-items: center; cursor: pointer; }}
+  .bus-toggle {{ margin: 0 6px 0 0; }}
+  tr.off {{ opacity: 0.45; }}
   .stop-pin {{ background: none; border: 0; }}
   .stop-pin span {{ display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 22px; height: 22px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); font-size: 11px; font-weight: 700; }}
   @media (max-width: 800px) {{ #wrap {{ flex-direction: column; }} #panel {{ width: auto; border-right: 0; border-bottom: 1px solid #ddd; max-height: 45%; }} }}
@@ -282,6 +291,26 @@ L.control.layers({{
   'OV-haltes (De Lijn, TEC, NMBS)': transitLayer
 }}).addTo(map);
 map.fitBounds(layer.getBounds().pad(0.05));
+// The legend doubles as an on/off switch per bus (route line plus its stops).
+const busLayers = {{}};
+layer.eachLayer(l => {{
+  const id = l.feature && l.feature.properties.bus_id;
+  if (id) {{
+    (busLayers[id] = busLayers[id] || []).push(l);
+  }}
+}});
+document.querySelectorAll('.bus-toggle').forEach(box => {{
+  box.addEventListener('change', () => {{
+    (busLayers[box.dataset.bus] || []).forEach(l => {{
+      if (box.checked) {{
+        layer.addLayer(l);
+      }} else {{
+        layer.removeLayer(l);
+      }}
+    }});
+    box.closest('tr').classList.toggle('off', !box.checked);
+  }});
+}});
 </script>
 </body>
 </html>

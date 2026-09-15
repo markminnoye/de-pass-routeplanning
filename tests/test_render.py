@@ -69,6 +69,15 @@ def test_map_html_puts_stop_order_inside_the_marker(school, students, buses, fak
     assert "stop-label" not in html
 
 
+def test_map_html_legend_toggles_buses(school, students, buses, fake_client):
+    result = result_for(school, students, buses, fake_client)
+    html = render_map_html(result, to_geojson(result))
+    assert 'class="bus-toggle" data-bus="bus1" checked' in html
+    assert 'class="bus-toggle" data-bus="bus2" checked' in html
+    assert "border-radius: 50%" in html  # round legend swatches, not squares
+    assert "layer.removeLayer(l)" in html
+
+
 def test_map_html_embeds_transit_stops(school, students, buses, fake_client):
     result = result_for(school, students, buses, fake_client)
     transit = {

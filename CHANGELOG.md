@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Leaflet CSS in `map.html` inlined; JS via cdnjs `leaflet.min.js` (artifact-viewer CSP blokkeert unpkg én externe stylesheets)
 - Skill: HTML-kaart is het hoofddeliverable (routes zien), daarna pas cijfers/vergelijking
 - Stopnummer staat nu ín de marker op `map.html` in plaats van in een zwevend labeltje erboven
+- Legende in `map.html`: ronde kleurstippen i.p.v. vierkantjes, en per bus aan/uit te zetten
 
 ## [0.2.1] - 2026-09-15
 
