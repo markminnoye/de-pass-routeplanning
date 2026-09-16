@@ -4,7 +4,10 @@ from datetime import date, datetime
 from busroutes.config import BRUSSELS, Settings
 from busroutes.evaluate import evaluate
 from busroutes.models import load_scenario
+from busroutes.offline import OfflineClient
+from busroutes.tomtom import _point_key
 from tests.conftest import haversine_m
+from tests.test_offline import write_origin_row
 
 SETTINGS = Settings(
     api_key="test",
@@ -119,6 +122,31 @@ def test_ordering_strategy_is_recorded_in_metrics(school, students, buses, fake_
     for settings, expected in ((SETTINGS, "matrix"), (FREE_SETTINGS, "haversine")):
         d = evaluate(scenario, school, students, buses, fake_client, settings).to_dict()
         assert d["settings"]["ordering_strategy"] == expected
+
+
+def test_to_dict_records_tomtom_mode_for_fake_client(school, students, buses, fake_client):
+    d = evaluate(
+        given_scenario(students, buses), school, students, buses, fake_client, SETTINGS
+    ).to_dict()
+    assert d["settings"]["mode"] == "tomtom"
+    assert "km_estimated" not in d["settings"]
+
+
+def test_to_dict_records_offline_mode_and_cell_ride_times(tmp_path, school, students, buses):
+    one = {"s001": students["s001"]}
+    one_bus = {"bus1": buses["bus1"]}
+    scenario = load_scenario(
+        {"name": "off", "ordering": "given", "buses": [{"bus_id": "bus1", "stops": ["s001"]}]},
+        one,
+        one_bus,
+    )
+    school_pt, student_pt = school.point, one["s001"].point
+    write_origin_row(tmp_path, school_pt, {_point_key(student_pt): 400})
+    write_origin_row(tmp_path, student_pt, {_point_key(school_pt): 500})
+    d = evaluate(scenario, school, one, one_bus, OfflineClient(tmp_path), SETTINGS).to_dict()
+    assert d["settings"]["mode"] == "offline"
+    assert d["settings"]["km_estimated"] is True
+    assert d["students"][0]["ride_min"] == round(500 / 60, 1)
 
 
 def test_pickup_point_ride_times_apply_to_all_riders(school, students, buses, fake_client):

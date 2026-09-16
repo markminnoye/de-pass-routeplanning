@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from busroutes.config import REPO_ROOT, load_settings, resolve_data_dir
+from busroutes.config import REPO_ROOT, ConfigError, load_settings, resolve_data_dir
 from busroutes.models import Point, ScenarioError, load_data_pack, load_samples
 
 
@@ -96,6 +96,28 @@ def test_load_settings_data_dir_override_wins(tmp_path, monkeypatch):
     override = tmp_path / "override"
     settings = load_settings(env_path=tmp_path / "missing.env", data_dir=override)
     assert settings.data_dir == override
+
+
+def test_load_settings_require_key_false_allows_empty_api_key(tmp_path, monkeypatch):
+    monkeypatch.delenv("TOMTOM_API_KEY", raising=False)
+    monkeypatch.setenv("BUSROUTES_REFERENCE_DATE", "2026-09-15")
+    settings = load_settings(env_path=tmp_path / "missing.env", require_key=False)
+    assert settings.api_key == ""
+    assert settings.reference_date.isoformat() == "2026-09-15"
+
+
+def test_load_settings_still_requires_key_by_default(tmp_path, monkeypatch):
+    monkeypatch.delenv("TOMTOM_API_KEY", raising=False)
+    monkeypatch.setenv("BUSROUTES_REFERENCE_DATE", "2026-09-15")
+    with pytest.raises(ConfigError, match="TOMTOM_API_KEY ontbreekt"):
+        load_settings(env_path=tmp_path / "missing.env")
+
+
+def test_load_settings_require_key_false_still_requires_reference_date(tmp_path, monkeypatch):
+    monkeypatch.delenv("TOMTOM_API_KEY", raising=False)
+    monkeypatch.delenv("BUSROUTES_REFERENCE_DATE", raising=False)
+    with pytest.raises(ConfigError, match="referentiedatum ontbreekt"):
+        load_settings(env_path=tmp_path / "missing.env", require_key=False)
 
 
 def test_load_samples_still_returns_three_tuple(tmp_path):

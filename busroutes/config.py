@@ -107,8 +107,9 @@ def load_settings(env_path: Path = DEFAULT_ENV_PATH, **overrides) -> Settings:
             f"BUSROUTES_ORDERING moet 'haversine' of 'matrix' zijn, niet '{ordering}'"
         )
     cache_dir_raw = env.get("BUSROUTES_CACHE_DIR", "").strip()
+    require_key = overrides.pop("require_key", True)
     values = {
-        "api_key": load_key(env_path),
+        "api_key": load_key(env_path) if require_key else "",
         "reference_date": _reference_date(env.get("BUSROUTES_REFERENCE_DATE")),
         "traffic": traffic,
         "ordering": ordering,

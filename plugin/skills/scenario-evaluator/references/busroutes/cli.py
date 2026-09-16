@@ -8,19 +8,22 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from busroutes.config import REPO_ROOT, ConfigError, load_settings
+from busroutes.config import REPO_ROOT, ConfigError, load_settings, resolve_data_dir
 from busroutes.evaluate import evaluate
 from busroutes.models import ScenarioError, load_samples, load_scenario_file
+from busroutes.offline import OfflineClient, OfflineError
 from busroutes.overpass import load_transit_overlay
 from busroutes.render import compare_markdown, render_map_html, to_geojson
-from busroutes.tomtom import TomTomClient, TomTomError, usage_report
+from busroutes.tomtom import GeoClient, TomTomClient, TomTomError, usage_report
 
-DEFAULT_SAMPLES = REPO_ROOT / "docs" / "samples"
 DEFAULT_OUT = REPO_ROOT / "out"
 
 
 def cmd_evaluate(args: argparse.Namespace) -> int:
-    overrides: dict[str, object] = {}
+    if args.samples is not None:
+        print("Waarschuwing: --samples is verouderd; gebruik --data.", file=sys.stderr)
+    data_dir = resolve_data_dir(args.data, args.samples)
+    overrides: dict[str, object] = {"data_dir": data_dir}
     if args.traffic:
         overrides["traffic"] = args.traffic
     if args.ordering:
@@ -33,12 +36,20 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
             "Let op: --no-cache negeert de cache, dus TomTom én Overpass worden opnieuw opgehaald.",
             file=sys.stderr,
         )
-    settings = load_settings(**overrides)
-    school, students, buses = load_samples(args.samples)
+    settings = load_settings(require_key=not args.offline, **overrides)
+    school, students, buses = load_samples(data_dir)
     scenario = load_scenario_file(args.scenario, students, buses)
-    client = TomTomClient(
-        settings.api_key, settings.cache_dir, settings.traffic, dry_run=args.dry_run
-    )
+    cells_dir = data_dir / "matrix"
+    if args.offline:
+        client: GeoClient = OfflineClient(cells_dir)
+    else:
+        client = TomTomClient(
+            settings.api_key,
+            settings.cache_dir,
+            settings.traffic,
+            dry_run=args.dry_run,
+            cells_dir=cells_dir,
+        )
 
     result = evaluate(scenario, school, students, buses, client, settings)
     print(f"Referentiedatum {settings.reference_date} · ordening '{settings.ordering}'")
@@ -90,8 +101,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     ev = sub.add_parser("evaluate", help="reken één scenario door")
     ev.add_argument("scenario", type=Path, help="pad naar scenario.json")
+    ev.add_argument("--data", type=Path, help="datapakket (school/students/buses/matrix)")
     ev.add_argument(
-        "--samples", type=Path, default=DEFAULT_SAMPLES, help="map met school/students/buses"
+        "--samples",
+        type=Path,
+        default=None,
+        help="verouderd: alias van --data",
     )
     ev.add_argument("--out", type=Path, help="outputmap (default: out/<scenario-naam>)")
     ev.add_argument(
@@ -115,6 +130,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="niets ophalen, alleen tellen wat deze run aan TomTom-transacties zou kosten",
     )
     ev.add_argument("--no-cache", action="store_true", help="TomTom- en Overpass-cache negeren")
+    ev.add_argument(
+        "--offline",
+        action="store_true",
+        help="reistijden uit de matrix, zonder TomTom-key",
+    )
     ev.set_defaults(func=cmd_evaluate)
 
     cp = sub.add_parser("compare", help="vergelijk metrics.json-bestanden")
@@ -128,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
-    except (ConfigError, ScenarioError, TomTomError) as exc:
+    except (ConfigError, ScenarioError, TomTomError, OfflineError) as exc:
         print(f"Fout: {exc}", file=sys.stderr)
         return 1
 

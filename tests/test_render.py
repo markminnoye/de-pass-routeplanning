@@ -2,8 +2,11 @@ import json
 
 from busroutes.evaluate import evaluate
 from busroutes.models import load_scenario
+from busroutes.offline import OfflineClient
 from busroutes.render import compare_markdown, render_map_html, to_geojson
+from busroutes.tomtom import _point_key
 from tests.test_evaluate import SETTINGS
+from tests.test_offline import write_origin_row
 
 
 def result_for(school, students, buses, fake_client):
@@ -103,10 +106,48 @@ def test_map_html_embeds_transit_stops(school, students, buses, fake_client):
     assert "OV-haltes &copy; OpenStreetMap-bijdragers" in html
 
 
+def test_map_html_offline_banner(tmp_path, school, students, buses):
+    one = {"s001": students["s001"]}
+    one_bus = {"bus1": buses["bus1"]}
+    scenario = load_scenario(
+        {"name": "off", "ordering": "given", "buses": [{"bus_id": "bus1", "stops": ["s001"]}]},
+        one,
+        one_bus,
+    )
+    school_pt, student_pt = school.point, one["s001"].point
+    write_origin_row(tmp_path, school_pt, {_point_key(student_pt): 400})
+    write_origin_row(tmp_path, student_pt, {_point_key(school_pt): 500})
+    result = evaluate(scenario, school, one, one_bus, OfflineClient(tmp_path), SETTINGS)
+    html = render_map_html(result, to_geojson(result))
+    assert "Offline-schatting: tijden uit de matrix, rechte lijnen, km geschat" in html
+    assert "(geschat)" in html
+
+
 def test_compare_markdown_table(school, students, buses, fake_client):
     d = result_for(school, students, buses, fake_client).to_dict()
     md = compare_markdown([d, {**d, "scenario": "other"}])
     assert md.splitlines()[0].startswith("| Scenario")
     assert "| r " in md and "| other " in md
     assert "| Bussen |" in md.splitlines()[0]
-    assert "| r | 2 |" in md
+    assert "| r | tomtom | 2 |" in md
+
+
+def test_compare_markdown_includes_modus_column(school, students, buses, fake_client):
+    d = result_for(school, students, buses, fake_client).to_dict()
+    md = compare_markdown([d])
+    header = md.splitlines()[0]
+    assert "| Modus |" in header
+    assert "| tomtom |" in md
+
+
+def test_compare_markdown_marks_mixed_modes(school, students, buses, fake_client):
+    d = result_for(school, students, buses, fake_client).to_dict()
+    offline = {
+        **d,
+        "scenario": "off",
+        "settings": {**d["settings"], "mode": "offline", "km_estimated": True},
+    }
+    md = compare_markdown([d, offline])
+    assert "| tomtom |" in md
+    assert "| offline |" in md
+    assert "niet 1-op-1 vergelijkbaar" in md

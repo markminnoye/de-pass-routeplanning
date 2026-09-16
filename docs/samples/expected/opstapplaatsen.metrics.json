@@ -8,7 +8,8 @@
     "depart_at_reference": "2026-09-15T07:30+02:00",
     "target_arrival": "08:30",
     "dwell_base_s": 30,
-    "dwell_per_student_s": 10
+    "dwell_per_student_s": 10,
+    "mode": "tomtom"
   },
   "summary": {
     "students": 140,

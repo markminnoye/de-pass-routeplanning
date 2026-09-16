@@ -20,6 +20,7 @@ BUS_COLOURS = ["#d7263d", "#1b7f79", "#f46036", "#2e294e", "#3a86ff", "#8338ec",
 
 COMPARE_COLUMNS = [
     ("scenario", "Scenario"),
+    ("mode", "Modus"),
     ("buses_used", "Bussen"),
     ("max_ride_min", "Langste rit (min)"),
     ("avg_ride_min", "Gem. rit (min)"),
@@ -104,28 +105,43 @@ def to_geojson(result: ScenarioResult) -> dict:
     return {"type": "FeatureCollection", "features": features}
 
 
+def _compare_cell(m: dict, key: str) -> str:
+    if key == "scenario":
+        return str(m[key])
+    if key == "mode":
+        return str(m.get("settings", {}).get("mode", "tomtom"))
+    return str(m["summary"].get(key, ""))
+
+
 def compare_markdown(metrics: list[dict]) -> str:
     header = "| " + " | ".join(label for _, label in COMPARE_COLUMNS) + " |"
     sep = "|" + "|".join("---" for _ in COMPARE_COLUMNS) + "|"
     rows = []
     for m in metrics:
-        cells = [
-            str(m[key]) if key == "scenario" else str(m["summary"].get(key, ""))
-            for key, _ in COMPARE_COLUMNS
-        ]
+        cells = [_compare_cell(m, key) for key, _ in COMPARE_COLUMNS]
         rows.append("| " + " | ".join(cells) + " |")
-    return "\n".join([header, sep, *rows]) + "\n"
+    text = "\n".join([header, sep, *rows]) + "\n"
+    modes = {m.get("settings", {}).get("mode", "tomtom") for m in metrics}
+    if "offline" in modes and "tomtom" in modes:
+        text += (
+            "\nLet op: de tabel mengt offline- en tomtom-modi; "
+            "cijfers zijn niet 1-op-1 vergelijkbaar.\n"
+        )
+    return text
 
 
 def _summary_rows(d: dict) -> str:
     s = d["summary"]
+    km = f"{s['total_km']} km"
+    if d.get("settings", {}).get("km_estimated"):
+        km += " (geschat)"
     items = [
         ("Leerlingen", s["students"]),
         ("Langste rit", f"{s['max_ride_min']} min"),
         ("Gemiddelde rit", f"{s['avg_ride_min']} min"),
         ("Mediaan rit", f"{s['median_ride_min']} min"),
         ("Totale rijtijd", f"{s['total_drive_min']} min"),
-        ("Totale afstand", f"{s['total_km']} km"),
+        ("Totale afstand", km),
         ("Gem. bezetting", f"{s['avg_occupancy_pct']} %"),
         ("Vroegste vertrek", s["earliest_departure"]),
         ("Aankomst school", s["arrival"]),
@@ -169,6 +185,9 @@ def render_map_html(
     }
     title = html.escape(f"Scenario {d['scenario']}")
     description = html.escape(d.get("description", ""))
+    banner = ""
+    if d.get("settings", {}).get("mode") == "offline":
+        banner = '<p class="banner">Offline-schatting: tijden uit de matrix, rechte lijnen, km geschat</p>'
     data = json.dumps(geojson).replace("</", "<\\/")
     transit = json.dumps(transit_geojson or {"type": "FeatureCollection", "features": []}).replace(
         "</", "<\\/"
@@ -188,6 +207,7 @@ def render_map_html(
   #map {{ flex: 1; }}
   h1 {{ font-size: 18px; margin: 0 0 4px; }}
   p.desc {{ color: #555; margin: 0 0 12px; }}
+  p.banner {{ background: #fff3cd; border: 1px solid #ffc107; padding: 8px 12px; margin: 0 0 12px; }}
   table {{ border-collapse: collapse; width: 100%; margin-bottom: 16px; }}
   th, td {{ text-align: left; padding: 3px 6px; border-bottom: 1px solid #eee; vertical-align: top; }}
   th {{ font-weight: 600; color: #333; }}
@@ -205,6 +225,7 @@ def render_map_html(
   <div id="panel">
     <h1>{title}</h1>
     <p class="desc">{description}</p>
+    {banner}
     <table>{_summary_rows(d)}</table>
     <table>
       <thead><tr><th>Bus</th><th>Bezet</th><th>Vertrek</th><th>Rijtijd</th><th>Km</th><th>Langste rit</th></tr></thead>

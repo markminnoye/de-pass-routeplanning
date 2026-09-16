@@ -10,6 +10,7 @@ from statistics import mean, median
 from busroutes.config import Settings
 from busroutes.geo import haversine_m
 from busroutes.models import Bus, BusPlan, Point, Scenario, School, Stop, Student
+from busroutes.offline import OfflineClient
 from busroutes.ordering import Matrix, OrderingStrategy, order_stops
 from busroutes.tomtom import GeoClient, RouteResult
 
@@ -56,6 +57,7 @@ class ScenarioResult:
     students: dict[str, Student]
     buses: list[BusResult] = field(default_factory=list)
     unused_buses: list[str] = field(default_factory=list)
+    mode: str = "tomtom"
 
     def ride_times_s(self) -> list[int]:
         return [s.ride_s for b in self.buses for s in b.stops for _ in s.stop.students]
@@ -73,18 +75,22 @@ class ScenarioResult:
             for s in b.stops
             for sid in s.stop.students
         ]
+        settings_d: dict = {
+            "traffic": self.settings.traffic,
+            "ordering_strategy": self.settings.ordering,
+            "depart_at_reference": self.depart_at_reference.isoformat(timespec="minutes"),
+            "target_arrival": _hhmm(self.school.target_arrival),
+            "dwell_base_s": self.settings.dwell_base_s,
+            "dwell_per_student_s": self.settings.dwell_per_student_s,
+            "mode": self.mode,
+        }
+        if self.mode == "offline":
+            settings_d["km_estimated"] = True
         return {
             "scenario": self.scenario.name,
             "description": self.scenario.description,
             "ordering": self.scenario.ordering,
-            "settings": {
-                "traffic": self.settings.traffic,
-                "ordering_strategy": self.settings.ordering,
-                "depart_at_reference": self.depart_at_reference.isoformat(timespec="minutes"),
-                "target_arrival": _hhmm(self.school.target_arrival),
-                "dwell_base_s": self.settings.dwell_base_s,
-                "dwell_per_student_s": self.settings.dwell_per_student_s,
-            },
+            "settings": settings_d,
             "summary": {
                 "students": len(rides),
                 "buses_used": len(used),
@@ -244,6 +250,7 @@ def evaluate(
         settings=settings,
         depart_at_reference=depart_at,
         students=students,
+        mode="offline" if isinstance(client, OfflineClient) else "tomtom",
     )
     for plan in scenario.buses:
         result.buses.append(
