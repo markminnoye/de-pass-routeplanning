@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from busroutes.cli import main
+from busroutes.config import read_env_file
 from busroutes.models import Point
 from busroutes.tomtom import _point_key
 from tests.test_offline import write_origin_row
@@ -112,4 +113,30 @@ def test_evaluate_samples_flag_prints_deprecation_and_uses_that_dir(tmp_path, mo
     err = capsys.readouterr().err
     assert "verouderd" in err.lower() or "deprecated" in err.lower() or "--data" in err
     metrics = json.loads((out / "metrics.json").read_text())
+    assert metrics["settings"]["mode"] == "offline"
+
+
+def test_evaluate_offline_uses_data_dir_from_dotenv(tmp_path, monkeypatch):
+    monkeypatch.delenv("TOMTOM_API_KEY", raising=False)
+    monkeypatch.delenv("BUSROUTES_DATA_DIR", raising=False)
+    monkeypatch.delenv("BUSROUTES_REFERENCE_DATE", raising=False)
+    pack = write_mini_pack(tmp_path / "pack")
+    env_file = tmp_path / ".env"
+    env_file.write_text(f"BUSROUTES_DATA_DIR={pack}\n")
+    monkeypatch.setattr("busroutes.config.read_env_file", lambda path: read_env_file(env_file))
+    out = tmp_path / "out"
+    code = main(
+        [
+            "evaluate",
+            str(pack / "scenario.json"),
+            "--out",
+            str(out),
+            "--reference-date",
+            "2026-09-15",
+            "--offline",
+        ]
+    )
+    assert code == 0
+    metrics = json.loads((out / "metrics.json").read_text())
+    assert metrics["summary"]["students"] == 1
     assert metrics["settings"]["mode"] == "offline"

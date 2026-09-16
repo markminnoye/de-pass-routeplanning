@@ -22,8 +22,9 @@ DEFAULT_OUT = REPO_ROOT / "out"
 def cmd_evaluate(args: argparse.Namespace) -> int:
     if args.samples is not None:
         print("Waarschuwing: --samples is verouderd; gebruik --data.", file=sys.stderr)
-    data_dir = resolve_data_dir(args.data, args.samples)
-    overrides: dict[str, object] = {"data_dir": data_dir}
+    overrides: dict[str, object] = {}
+    if args.data is not None or args.samples is not None:
+        overrides["data_dir"] = resolve_data_dir(args.data, args.samples)
     if args.traffic:
         overrides["traffic"] = args.traffic
     if args.ordering:
@@ -37,6 +38,7 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
     settings = load_settings(require_key=not args.offline, **overrides)
+    data_dir = settings.data_dir
     school, students, buses = load_samples(data_dir)
     scenario = load_scenario_file(args.scenario, students, buses)
     cells_dir = data_dir / "matrix"
