@@ -146,8 +146,7 @@ def test_data_status_counts_two_missing_pairs_without_api_key(tmp_path, monkeypa
     code = main(["data", "status", "--data", str(tmp_path)])
     assert code == 0
     out = capsys.readouterr().out
-    assert "2" in out
-    assert "ontbrek" in out.lower()
+    assert "Ontbrekende paren: 2" in out
 
 
 def test_data_fetch_matrix_dry_run_works_without_api_key(tmp_path, monkeypatch, capsys):
