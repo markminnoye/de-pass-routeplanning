@@ -1,6 +1,6 @@
 # Plan: hybride optimalisatie — datapakket, offline-modus, stdlib-solver, skill-herwerking
 
-Status: 🔄 actief — WP0 ✅ (16/09/2026), WP1 spec geschreven (`docs/superpowers/specs/2026-09-16-hybride-optimalisatie-design.md`), wacht op review.
+Status: 🔄 actief — WP0 ✅, WP1 ✅ (spec), WP2 ✅ (16/09/2026, branch `wp2-datapakket-offline`). Volgende: WP3 solver.
 
 ## Context
 
@@ -64,7 +64,7 @@ met dit plan als opdrachtbeschrijving per WP; ik (hoofdsessie) review elk WP.
 offline-modus, solver-doelfunctie, CLI-contract, skill-tabel, privacyregels. Dit is het
 contract waar WP2–WP6 tegen bouwen; Mark keurt de spec goed vóór WP2 start.
 
-### WP2 — Datapakket + offline-modus (`busroutes`)
+### WP2 — Datapakket + offline-modus (`busroutes`) ✅ 16/09/2026
 Agent-opdracht:
 - **Datapakket** = één map (`BUSROUTES_DATA_DIR`, CLI `--data`), default `docs/samples/`
   (de fictieve set is meteen het voorbeeldpakket): `school.json`, `students.json`,
