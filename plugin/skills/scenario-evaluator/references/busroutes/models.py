@@ -78,6 +78,7 @@ class BusPlan:
     bus_id: str
     stops: list[Stop]
     ordering: Ordering = "auto"  # resolved: bus-level override, else the scenario's
+    pinned: bool = False
 
     @property
     def student_ids(self) -> list[str]:
@@ -90,6 +91,7 @@ class Scenario:
     description: str
     ordering: Ordering
     buses: list[BusPlan] = field(default_factory=list)
+    pinned_stops: tuple[str, ...] = ()
 
 
 def _point(d: dict, where: str) -> Point:
@@ -258,7 +260,10 @@ def load_scenario(data: dict, students: dict[str, Student], buses: dict[str, Bus
             raise ScenarioError(
                 f"{bus_id}: ordering moet 'given' of 'auto' zijn, niet '{bus_ordering}'"
             )
-        plan = BusPlan(bus_id=bus_id, stops=stops, ordering=bus_ordering)
+        pinned = raw_bus.get("pinned", False)
+        if not isinstance(pinned, bool):
+            raise ScenarioError(f"{bus_id}: 'pinned' moet true of false zijn, niet {pinned!r}")
+        plan = BusPlan(bus_id=bus_id, stops=stops, ordering=bus_ordering, pinned=pinned)
         for sid in plan.student_ids:
             if sid in seen:
                 raise ScenarioError(f"leerling {sid} zit op {seen[sid]} én op {bus_id}")
@@ -275,12 +280,59 @@ def load_scenario(data: dict, students: dict[str, Student], buses: dict[str, Bus
     if missing:
         raise ScenarioError(f"niet toegewezen: {', '.join(missing)}")
 
+    raw_pinned_stops = data.get("pinned_stops", [])
+    if not isinstance(raw_pinned_stops, list) or not all(
+        isinstance(sid, str) for sid in raw_pinned_stops
+    ):
+        raise ScenarioError("'pinned_stops' moet een lijst van strings zijn")
+    known_stop_ids = {stop.id for plan in plans for stop in plan.stops}
+    for sid in raw_pinned_stops:
+        if sid not in known_stop_ids:
+            raise ScenarioError(f"pinned_stops: onbekende stop-id '{sid}'")
+
     return Scenario(
         name=data.get("name", "scenario"),
         description=data.get("description", ""),
         ordering=ordering,
         buses=plans,
+        pinned_stops=tuple(raw_pinned_stops),
     )
+
+
+def _stop_to_json(stop: Stop) -> str | dict:
+    if not stop.is_pickup_point:
+        return stop.id
+    return {
+        "id": stop.id,
+        "lat": stop.point.lat,
+        "lon": stop.point.lon,
+        "name": stop.name,
+        "students": list(stop.students),
+    }
+
+
+def scenario_to_dict(scenario: Scenario) -> dict:
+    """Dump a Scenario back to the scenario-JSON form used by load_scenario."""
+    buses = []
+    for plan in scenario.buses:
+        bus_d: dict = {
+            "bus_id": plan.bus_id,
+            "stops": [_stop_to_json(stop) for stop in plan.stops],
+        }
+        if plan.ordering != scenario.ordering:
+            bus_d["ordering"] = plan.ordering
+        if plan.pinned:
+            bus_d["pinned"] = True
+        buses.append(bus_d)
+    out: dict = {
+        "name": scenario.name,
+        "description": scenario.description,
+        "ordering": scenario.ordering,
+        "buses": buses,
+    }
+    if scenario.pinned_stops:
+        out["pinned_stops"] = list(scenario.pinned_stops)
+    return out
 
 
 def load_scenario_file(path: Path, students: dict[str, Student], buses: dict[str, Bus]) -> Scenario:

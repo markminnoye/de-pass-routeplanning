@@ -2,7 +2,14 @@ import json
 
 import pytest
 
-from busroutes.models import Point, ScenarioError, load_data_pack, load_samples, load_scenario
+from busroutes.models import (
+    Point,
+    ScenarioError,
+    load_data_pack,
+    load_samples,
+    load_scenario,
+    scenario_to_dict,
+)
 
 
 def scenario_dict(**overrides):
@@ -143,3 +150,118 @@ def test_ordering_defaults_to_auto(students, buses):
     d = scenario_dict()
     del d["ordering"]
     assert load_scenario(d, students, buses).ordering == "auto"
+
+
+def test_pinned_true_on_bus1_defaults_false_on_bus2(students, buses):
+    d = scenario_dict()
+    d["buses"][0]["pinned"] = True
+    scenario = load_scenario(d, students, buses)
+    assert scenario.buses[0].pinned is True
+    assert scenario.buses[1].pinned is False
+
+
+def test_pinned_false_is_false(students, buses):
+    d = scenario_dict()
+    d["buses"][0]["pinned"] = False
+    scenario = load_scenario(d, students, buses)
+    assert scenario.buses[0].pinned is False
+
+
+@pytest.mark.parametrize("value", ["yes", 1])
+def test_pinned_non_bool_raises(students, buses, value):
+    d = scenario_dict()
+    d["buses"][0]["pinned"] = value
+    with pytest.raises(ScenarioError, match="pinned"):
+        load_scenario(d, students, buses)
+
+
+def test_pinned_stops_keeps_known_ids_in_json_order(students, buses):
+    scenario = load_scenario(scenario_dict(pinned_stops=["s004", "s001"]), students, buses)
+    assert scenario.pinned_stops == ("s004", "s001")
+
+
+def test_missing_pinned_stops_is_empty(students, buses):
+    scenario = load_scenario(scenario_dict(), students, buses)
+    assert scenario.pinned_stops == ()
+
+
+def test_pinned_bus_does_not_imply_pinned_stops(students, buses):
+    d = scenario_dict()
+    d["buses"][0]["pinned"] = True
+    scenario = load_scenario(d, students, buses)
+    assert scenario.buses[0].pinned is True
+    assert scenario.pinned_stops == ()
+
+
+def test_unknown_pinned_stop_id_raises(students, buses):
+    with pytest.raises(ScenarioError, match="ghost"):
+        load_scenario(scenario_dict(pinned_stops=["ghost"]), students, buses)
+
+
+@pytest.mark.parametrize("value", ["s001", [1]])
+def test_pinned_stops_wrong_type_raises(students, buses, value):
+    with pytest.raises(ScenarioError, match="pinned_stops"):
+        load_scenario(scenario_dict(pinned_stops=value), students, buses)
+
+
+def _pickup_and_pinned_scenario():
+    return scenario_dict(
+        pinned_stops=["pp-x", "s003"],
+        buses=[
+            {
+                "bus_id": "bus1",
+                "pinned": True,
+                "stops": [
+                    {
+                        "id": "pp-x",
+                        "lat": 50.8,
+                        "lon": 4.9,
+                        "name": "X",
+                        "students": ["s001", "s002"],
+                    }
+                ],
+            },
+            {"bus_id": "bus2", "stops": ["s003", "s004"]},
+        ],
+    )
+
+
+def test_scenario_to_dict_round_trip(students, buses):
+    loaded = load_scenario(_pickup_and_pinned_scenario(), students, buses)
+    dumped = scenario_to_dict(loaded)
+    reloaded = load_scenario(dumped, students, buses)
+    assert [b.bus_id for b in reloaded.buses] == [b.bus_id for b in loaded.buses]
+    assert [[s.id for s in b.stops] for b in reloaded.buses] == [
+        [s.id for s in b.stops] for b in loaded.buses
+    ]
+    assert [b.pinned for b in reloaded.buses] == [True, False]
+    assert reloaded.pinned_stops == ("pp-x", "s003")
+    assert reloaded.buses[0].stops[0].point == Point(50.8, 4.9)
+    assert reloaded.buses[1].stops[0].point == students["s003"].point
+    assert reloaded.buses[1].stops[1].point == students["s004"].point
+
+
+def test_scenario_to_dict_omits_false_pinned_and_empty_pinned_stops(students, buses):
+    dumped = scenario_to_dict(load_scenario(scenario_dict(), students, buses))
+    assert "pinned_stops" not in dumped
+    assert all("pinned" not in bus for bus in dumped["buses"])
+    assert dumped["buses"][0]["stops"] == ["s001", "s002"]
+
+
+def test_scenario_to_dict_dumps_stored_ordering(students, buses):
+    d = scenario_dict()
+    del d["ordering"]
+    dumped = scenario_to_dict(load_scenario(d, students, buses))
+    assert dumped["ordering"] == "auto"
+
+
+def test_scenario_to_dict_writes_pickup_object_and_pinned_true(students, buses):
+    dumped = scenario_to_dict(load_scenario(_pickup_and_pinned_scenario(), students, buses))
+    assert dumped["buses"][0]["pinned"] is True
+    assert "pinned" not in dumped["buses"][1]
+    assert dumped["pinned_stops"] == ["pp-x", "s003"]
+    assert dumped["buses"][0]["stops"] == [
+        {"id": "pp-x", "lat": 50.8, "lon": 4.9, "name": "X", "students": ["s001", "s002"]}
+    ]
+    assert dumped["buses"][1]["stops"] == ["s003", "s004"]
+    assert dumped["ordering"] == "given"
