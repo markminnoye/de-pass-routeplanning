@@ -60,6 +60,33 @@ def test_load_data_pack_missing_school_json_raises_with_path_and_layout(tmp_path
     assert "pickup_points.json" in message
 
 
+@pytest.mark.parametrize("payload", [{}, None])
+def test_load_data_pack_students_wrong_shape_raises_scenario_error(tmp_path, payload):
+    write_pack(tmp_path)
+    (tmp_path / "students.json").write_text(json.dumps(payload))
+    with pytest.raises(ScenarioError) as exc:
+        load_data_pack(tmp_path)
+    message = str(exc.value)
+    assert str(tmp_path / "students.json") in message
+    assert "school.json" in message
+    assert "students.json" in message
+    assert "buses.json" in message
+
+
+def test_load_data_pack_school_missing_target_arrival_raises_scenario_error(tmp_path):
+    write_pack(tmp_path)
+    (tmp_path / "school.json").write_text(
+        json.dumps({"id": "school", "name": "x", "lat": 1.0, "lon": 2.0})
+    )
+    with pytest.raises(ScenarioError) as exc:
+        load_data_pack(tmp_path)
+    message = str(exc.value)
+    assert str(tmp_path / "school.json") in message
+    assert "school.json" in message
+    assert "students.json" in message
+    assert "buses.json" in message
+
+
 def test_resolve_data_dir_cli_data_wins_over_env_and_default(tmp_path):
     cli = tmp_path / "cli"
     env_dir = tmp_path / "env"
@@ -192,6 +219,54 @@ def test_data_status_missing_pack_file_is_scenario_error(tmp_path, monkeypatch, 
     err = capsys.readouterr().err
     assert "school.json" in err
     assert err.startswith("Fout:")
+
+
+@pytest.mark.parametrize("payload", [{}, None])
+def test_data_status_malformed_students_exits_with_fout(tmp_path, monkeypatch, capsys, payload):
+    isolate_from_repo_env(monkeypatch)
+    write_pack(tmp_path)
+    (tmp_path / "students.json").write_text(json.dumps(payload))
+    code = main(["data", "status", "--data", str(tmp_path)])
+    assert code == 1
+    err = capsys.readouterr().err
+    assert err.startswith("Fout:")
+    assert "Traceback" not in err
+    assert "students.json" in err
+
+
+def test_evaluate_school_missing_target_arrival_exits_with_fout(tmp_path, monkeypatch, capsys):
+    isolate_from_repo_env(monkeypatch)
+    write_pack(tmp_path)
+    (tmp_path / "school.json").write_text(
+        json.dumps({"id": "school", "name": "x", "lat": 1.0, "lon": 2.0})
+    )
+    (tmp_path / "scenario.json").write_text(
+        json.dumps(
+            {
+                "name": "t",
+                "ordering": "given",
+                "buses": [{"bus_id": "bus1", "stops": ["s001"]}],
+            }
+        )
+    )
+    code = main(
+        [
+            "evaluate",
+            str(tmp_path / "scenario.json"),
+            "--data",
+            str(tmp_path),
+            "--offline",
+            "--reference-date",
+            "2026-09-15",
+            "--out",
+            str(tmp_path / "out"),
+        ]
+    )
+    assert code == 1
+    err = capsys.readouterr().err
+    assert err.startswith("Fout:")
+    assert "Traceback" not in err
+    assert "school.json" in err
 
 
 def test_data_geocode_does_not_exist():

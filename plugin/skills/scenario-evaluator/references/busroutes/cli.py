@@ -43,7 +43,8 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     if args.no_cache:
         overrides["cache_dir"] = None
         print(
-            "Let op: --no-cache negeert de cache, dus TomTom én Overpass worden opnieuw opgehaald.",
+            "Let op: --no-cache negeert de TomTom-routecache en Overpass, "
+            "dus die worden opnieuw opgehaald.",
             file=sys.stderr,
         )
     settings = load_settings(require_key=not args.offline, **overrides)
@@ -216,7 +217,9 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="niets ophalen, alleen tellen wat deze run aan TomTom-transacties zou kosten",
     )
-    ev.add_argument("--no-cache", action="store_true", help="TomTom- en Overpass-cache negeren")
+    ev.add_argument(
+        "--no-cache", action="store_true", help="TomTom-routecache en Overpass-cache negeren"
+    )
     ev.add_argument(
         "--offline",
         action="store_true",

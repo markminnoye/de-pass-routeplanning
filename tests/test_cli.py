@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
-from busroutes.cli import main
+from busroutes.cli import build_parser, main
 from busroutes.config import read_env_file
 from busroutes.models import Point
 from busroutes.tomtom import _point_key
@@ -140,3 +141,29 @@ def test_evaluate_offline_uses_data_dir_from_dotenv(tmp_path, monkeypatch):
     metrics = json.loads((out / "metrics.json").read_text())
     assert metrics["summary"]["students"] == 1
     assert metrics["settings"]["mode"] == "offline"
+
+
+def test_no_cache_help_mentions_route_cache_and_overpass_not_matrix():
+    parser = build_parser()
+    sub = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
+    help_text = sub.choices["evaluate"].format_help()
+    lowered = help_text.lower()
+    assert "routecache" in lowered or "route-cache" in lowered
+    assert "overpass" in lowered
+    assert "tomtom-cache" not in lowered
+    assert "TomTom- en Overpass-cache" not in help_text
+
+
+def test_no_cache_warning_mentions_route_cache_and_overpass_not_matrix(
+    tmp_path, monkeypatch, capsys
+):
+    isolate_from_repo_env(monkeypatch)
+    pack = write_mini_pack(tmp_path / "pack")
+    out = tmp_path / "out"
+    code = main(evaluate_argv(pack, out, "--offline", "--no-cache"))
+    assert code == 0
+    err = capsys.readouterr().err.lower()
+    assert "routecache" in err or "route-cache" in err
+    assert "overpass" in err
+    assert "matrix" not in err
+    assert "negeert de cache" not in err

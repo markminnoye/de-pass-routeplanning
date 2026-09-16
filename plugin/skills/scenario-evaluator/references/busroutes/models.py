@@ -113,43 +113,93 @@ def _read_pack_json(path: Path, *, required: bool) -> object | None:
         raise ScenarioError(f"{path}: ongeldig. Verwachte layout: {_PACK_LAYOUT}") from exc
 
 
+def _as_object(raw: object, path: Path) -> dict:
+    if not isinstance(raw, dict):
+        raise ScenarioError(f"{path}: ongeldig. Verwachte layout: {_PACK_LAYOUT}")
+    return raw
+
+
+def _as_list(raw: object, path: Path) -> list:
+    if not isinstance(raw, list):
+        raise ScenarioError(f"{path}: ongeldig. Verwachte layout: {_PACK_LAYOUT}")
+    return raw
+
+
+def _parse_pack(path: Path, parse):
+    try:
+        return parse()
+    except (KeyError, TypeError, AttributeError, ValueError) as exc:
+        if isinstance(exc, ScenarioError):
+            raise
+        raise ScenarioError(f"{path}: ongeldig. Verwachte layout: {_PACK_LAYOUT}") from exc
+
+
 def load_data_pack(data_dir: Path) -> DataPack:
     data_dir = Path(data_dir)
-    school_d = _read_pack_json(data_dir / "school.json", required=True)
-    hh, mm = school_d["target_arrival"].split(":")
-    school = School(
-        id=school_d["id"],
-        name=school_d.get("name", school_d["id"]),
-        point=_point(school_d, "school.json"),
-        target_arrival=time(int(hh), int(mm)),
-    )
+    school_path = data_dir / "school.json"
+    school_d = _as_object(_read_pack_json(school_path, required=True), school_path)
 
-    students: dict[str, Student] = {}
-    for s in _read_pack_json(data_dir / "students.json", required=True):
-        if s["id"] in students:
-            raise ScenarioError(f"students.json: dubbele leerling-id {s['id']}")
-        students[s["id"]] = Student(
-            id=s["id"], point=_point(s, f"student {s['id']}"), zone=s.get("zone")
+    def _school() -> School:
+        hh, mm = school_d["target_arrival"].split(":")
+        return School(
+            id=school_d["id"],
+            name=school_d.get("name", school_d["id"]),
+            point=_point(school_d, "school.json"),
+            target_arrival=time(int(hh), int(mm)),
         )
 
-    buses: dict[str, Bus] = {}
-    for b in _read_pack_json(data_dir / "buses.json", required=True):
-        start = b.get("start", "school")
-        start_point = school.point if start == "school" else _point(start, f"bus {b['id']} start")
-        buses[b["id"]] = Bus(id=b["id"], capacity=int(b["capacity"]), start=start_point)
+    school = _parse_pack(school_path, _school)
 
-    pickup_points: dict[str, PickupPoint] = {}
-    pickup_raw = _read_pack_json(data_dir / "pickup_points.json", required=False)
-    if pickup_raw is not None:
-        for pp in pickup_raw:
-            pid = pp["id"]
-            if pid in pickup_points:
-                raise ScenarioError(f"pickup_points.json: dubbele id {pid}")
-            pickup_points[pid] = PickupPoint(
-                id=pid,
-                point=_point(pp, f"pickup_points.json {pid}"),
-                name=str(pp.get("name") or pid),
+    students_path = data_dir / "students.json"
+    students_raw = _as_list(_read_pack_json(students_path, required=True), students_path)
+
+    def _students() -> dict[str, Student]:
+        out: dict[str, Student] = {}
+        for s in students_raw:
+            if s["id"] in out:
+                raise ScenarioError(f"students.json: dubbele leerling-id {s['id']}")
+            out[s["id"]] = Student(
+                id=s["id"], point=_point(s, f"student {s['id']}"), zone=s.get("zone")
             )
+        return out
+
+    students = _parse_pack(students_path, _students)
+
+    buses_path = data_dir / "buses.json"
+    buses_raw = _as_list(_read_pack_json(buses_path, required=True), buses_path)
+
+    def _buses() -> dict[str, Bus]:
+        out: dict[str, Bus] = {}
+        for b in buses_raw:
+            start = b.get("start", "school")
+            start_point = (
+                school.point if start == "school" else _point(start, f"bus {b['id']} start")
+            )
+            out[b["id"]] = Bus(id=b["id"], capacity=int(b["capacity"]), start=start_point)
+        return out
+
+    buses = _parse_pack(buses_path, _buses)
+
+    pickup_path = data_dir / "pickup_points.json"
+    pickup_raw = _read_pack_json(pickup_path, required=False)
+    pickup_points: dict[str, PickupPoint] = {}
+    if pickup_raw is not None:
+        pickup_list = _as_list(pickup_raw, pickup_path)
+
+        def _pickups() -> dict[str, PickupPoint]:
+            out: dict[str, PickupPoint] = {}
+            for pp in pickup_list:
+                pid = pp["id"]
+                if pid in out:
+                    raise ScenarioError(f"pickup_points.json: dubbele id {pid}")
+                out[pid] = PickupPoint(
+                    id=pid,
+                    point=_point(pp, f"pickup_points.json {pid}"),
+                    name=str(pp.get("name") or pid),
+                )
+            return out
+
+        pickup_points = _parse_pack(pickup_path, _pickups)
 
     return DataPack(
         path=data_dir,

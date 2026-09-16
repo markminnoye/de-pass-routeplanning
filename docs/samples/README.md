@@ -63,6 +63,9 @@ Gecachete TomTom-reistijden per oorsprongspunt: `matrix/<digest>/<lat,lon>.json`
 (zelfde formaat als de oude `.cache/tomtom/cells/`). `evaluate --offline` leest
 alleen deze map; ontbrekende paren falen met het commando
 `busroutes data fetch-matrix --dry-run`. Status: `busroutes data status`.
+Dit pakket dekt de drie referentiescenario's, geen volledige N×N-matrix;
+een complete pack kost ~7.000 transacties (`busroutes data fetch-matrix --dry-run`
+eerst; geen live fetch).
 
 ### Output (`out/<naam>/metrics.json`)
 
