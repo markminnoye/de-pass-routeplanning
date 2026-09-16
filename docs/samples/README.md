@@ -99,8 +99,16 @@ thuisstop — die verplaatsing zit **niet** in `ride_min`).
   - Een object is een **vaste opstapplaats** met eigen coördinaten en een lijst `students`.
 - `ordering` (scenario-breed, per bus te overschrijven met `"ordering"` in het bus-object):
   - `"given"` — de bus rijdt de stops exact in de opgegeven volgorde.
-  - `"auto"` — de evaluator bepaalt zelf een volgorde per bus (heuristiek op de TomTom-matrix;
-    minimaliseert routelengte, niet rittijd per kind).
+  - `"auto"` — de evaluator bepaalt zelf een volgorde per bus.
+    - **matrix** (default, TomTom-reistijden): rittijd-solver (2-opt/or-opt op kindritten),
+      niet padkost.
+    - **haversine** (`--ordering haversine`): oude padkost-heuristiek (nearest neighbour +
+      2-opt op hemelsbrede afstand).
+- `"pinned": true` op een bus-object: `optimize --assign` raakt die bus niet aan (geen
+  herverdeling en geen herordening). Ontbrekend of `false` → niet vastgezet.
+- `"pinned_stops": ["s041", "pp-tienen-station"]` (scenario-veld): die stops blijven op hun
+  huidige bus; de volgorde op die bus mag wel wijzigen, tenzij de bus zelf `pinned` is.
+  Ontbrekend → leeg.
 - Regels die de evaluator afdwingt: elke leerling exact één keer toegewezen, aantal instappers
   per bus ≤ `capacity` (30), elke `bus_id` bestaat in `buses.json`. Overtreding = foutmelding.
 

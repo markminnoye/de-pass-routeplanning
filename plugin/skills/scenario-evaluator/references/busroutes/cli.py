@@ -1,4 +1,4 @@
-"""Command line: `busroutes evaluate <scenario.json>` and `busroutes compare <metrics.json>...`."""
+"""Command line: `busroutes evaluate|optimize|compare` and `busroutes data ...`."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 import sys
+from dataclasses import replace
 from datetime import date
 from pathlib import Path
 
@@ -19,8 +20,16 @@ from busroutes.config import (
 )
 from busroutes.datapack import add_points, fetch_matrix, pack_status
 from busroutes.evaluate import evaluate
-from busroutes.models import ScenarioError, load_samples, load_scenario_file
+from busroutes.models import (
+    Point,
+    Scenario,
+    ScenarioError,
+    load_samples,
+    load_scenario_file,
+    scenario_to_dict,
+)
 from busroutes.offline import OfflineClient, OfflineError
+from busroutes.optimize import optimize_assign, optimize_order
 from busroutes.overpass import load_transit_overlay
 from busroutes.render import compare_markdown, render_map_html, to_geojson
 from busroutes.tomtom import GeoClient, TomTomClient, TomTomError, usage_report
@@ -183,6 +192,76 @@ def cmd_compare(args: argparse.Namespace) -> int:
     return 0
 
 
+def _force_given(scenario: Scenario) -> Scenario:
+    return replace(
+        scenario,
+        ordering="given",
+        buses=[replace(plan, ordering="given") for plan in scenario.buses],
+    )
+
+
+def _offline_travel(client: OfflineClient):
+    def travel(a: Point, b: Point) -> int:
+        if (a.lat, a.lon) == (b.lat, b.lon):
+            return 0
+        return client.matrix([a], [b])[0][0]
+
+    return travel
+
+
+def _student_buses(scenario: Scenario) -> dict[str, str]:
+    return {sid: plan.bus_id for plan in scenario.buses for sid in plan.student_ids}
+
+
+def cmd_optimize(args: argparse.Namespace) -> int:
+    _warn_samples(args)
+    overrides: dict[str, object] = _data_overrides(args)
+    if args.reference_date:
+        overrides["reference_date"] = args.reference_date
+    settings = load_settings(require_key=False, **overrides)
+    school, students, buses = load_samples(settings.data_dir)
+    scenario = load_scenario_file(args.scenario, students, buses)
+    client = OfflineClient(settings.data_dir / "matrix")
+    travel = _offline_travel(client)
+    before = evaluate(_force_given(scenario), school, students, buses, client, settings)
+    mode = "order" if args.order else "assign"
+    if args.order:
+        optimized = optimize_order(scenario, buses, school, travel, settings)
+    else:
+        optimized = optimize_assign(
+            scenario,
+            buses,
+            school,
+            travel,
+            settings,
+            seed=args.seed,
+            max_seconds=args.max_seconds,
+        )
+    optimized = replace(
+        optimized,
+        description=scenario.description + f" · geoptimaliseerd ({mode}, seed {args.seed})",
+    )
+    after = evaluate(optimized, school, students, buses, client, settings)
+    before_s = before.to_dict()["summary"]
+    after_s = after.to_dict()["summary"]
+    print("Vóór → na (offline)")
+    for key in ("max_ride_min", "avg_ride_min", "total_drive_min"):
+        print(f"{key} {before_s[key]} → {after_s[key]}")
+    if args.assign:
+        before_bus = _student_buses(scenario)
+        after_bus = _student_buses(optimized)
+        for sid in sorted(before_bus):
+            if before_bus[sid] != after_bus.get(sid):
+                print(f"{sid}: was {before_bus[sid]}, nu {after_bus[sid]}")
+    out_path = args.out if args.out else args.scenario.parent / f"{scenario.name}-optimized.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(
+        json.dumps(scenario_to_dict(optimized), indent=2, ensure_ascii=False) + "\n"
+    )
+    print(f"Output: {out_path}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="busroutes", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -249,6 +328,32 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("json", type=Path, help="JSON-lijst met nieuwe punten")
     _add_data_dir_flags(ap)
     ap.set_defaults(func=cmd_data_add_points)
+
+    opt = sub.add_parser("optimize", help="optimaliseer volgorde of toewijzing op de matrix")
+    opt.add_argument("scenario", type=Path, help="pad naar scenario.json")
+    mode = opt.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--order", action="store_true", help="herorden stops per bus")
+    mode.add_argument("--assign", action="store_true", help="herverdeel stops over bussen")
+    opt.add_argument("--seed", type=int, default=0, help="RNG-seed voor --assign (default 0)")
+    opt.add_argument(
+        "--max-seconds",
+        type=float,
+        default=30.0,
+        help="zoeklimiet in seconden voor --assign (default 30)",
+    )
+    opt.add_argument(
+        "--out",
+        type=Path,
+        help="output-JSON (default: <scenario.name>-optimized.json naast invoer)",
+    )
+    opt.add_argument(
+        "--reference-date",
+        type=date.fromisoformat,
+        metavar="YYYY-MM-DD",
+        help="schooldag waarop departAt vastligt; overschrijft BUSROUTES_REFERENCE_DATE",
+    )
+    _add_data_dir_flags(opt)
+    opt.set_defaults(func=cmd_optimize)
     return parser
 
 

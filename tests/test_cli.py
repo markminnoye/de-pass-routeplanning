@@ -6,6 +6,8 @@ import argparse
 import json
 from pathlib import Path
 
+import pytest
+
 from busroutes.cli import build_parser, main
 from busroutes.config import read_env_file
 from busroutes.models import Point
@@ -167,3 +169,83 @@ def test_no_cache_warning_mentions_route_cache_and_overpass_not_matrix(
     assert "overpass" in err
     assert "matrix" not in err
     assert "negeert de cache" not in err
+
+
+def optimize_argv(pack: Path, *extra: str) -> list[str]:
+    return [
+        "optimize",
+        str(pack / "scenario.json"),
+        "--data",
+        str(pack),
+        "--reference-date",
+        "2026-09-15",
+        *extra,
+    ]
+
+
+def test_optimize_order_writes_given_json_without_api_key(tmp_path, monkeypatch, capsys):
+    isolate_from_repo_env(monkeypatch)
+    pack = write_mini_pack(tmp_path / "pack")
+    code = main(optimize_argv(pack, "--order"))
+    assert code == 0
+    out_path = pack / "mini-optimized.json"
+    assert out_path.is_file()
+    payload = json.loads(out_path.read_text())
+    assert payload["ordering"] == "given"
+    assert "geoptimaliseerd (order" in payload["description"]
+    assert " · geoptimaliseerd (order, seed 0)" in payload["description"]
+    captured = capsys.readouterr()
+    combined = captured.out + captured.err
+    assert "Fout:" not in captured.err
+    assert "TOMTOM_API_KEY" not in combined
+    assert "max_ride_min" in captured.out
+    assert "avg_ride_min" in captured.out
+    assert "total_drive_min" in captured.out
+
+
+def test_optimize_assign_seed_zero_is_deterministic(tmp_path, monkeypatch):
+    isolate_from_repo_env(monkeypatch)
+    pack = write_mini_pack(tmp_path / "pack")
+    out1 = tmp_path / "first.json"
+    out2 = tmp_path / "second.json"
+    assert main(optimize_argv(pack, "--assign", "--seed", "0", "--out", str(out1))) == 0
+    assert main(optimize_argv(pack, "--assign", "--seed", "0", "--out", str(out2))) == 0
+    assert out1.read_text() == out2.read_text()
+
+
+def test_optimize_rejects_order_and_assign_together(capsys):
+    with pytest.raises(SystemExit) as exc:
+        main(["optimize", "scenario.json", "--order", "--assign"])
+    assert exc.value.code != 0
+    err = capsys.readouterr().err
+    assert "--order" in err and "--assign" in err
+
+
+def test_optimize_requires_order_or_assign(capsys):
+    with pytest.raises(SystemExit) as exc:
+        main(["optimize", "scenario.json"])
+    assert exc.value.code != 0
+    err = capsys.readouterr().err
+    assert "--order" in err and "--assign" in err
+
+
+def test_optimize_missing_pair_exits_with_fetch_matrix(tmp_path, monkeypatch, capsys):
+    isolate_from_repo_env(monkeypatch)
+    pack = write_mini_pack(tmp_path / "pack", complete=False)
+    code = main(optimize_argv(pack, "--order"))
+    assert code == 1
+    err = capsys.readouterr().err
+    assert "fetch-matrix" in err
+    assert err.startswith("Fout:")
+
+
+def test_optimize_out_writes_to_given_path(tmp_path, monkeypatch):
+    isolate_from_repo_env(monkeypatch)
+    pack = write_mini_pack(tmp_path / "pack")
+    out = tmp_path / "custom" / "result.json"
+    code = main(optimize_argv(pack, "--order", "--out", str(out)))
+    assert code == 0
+    assert out.is_file()
+    assert not (pack / "mini-optimized.json").exists()
+    payload = json.loads(out.read_text())
+    assert payload["ordering"] == "given"

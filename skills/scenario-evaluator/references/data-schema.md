@@ -75,10 +75,16 @@ van af, totale rijtijd/km wel.
 - `ordering` (scenario-breed, per bus te overschrijven met `"ordering"` in het
   bus-object):
   - `"given"` — de bus rijdt de stops exact in de opgegeven volgorde.
-  - `"auto"` — de evaluator bepaalt zelf een volgorde per bus (nearest neighbour +
-    2-opt; minimaliseert routelengte, **niet** rittijd per kind). De kostenmatrix
-    daarachter zijn standaard TomTom-reistijden; `--ordering haversine` gebruikt in de
-    plaats daarvan gratis hemelsbrede afstanden.
+  - `"auto"` — de evaluator bepaalt zelf een volgorde per bus.
+    - **matrix** (default, TomTom-reistijden): rittijd-solver (2-opt/or-opt op
+      kindritten), niet padkost.
+    - **haversine** (`--ordering haversine`): oude padkost-heuristiek (nearest
+      neighbour + 2-opt op hemelsbrede afstand).
+- `"pinned": true` op een bus-object: `optimize --assign` raakt die bus niet aan
+  (geen herverdeling en geen herordening). Ontbrekend of `false` → niet vastgezet.
+- `"pinned_stops": ["s001", "pp-tienen-station"]` (scenario-veld): die stops blijven
+  op hun huidige bus; de volgorde op die bus mag wel wijzigen, tenzij de bus zelf
+  `pinned` is. Ontbrekend → leeg.
 - Regels die de evaluator afdwingt (foutmelding bij overtreding):
   - elke leerling exact één keer toegewezen,
   - aantal instappers per bus ≤ `capacity`,

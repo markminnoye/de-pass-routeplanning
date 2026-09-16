@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `busroutes optimize --order|--assign`: stdlib-solver op de matrix (geen TomTom); schrijft
+  een scenario-JSON met `ordering: given` en een vóór/na-samenvatting op offline-cijfers
+- Scenario-velden `pinned` (per bus) en `pinned_stops` (stop-ids blijven op hun bus)
 - Datapakket (`BUSROUTES_DATA_DIR` / `--data`, default `docs/samples/` inclusief `matrix/`)
 - `evaluate --offline`: scenario's doorrekenen zonder TomTom-key
 - `busroutes data status|fetch-matrix|add-points`

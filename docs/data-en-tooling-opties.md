@@ -240,6 +240,6 @@ Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's
 2. ~~Fictieve testset opbouwen~~ ✅ 14/09/2026 — `docs/samples/` (140 leerlingpunten, 7 bussen, 3 referentiescenario's, `expected/`).
 3. ~~Eerste versie van de scenario-evaluator~~ ✅ 14/09/2026 — `busroutes` CLI (`evaluate`/`compare`) + skill `.claude/skills/scenario-evaluator/`. Vervolgwensen staan onderaan `.agent/plans/2026-09-14-testset-en-evaluator-v1.md`.
 4. ~~Offline-modus + matrix in het datapakket~~ ✅ 16/09/2026 — `evaluate --offline`, `busroutes data status|fetch-matrix|add-points`, matrix in `docs/samples/matrix/`.
-5. Stdlib-solver (`busroutes optimize`) in latere werkpakketten — vervangt het eerdere OR-Tools-punt voor het "volledig geoptimaliseerde" scenario. OR-Tools/VROOM blijven een benchmark-spoor, niet de plugin-solver.
+5. ~~Stdlib-solver (`busroutes optimize`)~~ ✅ 16/09/2026 (WP3) — `optimize --order|--assign` op de matrix, zonder TomTom. OR-Tools/VROOM blijven benchmark (WP4), niet de plugin-solver.
 6. (Apart spoor, optioneel) Google's js-route-optimization-app deployen op een eigen GCP-project om de API zelf te verkennen via de GUI.
 7. Zodra de echte leerlingdata beschikbaar is: adres, school, gewenste aankomsttijd, evt. vaste opstapplaats + buscapaciteiten per bus aanleveren.
