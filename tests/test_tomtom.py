@@ -6,10 +6,12 @@ import pytest
 from busroutes.models import Point
 from busroutes.tomtom import (
     MATRIX_MAX_CELLS,
+    MATRIX_OPTIONS,
     TomTomClient,
     TomTomError,
     _digest,
     _matrix_body,
+    _point_key,
     matrix_transactions,
     parse_route,
     plan_blocks,
@@ -248,6 +250,20 @@ def test_a_truncated_cache_entry_is_refetched_instead_of_crashing(tmp_path):
     assert client.route(points, when).legs
     assert len(calls) == 2
     assert client.usage.route_requests == 1
+
+
+def test_cells_dir_stores_pairs_outside_cache_cells(tmp_path):
+    cache_dir = tmp_path / "cache"
+    cells_dir = tmp_path / "matrix"
+    bodies: list[dict] = []
+    points = line(2)
+    TomTomClient("k", cache_dir, fetch=matrix_fetcher(bodies), cells_dir=cells_dir).matrix(
+        points, points
+    )
+    assert bodies
+    expected = cells_dir / _digest(MATRIX_OPTIONS)[:16] / f"{_point_key(points[0])}.json"
+    assert expected.is_file()
+    assert not (cache_dir / "cells").exists()
 
 
 def test_matrix_cell_error_is_reported(tmp_path):

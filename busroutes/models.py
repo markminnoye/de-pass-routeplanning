@@ -44,6 +44,22 @@ class School:
 
 
 @dataclass(frozen=True)
+class PickupPoint:
+    id: str
+    point: Point
+    name: str
+
+
+@dataclass
+class DataPack:
+    path: Path
+    school: School
+    students: dict[str, Student]
+    buses: dict[str, Bus]
+    pickup_points: dict[str, PickupPoint]
+
+
+@dataclass(frozen=True)
 class Stop:
     """A location where one or more students board."""
 
@@ -83,9 +99,23 @@ def _point(d: dict, where: str) -> Point:
         raise ScenarioError(f"{where}: 'lat'/'lon' ontbreken of zijn ongeldig") from exc
 
 
-def load_samples(samples_dir: Path) -> tuple[School, dict[str, Student], dict[str, Bus]]:
-    samples_dir = Path(samples_dir)
-    school_d = json.loads((samples_dir / "school.json").read_text())
+_PACK_LAYOUT = "school.json, students.json, buses.json, optioneel pickup_points.json"
+
+
+def _read_pack_json(path: Path, *, required: bool) -> object | None:
+    if not required and not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text())
+    except FileNotFoundError as exc:
+        raise ScenarioError(f"{path}: ontbreekt. Verwachte layout: {_PACK_LAYOUT}") from exc
+    except (OSError, ValueError) as exc:
+        raise ScenarioError(f"{path}: ongeldig. Verwachte layout: {_PACK_LAYOUT}") from exc
+
+
+def load_data_pack(data_dir: Path) -> DataPack:
+    data_dir = Path(data_dir)
+    school_d = _read_pack_json(data_dir / "school.json", required=True)
     hh, mm = school_d["target_arrival"].split(":")
     school = School(
         id=school_d["id"],
@@ -95,7 +125,7 @@ def load_samples(samples_dir: Path) -> tuple[School, dict[str, Student], dict[st
     )
 
     students: dict[str, Student] = {}
-    for s in json.loads((samples_dir / "students.json").read_text()):
+    for s in _read_pack_json(data_dir / "students.json", required=True):
         if s["id"] in students:
             raise ScenarioError(f"students.json: dubbele leerling-id {s['id']}")
         students[s["id"]] = Student(
@@ -103,11 +133,36 @@ def load_samples(samples_dir: Path) -> tuple[School, dict[str, Student], dict[st
         )
 
     buses: dict[str, Bus] = {}
-    for b in json.loads((samples_dir / "buses.json").read_text()):
+    for b in _read_pack_json(data_dir / "buses.json", required=True):
         start = b.get("start", "school")
         start_point = school.point if start == "school" else _point(start, f"bus {b['id']} start")
         buses[b["id"]] = Bus(id=b["id"], capacity=int(b["capacity"]), start=start_point)
-    return school, students, buses
+
+    pickup_points: dict[str, PickupPoint] = {}
+    pickup_raw = _read_pack_json(data_dir / "pickup_points.json", required=False)
+    if pickup_raw is not None:
+        for pp in pickup_raw:
+            pid = pp["id"]
+            if pid in pickup_points:
+                raise ScenarioError(f"pickup_points.json: dubbele id {pid}")
+            pickup_points[pid] = PickupPoint(
+                id=pid,
+                point=_point(pp, f"pickup_points.json {pid}"),
+                name=str(pp.get("name") or pid),
+            )
+
+    return DataPack(
+        path=data_dir,
+        school=school,
+        students=students,
+        buses=buses,
+        pickup_points=pickup_points,
+    )
+
+
+def load_samples(samples_dir: Path) -> tuple[School, dict[str, Student], dict[str, Bus]]:
+    pack = load_data_pack(samples_dir)
+    return pack.school, pack.students, pack.buses
 
 
 def _parse_stop(raw: str | dict, students: dict[str, Student], where: str) -> Stop:

@@ -272,11 +272,13 @@ class TomTomClient:
         traffic: Traffic = "historical",
         fetch: Fetcher = _http_json,
         dry_run: bool = False,
+        cells_dir: Path | None = None,
     ) -> None:
         if not api_key:
             raise TomTomError("TOMTOM_API_KEY ontbreekt")
         self._key = api_key
         self._cache_dir = Path(cache_dir) if cache_dir else None
+        self._cells_dir = Path(cells_dir) if cells_dir else None
         self._traffic = traffic
         self._fetch = fetch
         self._dry_run = dry_run
@@ -304,10 +306,13 @@ class TomTomClient:
     # -- pair-level matrix cache -------------------------------------------
 
     def _cells_path(self, origin: Point) -> Path | None:
+        options = _digest(MATRIX_OPTIONS)[:16]
+        name = f"{_point_key(origin)}.json"
+        if self._cells_dir is not None:
+            return self._cells_dir / options / name
         if self._cache_dir is None:
             return None
-        options = _digest(MATRIX_OPTIONS)[:16]
-        return self._cache_dir / "cells" / options / f"{_point_key(origin)}.json"
+        return self._cache_dir / "cells" / options / name
 
     def _read_cells(self, origin: Point) -> dict[str, int]:
         path = self._cells_path(origin)

@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from busroutes.models import Point, ScenarioError, load_samples, load_scenario
+from busroutes.models import Point, ScenarioError, load_data_pack, load_samples, load_scenario
 
 
 def scenario_dict(**overrides):
@@ -119,6 +119,9 @@ def test_load_samples_reads_repo_samples(tmp_path):
     assert students["s001"].zone == "z"
     assert buses["bus1"].start == school.point
     assert buses["bus2"].start == Point(1.5, 2.5)
+    pack = load_data_pack(tmp_path)
+    assert (school, students, buses) == (pack.school, pack.students, pack.buses)
+    assert pack.pickup_points == {}
 
 
 def test_bus_level_ordering_overrides_scenario(students, buses):

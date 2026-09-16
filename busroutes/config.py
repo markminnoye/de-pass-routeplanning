@@ -6,6 +6,7 @@ Sources, in order: environment variables, then a `.env` file in the repo root.
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
@@ -59,6 +60,7 @@ class Settings:
     dwell_per_student_s: int = 10
     cache_dir: Path | None = DEFAULT_CACHE_DIR
     lead_time_min: int = 60  # departAt = target_arrival - lead_time (only for traffic profile)
+    data_dir: Path = REPO_ROOT / "docs" / "samples"
 
     def reference_arrival(self, target_arrival: time) -> datetime:
         """Timezone-aware datetime of the school arrival on the reference weekday."""
@@ -75,6 +77,23 @@ def next_weekday(today: date) -> date:
     while day.weekday() >= 5:
         day += timedelta(days=1)
     return day
+
+
+def resolve_data_dir(
+    cli_data: Path | None = None,
+    cli_samples: Path | None = None,
+    env: Mapping[str, str] | None = None,
+) -> Path:
+    """`--data` wins, then `--samples`, then BUSROUTES_DATA_DIR, then docs/samples."""
+    if cli_data is not None:
+        return Path(cli_data)
+    if cli_samples is not None:
+        return Path(cli_samples)
+    source = os.environ if env is None else env
+    raw = str(source.get("BUSROUTES_DATA_DIR", "") or "").strip()
+    if raw:
+        return Path(raw)
+    return REPO_ROOT / "docs" / "samples"
 
 
 def load_settings(env_path: Path = DEFAULT_ENV_PATH, **overrides) -> Settings:
@@ -96,6 +115,7 @@ def load_settings(env_path: Path = DEFAULT_ENV_PATH, **overrides) -> Settings:
         "dwell_base_s": int(env.get("BUSROUTES_DWELL_BASE_S", 30)),
         "dwell_per_student_s": int(env.get("BUSROUTES_DWELL_PER_STUDENT_S", 10)),
         "cache_dir": Path(cache_dir_raw) if cache_dir_raw else DEFAULT_CACHE_DIR,
+        "data_dir": resolve_data_dir(env=env),
     }
     values.update(overrides)
     if values.get("reference_date") is None:
