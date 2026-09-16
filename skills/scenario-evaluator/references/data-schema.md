@@ -77,8 +77,8 @@ van af, totale rijtijd/km wel.
   - `"given"` — de bus rijdt de stops exact in de opgegeven volgorde.
   - `"auto"` — de evaluator bepaalt zelf een volgorde per bus (nearest neighbour +
     2-opt; minimaliseert routelengte, **niet** rittijd per kind). De kostenmatrix
-    daarachter is standaard hemelsbreed en gratis; `--ordering matrix` koopt in de
-    plaats daarvan TomTom-reistijden.
+    daarachter zijn standaard TomTom-reistijden; `--ordering haversine` gebruikt in de
+    plaats daarvan gratis hemelsbrede afstanden.
 - Regels die de evaluator afdwingt (foutmelding bij overtreding):
   - elke leerling exact één keer toegewezen,
   - aantal instappers per bus ≤ `capacity`,

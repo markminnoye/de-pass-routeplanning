@@ -10,9 +10,10 @@ from typing import Literal
 
 Matrix = list[list[int]]
 
-# Where the cost matrix behind `ordering: "auto"` comes from. "haversine" is free
-# (straight-line metres); "matrix" buys real travel times from TomTom and is the
-# most expensive thing the evaluator can do — see busroutes/tomtom.py.
+# Where the cost matrix behind `ordering: "auto"` comes from. "matrix" is the default:
+# real TomTom travel times, and the most expensive thing the evaluator does. "haversine"
+# is free straight-line metres, for exploring many variants — it costs 4 to 13% more
+# drive time on our own test set. See busroutes/tomtom.py.
 OrderingStrategy = Literal["haversine", "matrix"]
 
 

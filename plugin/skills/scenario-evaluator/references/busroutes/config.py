@@ -54,7 +54,7 @@ class Settings:
     api_key: str
     reference_date: date  # the school day departAt is anchored to; never "today"
     traffic: Traffic = "historical"
-    ordering: OrderingStrategy = "haversine"
+    ordering: OrderingStrategy = "matrix"
     dwell_base_s: int = 30
     dwell_per_student_s: int = 10
     cache_dir: Path | None = DEFAULT_CACHE_DIR
@@ -82,7 +82,7 @@ def load_settings(env_path: Path = DEFAULT_ENV_PATH, **overrides) -> Settings:
     traffic = env.get("BUSROUTES_TRAFFIC", "historical")
     if traffic not in ("historical", "live"):
         raise ConfigError(f"BUSROUTES_TRAFFIC moet 'historical' of 'live' zijn, niet '{traffic}'")
-    ordering = env.get("BUSROUTES_ORDERING", "haversine")
+    ordering = env.get("BUSROUTES_ORDERING", "matrix")
     if ordering not in ("haversine", "matrix"):
         raise ConfigError(
             f"BUSROUTES_ORDERING moet 'haversine' of 'matrix' zijn, niet '{ordering}'"

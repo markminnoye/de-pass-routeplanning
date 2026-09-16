@@ -101,7 +101,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--ordering",
         choices=["haversine", "matrix"],
         help="kostenmatrix voor 'auto'-volgorde; overschrijft BUSROUTES_ORDERING "
-        "(default haversine, gratis; 'matrix' koopt TomTom-reistijden)",
+        "(default matrix = TomTom-reistijden; 'haversine' is gratis maar 4-13%% langere ritten)",
     )
     ev.add_argument(
         "--reference-date",

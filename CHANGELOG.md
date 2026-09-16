@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Default ordening terug naar `matrix` (beslissing 15/09/2026: exactheid boven credits);
+  `haversine` blijft als goedkope verkenmodus (`--ordering haversine` / `BUSROUTES_ORDERING`)
 - Plugin-pakket is weer `de-pass-routeplanning.plugin` (Desktop: `.zip` = skill, `.plugin` = plugin)
 - Leaflet CSS in `map.html` inlined; JS via cdnjs `leaflet.min.js` (artifact-viewer CSP blokkeert unpkg én externe stylesheets)
 - Skill: HTML-kaart is het hoofddeliverable (routes zien), daarna pas cijfers/vergelijking

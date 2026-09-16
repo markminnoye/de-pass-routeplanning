@@ -124,21 +124,20 @@ gebruiker naar de versie of een update vraagt. Niet bij elke follow-up.
 - `"ordering": "auto"` minimaliseert routelengte per bus, niet rittijd per kind: kinderen
   die vroeg instappen en daarna ver meerijden krijgen lange ritten. Kijk naar `ride_min`
   per stop; wil je een andere volgorde, geef die bus `"ordering": "given"`.
-- De volgorde bij `"auto"` komt standaard uit **hemelsbrede afstanden** (gratis). Dat is
-  goed genoeg om varianten tegen elkaar af te wegen, maar het ziet geen eenrichtingsstraten
-  of omwegen: op de eigen testset geeft het 4 tot 13 % meer rijtijd dan de volgorde uit
-  TomTom-reistijden, tot +20 min op één bus. Werkwijze dus: **verkennen met de default**, en
-  het scenario dat de eindkeuze wordt **overrekenen met `--ordering matrix`** (~1500
-  transacties per scenario in plaats van 7) voor je cijfers aan de school rapporteert.
-  Zeg altijd welke van de twee je gebruikt hebt. `metrics.json` →
-  `settings.ordering_strategy` houdt het bij; vergelijk nooit een `haversine`-scenario met
-  een `matrix`-scenario.
+- De volgorde bij `"auto"` komt standaard uit **TomTom-reistijden**, wat een nieuw scenario
+  ~1500 transacties kost. Wil je snel veel varianten aftasten, dan geeft `--ordering
+  haversine` dezelfde heuristiek op hemelsbrede afstanden voor 7 transacties, maar met 4 tot
+  13 % meer rijtijd (tot +20 min op één bus) omdat het geen eenrichtingsstraten of omwegen
+  ziet. Rapporteer dan expliciet dat de cijfers een benadering zijn en reken de uiteindelijke
+  keuze over met de default. `metrics.json` → `settings.ordering_strategy` houdt bij welke
+  van de twee gebruikt is; vergelijk nooit een `haversine`-scenario met een `matrix`-scenario.
 - TomTom rekent forse keer-penalty's (U-turns) bij deur-aan-deur ophalen in dorpsstraten;
   dat kan ritten onnodig langer maken t.o.v. opstapplaatsen op een doorgaande weg.
 - Nieuwe routes/matrixcellen vragen een TomTom-call. Antwoorden worden gecachet in
   `.cache/tomtom/` (routes per aanvraag, matrixcellen per punt-paar), dus een scenario dat
-  dezelfde punten anders over de bussen verdeelt is gratis. Een gratis TomTom-sleutel geeft
-  2.500 requests per dag; met de standaardinstellingen kost een scenario 7 transacties.
+  dezelfde punten anders over de bussen verdeelt is daarna gratis. Een gratis TomTom-sleutel
+  geeft 2.500 requests per dag en een nieuw scenario kost er standaard ~1.500: twee nieuwe
+  scenario's op één dag passen er dus niet in.
 
 ## Kosten laag houden
 
@@ -149,8 +148,12 @@ De gebruiker betaalt zelf per TomTom-request, dus:
   is gratis om opnieuw te vullen maar scheelt Overpass-calls. Een tijdelijke map zoals
   `/tmp/...` is prima binnen één sessie, niet als blijvende keuze — vraag bij een tweede
   sessie of de vorige werkmap er nog is.
-- **Laat `--ordering` op de default staan** tenzij er een concrete aanleiding is (zie
-  "Interpretatie").
+- **Vraag het de gebruiker** voor je aan een reeks nieuwe scenario's begint: exact rekenen
+  (default, ~1.500 per scenario) of eerst breed verkennen met `--ordering haversine` (7 per
+  scenario). Loop niet stil het dagplafond op.
+- **Overweeg de puntmatrix één keer in bulk te kopen** als er veel scenario's aankomen: alle
+  punten onderling kost ~7.000 transacties en daarna is elk scenario exact én gratis. Zie
+  `docs/data-en-tooling-opties.md`.
 - **Gebruik `--no-cache` niet** om iets te "verversen"; dat rekent TomTom opnieuw aan én haalt Overpass opnieuw op.
   Wil je andere verkeersomstandigheden, verander dan de referentiedatum of `--traffic`.
 - Bij twijfel eerst `--dry-run`, en meld de raming aan de gebruiker voor je een dure run doet.

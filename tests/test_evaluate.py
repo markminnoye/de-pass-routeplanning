@@ -13,7 +13,7 @@ SETTINGS = Settings(
     dwell_per_student_s=10,
     reference_date=date(2026, 9, 15),  # a Tuesday
 )
-MATRIX_SETTINGS = replace(SETTINGS, ordering="matrix")
+FREE_SETTINGS = replace(SETTINGS, ordering="haversine")
 
 
 def given_scenario(students, buses):
@@ -97,30 +97,28 @@ def auto_scenario(students, buses):
 
 def test_auto_ordering_uses_matrix_and_visits_far_stop_first(school, students, buses, fake_client):
     result = evaluate(
-        auto_scenario(students, buses), school, students, buses, fake_client, MATRIX_SETTINGS
+        auto_scenario(students, buses), school, students, buses, fake_client, SETTINGS
     )
+    assert SETTINGS.ordering == "matrix", "real travel times are the default"
     assert len(fake_client.matrix_calls) == 2
     assert [s.stop.id for s in result.buses[0].stops] == ["s002", "s001"]
     assert [s.stop.id for s in result.buses[1].stops] == ["s004", "s003"]
 
 
-def test_default_ordering_is_free_and_keeps_the_same_order(school, students, buses, fake_client):
-    """The haversine strategy buys nothing from TomTom, so `auto` costs matrix calls
-    only when explicitly asked for."""
+def test_haversine_ordering_buys_nothing_from_tomtom(school, students, buses, fake_client):
     result = evaluate(
-        auto_scenario(students, buses), school, students, buses, fake_client, SETTINGS
+        auto_scenario(students, buses), school, students, buses, fake_client, FREE_SETTINGS
     )
-    assert SETTINGS.ordering == "haversine"
     assert fake_client.matrix_calls == []
     assert [s.stop.id for s in result.buses[0].stops] == ["s002", "s001"]
     assert [s.stop.id for s in result.buses[1].stops] == ["s004", "s003"]
 
 
 def test_ordering_strategy_is_recorded_in_metrics(school, students, buses, fake_client):
-    d = evaluate(
-        given_scenario(students, buses), school, students, buses, fake_client, MATRIX_SETTINGS
-    ).to_dict()
-    assert d["settings"]["ordering_strategy"] == "matrix"
+    scenario = given_scenario(students, buses)
+    for settings, expected in ((SETTINGS, "matrix"), (FREE_SETTINGS, "haversine")):
+        d = evaluate(scenario, school, students, buses, fake_client, settings).to_dict()
+        assert d["settings"]["ordering_strategy"] == expected
 
 
 def test_pickup_point_ride_times_apply_to_all_riders(school, students, buses, fake_client):
@@ -180,7 +178,7 @@ def test_bus_level_ordering_given_keeps_order_while_others_auto(
         students,
         buses,
     )
-    result = evaluate(scenario, school, students, buses, fake_client, MATRIX_SETTINGS)
+    result = evaluate(scenario, school, students, buses, fake_client, SETTINGS)
     assert [s.stop.id for s in result.buses[0].stops] == ["s001", "s002"]  # kept
     assert [s.stop.id for s in result.buses[1].stops] == ["s004", "s003"]  # auto
     assert len(fake_client.matrix_calls) == 1

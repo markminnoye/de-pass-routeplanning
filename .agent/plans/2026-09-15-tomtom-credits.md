@@ -6,6 +6,8 @@ status: done
 
 # TomTom-credits terugdringen
 
+> **Afgerond (16/09/2026):** default teruggezet op `matrix`; plugin herbouwd; ruff + pytest groen.
+
 **Aanleiding:** de gratis TomTom-credits (Freemium: 2.500 non-tile requests per dag) waren op
 na een handvol doorrekeningen. Zoekvraag: welke fouten of verbeteringen in de evaluator
 kosten onnodig credits?
@@ -43,8 +45,10 @@ Gevonden problemen, in volgorde van impact:
   punt-paar in `.cache/tomtom/cells/`; `_harvest_legacy()` vult die gratis uit de oude
   `.cache/tomtom/matrix/`; `Usage`-teller; atomische writes; afgebroken cachebestand wordt
   opnieuw opgehaald; identieke punten vallen samen.
-- `busroutes/ordering.py` + `evaluate.py`: `OrderingStrategy` (`haversine` | `matrix`),
-  default `haversine` (gratis), vastgelegd in `metrics.json` → `settings.ordering_strategy`.
+- `busroutes/ordering.py` + `evaluate.py`: `OrderingStrategy` (`matrix` | `haversine`),
+  vastgelegd in `metrics.json` → `settings.ordering_strategy`. Default blijft `matrix`
+  (beslissing van de opdrachtgever, 15/09/2026: exactheid boven kosten); `haversine` is de
+  gratis verkenmodus.
 - `busroutes/config.py`: referentiedatum verplicht met een fout die een datum voorstelt;
   `BUSROUTES_ORDERING` en `BUSROUTES_CACHE_DIR` erbij.
 - `busroutes/cli.py`: `--ordering`, `--reference-date`, `--dry-run`, verbruiksrapport na een
@@ -54,15 +58,18 @@ Gevonden problemen, in volgorde van impact:
 
 ## Gemeten resultaat
 
-Koude cache, de drie referentiescenario's samen: **5.934 → 21 transacties**. Per scenario
-7 (één `calculateRoute` per bus) in plaats van ~2.000. Met `--ordering matrix` kost een
-scenario 1.081–1.482 in plaats van 1.608–2.163.
+Koude cache, de drie referentiescenario's samen: **5.934 → 4.025 transacties** met de default
+(exacte ordening), en **21** met `--ordering haversine`. Per scenario 1.081–1.482 in plaats
+van 1.608–2.163; met de gratis ordening 7. Bij een gaten-cache koos de eerste versie van
+`plan_blocks()` nog voor 13.694 transacties waar één volledige rechthoek 6.995 kost — dat
+weegt de planner nu af.
 
 Kwaliteitsprijs van de gratis ordening, gemeten met de echte TomTom-tijden uit de cache:
 +3,8 % / +10,7 % / +13,3 % totale rijtijd op de drie scenario's, tot +20 min op één bus. Zie
-`docs/data-en-tooling-opties.md` voor de tabel en de aanbevolen werkwijze (verkennen met
-`haversine`, eindkeuze overrekenen met `--ordering matrix`, of één keer de volledige
-139-puntsmatrix kopen voor 6.995 transacties waarna alles exact én gratis is).
+`docs/data-en-tooling-opties.md` voor de tabel en de aanbevolen werkwijze (default =
+`matrix`; verkennen met `--ordering haversine`, eindkeuze opnieuw met de default, of één
+keer de volledige 139-puntsmatrix kopen voor 6.995 transacties waarna alles exact én gratis
+is).
 
 De bestaande warme cache (65 matrixpayloads, 26 routes) is behouden: de drie
 `docs/samples/expected/`-baselines reproduceren bit-identiek met `--ordering matrix` en
