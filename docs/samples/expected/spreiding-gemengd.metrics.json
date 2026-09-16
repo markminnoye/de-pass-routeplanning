@@ -5,8 +5,8 @@
   "settings": {
     "traffic": "historical",
     "ordering_strategy": "matrix",
-    "depart_at_reference": "2026-09-15T07:20+02:00",
-    "target_arrival": "08:20",
+    "depart_at_reference": "2026-09-15T07:30+02:00",
+    "target_arrival": "08:30",
     "dwell_base_s": 30,
     "dwell_per_student_s": 10
   },
@@ -14,18 +14,18 @@
     "students": 140,
     "buses_used": 7,
     "buses_unused": [],
-    "max_ride_min": 207.5,
-    "avg_ride_min": 86.3,
+    "max_ride_min": 207.1,
+    "avg_ride_min": 86.2,
     "median_ride_min": 79.8,
     "rides_over_60_min": 80,
     "rides_over_90_min": 64,
     "max_to_stop_km": 0.0,
     "students_with_to_stop_over_1km": 0,
-    "total_drive_min": 1345.8,
-    "total_km": 804.9,
+    "total_drive_min": 1345.2,
+    "total_km": 805.4,
     "avg_occupancy_pct": 66.7,
-    "earliest_departure": "04:35",
-    "arrival": "08:20"
+    "earliest_departure": "04:45",
+    "arrival": "08:30"
   },
   "buses": [
     {
@@ -33,11 +33,11 @@
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "05:32",
-      "arrival": "08:20",
-      "drive_min": 154.1,
+      "departure": "05:42",
+      "arrival": "08:30",
+      "drive_min": 154.3,
       "km": 78.2,
-      "max_ride_min": 155.2,
+      "max_ride_min": 155.3,
       "stops": [
         {
           "id": "s076",
@@ -47,9 +47,9 @@
           "students": [
             "s076"
           ],
-          "arrival": "05:44",
-          "departure": "05:44",
-          "ride_min": 155.2
+          "arrival": "05:54",
+          "departure": "05:54",
+          "ride_min": 155.3
         },
         {
           "id": "s064",
@@ -59,9 +59,9 @@
           "students": [
             "s064"
           ],
-          "arrival": "05:51",
-          "departure": "05:52",
-          "ride_min": 147.7
+          "arrival": "06:01",
+          "departure": "06:02",
+          "ride_min": 147.8
         },
         {
           "id": "s075",
@@ -71,9 +71,9 @@
           "students": [
             "s075"
           ],
-          "arrival": "05:57",
-          "departure": "05:58",
-          "ride_min": 142.0
+          "arrival": "06:07",
+          "departure": "06:08",
+          "ride_min": 141.9
         },
         {
           "id": "s080",
@@ -83,9 +83,9 @@
           "students": [
             "s080"
           ],
-          "arrival": "06:05",
-          "departure": "06:06",
-          "ride_min": 133.6
+          "arrival": "06:16",
+          "departure": "06:16",
+          "ride_min": 133.3
         },
         {
           "id": "s062",
@@ -95,9 +95,9 @@
           "students": [
             "s062"
           ],
-          "arrival": "06:10",
-          "departure": "06:10",
-          "ride_min": 129.2
+          "arrival": "06:20",
+          "departure": "06:21",
+          "ride_min": 128.9
         },
         {
           "id": "s081",
@@ -107,9 +107,9 @@
           "students": [
             "s081"
           ],
-          "arrival": "06:13",
-          "departure": "06:13",
-          "ride_min": 126.3
+          "arrival": "06:23",
+          "departure": "06:24",
+          "ride_min": 126.0
         },
         {
           "id": "s061",
@@ -119,9 +119,9 @@
           "students": [
             "s061"
           ],
-          "arrival": "06:15",
-          "departure": "06:16",
-          "ride_min": 123.8
+          "arrival": "06:25",
+          "departure": "06:26",
+          "ride_min": 123.5
         },
         {
           "id": "s051",
@@ -131,9 +131,9 @@
           "students": [
             "s051"
           ],
-          "arrival": "06:25",
-          "departure": "06:26",
-          "ride_min": 114.0
+          "arrival": "06:35",
+          "departure": "06:36",
+          "ride_min": 113.7
         },
         {
           "id": "s055",
@@ -143,9 +143,9 @@
           "students": [
             "s055"
           ],
-          "arrival": "06:42",
-          "departure": "06:42",
-          "ride_min": 97.2
+          "arrival": "06:52",
+          "departure": "06:53",
+          "ride_min": 96.9
         },
         {
           "id": "s047",
@@ -155,9 +155,9 @@
           "students": [
             "s047"
           ],
-          "arrival": "06:53",
-          "departure": "06:54",
-          "ride_min": 85.4
+          "arrival": "07:04",
+          "departure": "07:04",
+          "ride_min": 85.2
         },
         {
           "id": "s042",
@@ -167,9 +167,9 @@
           "students": [
             "s042"
           ],
-          "arrival": "06:54",
-          "departure": "06:55",
-          "ride_min": 84.8
+          "arrival": "07:04",
+          "departure": "07:05",
+          "ride_min": 84.5
         },
         {
           "id": "s105",
@@ -179,9 +179,9 @@
           "students": [
             "s105"
           ],
-          "arrival": "07:14",
-          "departure": "07:15",
-          "ride_min": 64.9
+          "arrival": "07:24",
+          "departure": "07:25",
+          "ride_min": 64.8
         },
         {
           "id": "s092",
@@ -191,8 +191,8 @@
           "students": [
             "s092"
           ],
-          "arrival": "07:29",
-          "departure": "07:30",
+          "arrival": "07:39",
+          "departure": "07:40",
           "ride_min": 49.7
         },
         {
@@ -203,8 +203,8 @@
           "students": [
             "s099"
           ],
-          "arrival": "07:36",
-          "departure": "07:36",
+          "arrival": "07:46",
+          "departure": "07:46",
           "ride_min": 43.0
         },
         {
@@ -215,8 +215,8 @@
           "students": [
             "s095"
           ],
-          "arrival": "07:41",
-          "departure": "07:41",
+          "arrival": "07:51",
+          "departure": "07:51",
           "ride_min": 38.3
         },
         {
@@ -227,8 +227,8 @@
           "students": [
             "s089"
           ],
-          "arrival": "07:49",
-          "departure": "07:50",
+          "arrival": "07:59",
+          "departure": "08:00",
           "ride_min": 29.9
         },
         {
@@ -239,8 +239,8 @@
           "students": [
             "s017"
           ],
-          "arrival": "08:02",
-          "departure": "08:03",
+          "arrival": "08:12",
+          "departure": "08:13",
           "ride_min": 16.8
         },
         {
@@ -251,8 +251,8 @@
           "students": [
             "s003"
           ],
-          "arrival": "08:07",
-          "departure": "08:08",
+          "arrival": "08:17",
+          "departure": "08:18",
           "ride_min": 11.4
         },
         {
@@ -263,8 +263,8 @@
           "students": [
             "s018"
           ],
-          "arrival": "08:12",
-          "departure": "08:12",
+          "arrival": "08:22",
+          "departure": "08:22",
           "ride_min": 7.2
         },
         {
@@ -275,8 +275,8 @@
           "students": [
             "s020"
           ],
-          "arrival": "08:17",
-          "departure": "08:17",
+          "arrival": "08:27",
+          "departure": "08:27",
           "ride_min": 2.2
         }
       ]
@@ -286,11 +286,11 @@
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "04:43",
-      "arrival": "08:20",
-      "drive_min": 203.1,
+      "departure": "04:53",
+      "arrival": "08:30",
+      "drive_min": 203.2,
       "km": 127.0,
-      "max_ride_min": 200.3,
+      "max_ride_min": 200.2,
       "stops": [
         {
           "id": "s100",
@@ -300,9 +300,9 @@
           "students": [
             "s100"
           ],
-          "arrival": "04:59",
-          "departure": "04:59",
-          "ride_min": 200.3
+          "arrival": "05:09",
+          "departure": "05:09",
+          "ride_min": 200.2
         },
         {
           "id": "s096",
@@ -312,9 +312,9 @@
           "students": [
             "s096"
           ],
-          "arrival": "05:02",
-          "departure": "05:03",
-          "ride_min": 196.4
+          "arrival": "05:13",
+          "departure": "05:13",
+          "ride_min": 196.2
         },
         {
           "id": "s094",
@@ -324,9 +324,9 @@
           "students": [
             "s094"
           ],
-          "arrival": "05:04",
-          "departure": "05:04",
-          "ride_min": 195.1
+          "arrival": "05:14",
+          "departure": "05:15",
+          "ride_min": 194.9
         },
         {
           "id": "s104",
@@ -336,9 +336,9 @@
           "students": [
             "s104"
           ],
-          "arrival": "05:13",
-          "departure": "05:14",
-          "ride_min": 185.7
+          "arrival": "05:23",
+          "departure": "05:24",
+          "ride_min": 185.4
         },
         {
           "id": "s118",
@@ -348,9 +348,9 @@
           "students": [
             "s118"
           ],
-          "arrival": "05:33",
-          "departure": "05:33",
-          "ride_min": 166.0
+          "arrival": "05:43",
+          "departure": "05:44",
+          "ride_min": 165.6
         },
         {
           "id": "s107",
@@ -360,9 +360,9 @@
           "students": [
             "s107"
           ],
-          "arrival": "05:46",
-          "departure": "05:46",
-          "ride_min": 153.0
+          "arrival": "05:56",
+          "departure": "05:57",
+          "ride_min": 152.6
         },
         {
           "id": "s127",
@@ -372,9 +372,9 @@
           "students": [
             "s127"
           ],
-          "arrival": "06:19",
-          "departure": "06:20",
-          "ride_min": 119.7
+          "arrival": "06:29",
+          "departure": "06:30",
+          "ride_min": 119.4
         },
         {
           "id": "s126",
@@ -384,9 +384,9 @@
           "students": [
             "s126"
           ],
-          "arrival": "06:23",
-          "departure": "06:24",
-          "ride_min": 115.6
+          "arrival": "06:34",
+          "departure": "06:34",
+          "ride_min": 115.3
         },
         {
           "id": "s125",
@@ -396,9 +396,9 @@
           "students": [
             "s125"
           ],
-          "arrival": "06:30",
-          "departure": "06:30",
-          "ride_min": 109.1
+          "arrival": "06:40",
+          "departure": "06:41",
+          "ride_min": 108.9
         },
         {
           "id": "s130",
@@ -408,9 +408,9 @@
           "students": [
             "s130"
           ],
-          "arrival": "06:34",
-          "departure": "06:35",
-          "ride_min": 104.5
+          "arrival": "06:45",
+          "departure": "06:45",
+          "ride_min": 104.3
         },
         {
           "id": "s121",
@@ -420,9 +420,9 @@
           "students": [
             "s121"
           ],
-          "arrival": "06:37",
-          "departure": "06:38",
-          "ride_min": 101.5
+          "arrival": "06:48",
+          "departure": "06:48",
+          "ride_min": 101.3
         },
         {
           "id": "s129",
@@ -432,9 +432,9 @@
           "students": [
             "s129"
           ],
-          "arrival": "06:42",
-          "departure": "06:42",
-          "ride_min": 97.1
+          "arrival": "06:52",
+          "departure": "06:53",
+          "ride_min": 96.9
         },
         {
           "id": "s137",
@@ -444,9 +444,9 @@
           "students": [
             "s137"
           ],
-          "arrival": "06:56",
-          "departure": "06:57",
-          "ride_min": 82.9
+          "arrival": "07:06",
+          "departure": "07:07",
+          "ride_min": 82.8
         },
         {
           "id": "s134",
@@ -456,9 +456,9 @@
           "students": [
             "s134"
           ],
-          "arrival": "07:10",
-          "departure": "07:11",
-          "ride_min": 68.8
+          "arrival": "07:20",
+          "departure": "07:21",
+          "ride_min": 68.7
         },
         {
           "id": "s077",
@@ -468,9 +468,9 @@
           "students": [
             "s077"
           ],
-          "arrival": "07:27",
-          "departure": "07:27",
-          "ride_min": 52.1
+          "arrival": "07:37",
+          "departure": "07:37",
+          "ride_min": 52.0
         },
         {
           "id": "s078",
@@ -480,8 +480,8 @@
           "students": [
             "s078"
           ],
-          "arrival": "07:34",
-          "departure": "07:35",
+          "arrival": "07:44",
+          "departure": "07:45",
           "ride_min": 44.8
         },
         {
@@ -492,8 +492,8 @@
           "students": [
             "s069"
           ],
-          "arrival": "07:43",
-          "departure": "07:44",
+          "arrival": "07:53",
+          "departure": "07:54",
           "ride_min": 35.8
         },
         {
@@ -504,8 +504,8 @@
           "students": [
             "s052"
           ],
-          "arrival": "07:53",
-          "departure": "07:54",
+          "arrival": "08:03",
+          "departure": "08:04",
           "ride_min": 25.9
         },
         {
@@ -516,8 +516,8 @@
           "students": [
             "s026"
           ],
-          "arrival": "07:58",
-          "departure": "07:59",
+          "arrival": "08:08",
+          "departure": "08:09",
           "ride_min": 20.9
         },
         {
@@ -528,9 +528,9 @@
           "students": [
             "s030"
           ],
-          "arrival": "08:08",
-          "departure": "08:09",
-          "ride_min": 10.9
+          "arrival": "08:18",
+          "departure": "08:19",
+          "ride_min": 11.0
         }
       ]
     },
@@ -539,11 +539,11 @@
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "04:47",
-      "arrival": "08:20",
-      "drive_min": 198.8,
+      "departure": "04:58",
+      "arrival": "08:30",
+      "drive_min": 198.6,
       "km": 105.7,
-      "max_ride_min": 206.6,
+      "max_ride_min": 206.4,
       "stops": [
         {
           "id": "s036",
@@ -553,9 +553,9 @@
           "students": [
             "s036"
           ],
-          "arrival": "04:52",
-          "departure": "04:53",
-          "ride_min": 206.6
+          "arrival": "05:02",
+          "departure": "05:03",
+          "ride_min": 206.4
         },
         {
           "id": "s060",
@@ -565,9 +565,9 @@
           "students": [
             "s060"
           ],
-          "arrival": "05:02",
-          "departure": "05:03",
-          "ride_min": 196.4
+          "arrival": "05:13",
+          "departure": "05:14",
+          "ride_min": 196.0
         },
         {
           "id": "s032",
@@ -577,9 +577,9 @@
           "students": [
             "s032"
           ],
-          "arrival": "05:14",
-          "departure": "05:15",
-          "ride_min": 184.7
+          "arrival": "05:25",
+          "departure": "05:25",
+          "ride_min": 184.0
         },
         {
           "id": "s114",
@@ -589,9 +589,9 @@
           "students": [
             "s114"
           ],
-          "arrival": "05:46",
-          "departure": "05:47",
-          "ride_min": 152.6
+          "arrival": "05:57",
+          "departure": "05:58",
+          "ride_min": 151.9
         },
         {
           "id": "s119",
@@ -601,9 +601,9 @@
           "students": [
             "s119"
           ],
-          "arrival": "06:03",
-          "departure": "06:04",
-          "ride_min": 135.9
+          "arrival": "06:14",
+          "departure": "06:14",
+          "ride_min": 135.3
         },
         {
           "id": "s106",
@@ -613,9 +613,9 @@
           "students": [
             "s106"
           ],
-          "arrival": "06:28",
-          "departure": "06:28",
-          "ride_min": 111.3
+          "arrival": "06:38",
+          "departure": "06:38",
+          "ride_min": 111.1
         },
         {
           "id": "s090",
@@ -625,9 +625,9 @@
           "students": [
             "s090"
           ],
-          "arrival": "06:42",
-          "departure": "06:43",
-          "ride_min": 96.6
+          "arrival": "06:52",
+          "departure": "06:53",
+          "ride_min": 96.4
         },
         {
           "id": "s066",
@@ -637,9 +637,9 @@
           "students": [
             "s066"
           ],
-          "arrival": "06:53",
-          "departure": "06:53",
-          "ride_min": 86.2
+          "arrival": "07:03",
+          "departure": "07:03",
+          "ride_min": 86.0
         },
         {
           "id": "s072",
@@ -649,9 +649,9 @@
           "students": [
             "s072"
           ],
-          "arrival": "06:58",
-          "departure": "06:59",
-          "ride_min": 80.8
+          "arrival": "07:08",
+          "departure": "07:09",
+          "ride_min": 80.7
         },
         {
           "id": "s063",
@@ -661,9 +661,9 @@
           "students": [
             "s063"
           ],
-          "arrival": "07:00",
-          "departure": "07:01",
-          "ride_min": 78.9
+          "arrival": "07:10",
+          "departure": "07:11",
+          "ride_min": 78.8
         },
         {
           "id": "s132",
@@ -673,9 +673,9 @@
           "students": [
             "s132"
           ],
-          "arrival": "07:17",
-          "departure": "07:17",
-          "ride_min": 62.2
+          "arrival": "07:27",
+          "departure": "07:27",
+          "ride_min": 62.1
         },
         {
           "id": "s054",
@@ -685,8 +685,8 @@
           "students": [
             "s054"
           ],
-          "arrival": "07:41",
-          "departure": "07:42",
+          "arrival": "07:51",
+          "departure": "07:52",
           "ride_min": 37.5
         },
         {
@@ -697,8 +697,8 @@
           "students": [
             "s009"
           ],
-          "arrival": "07:50",
-          "departure": "07:51",
+          "arrival": "08:00",
+          "departure": "08:01",
           "ride_min": 28.9
         },
         {
@@ -709,8 +709,8 @@
           "students": [
             "s023"
           ],
-          "arrival": "07:53",
-          "departure": "07:54",
+          "arrival": "08:03",
+          "departure": "08:04",
           "ride_min": 25.4
         },
         {
@@ -721,8 +721,8 @@
           "students": [
             "s006"
           ],
-          "arrival": "07:59",
-          "departure": "08:00",
+          "arrival": "08:09",
+          "departure": "08:10",
           "ride_min": 20.0
         },
         {
@@ -733,9 +733,9 @@
           "students": [
             "s004"
           ],
-          "arrival": "08:03",
-          "departure": "08:04",
-          "ride_min": 15.3
+          "arrival": "08:13",
+          "departure": "08:14",
+          "ride_min": 15.4
         },
         {
           "id": "s038",
@@ -745,8 +745,8 @@
           "students": [
             "s038"
           ],
-          "arrival": "08:08",
-          "departure": "08:09",
+          "arrival": "08:18",
+          "departure": "08:19",
           "ride_min": 10.7
         },
         {
@@ -757,8 +757,8 @@
           "students": [
             "s005"
           ],
-          "arrival": "08:11",
-          "departure": "08:12",
+          "arrival": "08:21",
+          "departure": "08:22",
           "ride_min": 7.7
         },
         {
@@ -769,8 +769,8 @@
           "students": [
             "s013"
           ],
-          "arrival": "08:13",
-          "departure": "08:14",
+          "arrival": "08:23",
+          "departure": "08:24",
           "ride_min": 5.9
         },
         {
@@ -781,8 +781,8 @@
           "students": [
             "s016"
           ],
-          "arrival": "08:15",
-          "departure": "08:16",
+          "arrival": "08:25",
+          "departure": "08:26",
           "ride_min": 3.4
         }
       ]
@@ -792,11 +792,11 @@
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "04:41",
-      "arrival": "08:20",
-      "drive_min": 205.5,
+      "departure": "04:51",
+      "arrival": "08:30",
+      "drive_min": 205.3,
       "km": 138.9,
-      "max_ride_min": 207.5,
+      "max_ride_min": 207.1,
       "stops": [
         {
           "id": "s086",
@@ -806,9 +806,9 @@
           "students": [
             "s086"
           ],
-          "arrival": "04:51",
-          "departure": "04:52",
-          "ride_min": 207.5
+          "arrival": "05:02",
+          "departure": "05:02",
+          "ride_min": 207.1
         },
         {
           "id": "s087",
@@ -818,9 +818,9 @@
           "students": [
             "s087"
           ],
-          "arrival": "04:58",
-          "departure": "04:59",
-          "ride_min": 200.9
+          "arrival": "05:08",
+          "departure": "05:09",
+          "ride_min": 200.5
         },
         {
           "id": "s117",
@@ -830,9 +830,9 @@
           "students": [
             "s117"
           ],
-          "arrival": "05:29",
-          "departure": "05:29",
-          "ride_min": 170.2
+          "arrival": "05:39",
+          "departure": "05:39",
+          "ride_min": 170.1
         },
         {
           "id": "s083",
@@ -842,8 +842,8 @@
           "students": [
             "s083"
           ],
-          "arrival": "05:55",
-          "departure": "05:56",
+          "arrival": "06:05",
+          "departure": "06:06",
           "ride_min": 143.5
         },
         {
@@ -854,9 +854,9 @@
           "students": [
             "s131"
           ],
-          "arrival": "06:19",
-          "departure": "06:20",
-          "ride_min": 119.8
+          "arrival": "06:29",
+          "departure": "06:30",
+          "ride_min": 119.9
         },
         {
           "id": "s128",
@@ -866,9 +866,9 @@
           "students": [
             "s128"
           ],
-          "arrival": "06:39",
-          "departure": "06:40",
-          "ride_min": 99.5
+          "arrival": "06:49",
+          "departure": "06:50",
+          "ride_min": 99.7
         },
         {
           "id": "s122",
@@ -878,9 +878,9 @@
           "students": [
             "s122"
           ],
-          "arrival": "06:45",
-          "departure": "06:46",
-          "ride_min": 93.9
+          "arrival": "06:55",
+          "departure": "06:55",
+          "ride_min": 94.1
         },
         {
           "id": "s044",
@@ -890,8 +890,8 @@
           "students": [
             "s044"
           ],
-          "arrival": "07:04",
-          "departure": "07:05",
+          "arrival": "07:14",
+          "departure": "07:15",
           "ride_min": 74.8
         },
         {
@@ -902,9 +902,9 @@
           "students": [
             "s043"
           ],
-          "arrival": "07:09",
-          "departure": "07:10",
-          "ride_min": 69.9
+          "arrival": "07:19",
+          "departure": "07:20",
+          "ride_min": 69.8
         },
         {
           "id": "s057",
@@ -914,8 +914,8 @@
           "students": [
             "s057"
           ],
-          "arrival": "07:27",
-          "departure": "07:28",
+          "arrival": "07:37",
+          "departure": "07:38",
           "ride_min": 51.9
         },
         {
@@ -926,8 +926,8 @@
           "students": [
             "s058"
           ],
-          "arrival": "07:35",
-          "departure": "07:35",
+          "arrival": "07:45",
+          "departure": "07:45",
           "ride_min": 44.2
         },
         {
@@ -938,8 +938,8 @@
           "students": [
             "s037"
           ],
-          "arrival": "07:46",
-          "departure": "07:47",
+          "arrival": "07:56",
+          "departure": "07:57",
           "ride_min": 33.0
         },
         {
@@ -950,8 +950,8 @@
           "students": [
             "s040"
           ],
-          "arrival": "07:50",
-          "departure": "07:51",
+          "arrival": "08:00",
+          "departure": "08:01",
           "ride_min": 28.9
         },
         {
@@ -962,8 +962,8 @@
           "students": [
             "s029"
           ],
-          "arrival": "07:52",
-          "departure": "07:53",
+          "arrival": "08:02",
+          "departure": "08:03",
           "ride_min": 26.5
         },
         {
@@ -974,8 +974,8 @@
           "students": [
             "s001"
           ],
-          "arrival": "07:54",
-          "departure": "07:55",
+          "arrival": "08:04",
+          "departure": "08:05",
           "ride_min": 25.0
         },
         {
@@ -986,8 +986,8 @@
           "students": [
             "s002"
           ],
-          "arrival": "07:55",
-          "departure": "07:55",
+          "arrival": "08:05",
+          "departure": "08:05",
           "ride_min": 24.3
         },
         {
@@ -998,8 +998,8 @@
           "students": [
             "s010"
           ],
-          "arrival": "08:00",
-          "departure": "08:01",
+          "arrival": "08:10",
+          "departure": "08:11",
           "ride_min": 18.4
         },
         {
@@ -1010,8 +1010,8 @@
           "students": [
             "s011"
           ],
-          "arrival": "08:07",
-          "departure": "08:07",
+          "arrival": "08:17",
+          "departure": "08:17",
           "ride_min": 12.1
         },
         {
@@ -1022,8 +1022,8 @@
           "students": [
             "s022"
           ],
-          "arrival": "08:11",
-          "departure": "08:12",
+          "arrival": "08:21",
+          "departure": "08:22",
           "ride_min": 8.0
         },
         {
@@ -1034,8 +1034,8 @@
           "students": [
             "s028"
           ],
-          "arrival": "08:14",
-          "departure": "08:15",
+          "arrival": "08:24",
+          "departure": "08:25",
           "ride_min": 4.4
         }
       ]
@@ -1045,11 +1045,11 @@
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "04:35",
-      "arrival": "08:20",
-      "drive_min": 211.3,
+      "departure": "04:45",
+      "arrival": "08:30",
+      "drive_min": 211.1,
       "km": 127.2,
-      "max_ride_min": 199.0,
+      "max_ride_min": 198.5,
       "stops": [
         {
           "id": "s140",
@@ -1059,9 +1059,9 @@
           "students": [
             "s140"
           ],
-          "arrival": "05:00",
-          "departure": "05:00",
-          "ride_min": 199.0
+          "arrival": "05:10",
+          "departure": "05:11",
+          "ride_min": 198.5
         },
         {
           "id": "s138",
@@ -1071,9 +1071,9 @@
           "students": [
             "s138"
           ],
-          "arrival": "05:03",
-          "departure": "05:03",
-          "ride_min": 196.2
+          "arrival": "05:13",
+          "departure": "05:14",
+          "ride_min": 195.7
         },
         {
           "id": "s139",
@@ -1083,9 +1083,9 @@
           "students": [
             "s139"
           ],
-          "arrival": "05:11",
-          "departure": "05:12",
-          "ride_min": 187.6
+          "arrival": "05:22",
+          "departure": "05:22",
+          "ride_min": 187.1
         },
         {
           "id": "s123",
@@ -1095,9 +1095,9 @@
           "students": [
             "s123"
           ],
-          "arrival": "05:31",
-          "departure": "05:31",
-          "ride_min": 168.2
+          "arrival": "05:41",
+          "departure": "05:42",
+          "ride_min": 167.7
         },
         {
           "id": "s116",
@@ -1107,9 +1107,9 @@
           "students": [
             "s116"
           ],
-          "arrival": "06:10",
-          "departure": "06:11",
-          "ride_min": 128.6
+          "arrival": "06:21",
+          "departure": "06:21",
+          "ride_min": 128.1
         },
         {
           "id": "s113",
@@ -1119,9 +1119,9 @@
           "students": [
             "s113"
           ],
-          "arrival": "06:24",
-          "departure": "06:24",
-          "ride_min": 115.2
+          "arrival": "06:34",
+          "departure": "06:35",
+          "ride_min": 114.9
         },
         {
           "id": "s103",
@@ -1131,9 +1131,9 @@
           "students": [
             "s103"
           ],
-          "arrival": "06:41",
-          "departure": "06:42",
-          "ride_min": 97.4
+          "arrival": "06:52",
+          "departure": "06:52",
+          "ride_min": 97.3
         },
         {
           "id": "s101",
@@ -1143,8 +1143,8 @@
           "students": [
             "s101"
           ],
-          "arrival": "06:46",
-          "departure": "06:47",
+          "arrival": "06:56",
+          "departure": "06:57",
           "ride_min": 92.8
         },
         {
@@ -1155,9 +1155,9 @@
           "students": [
             "s093"
           ],
-          "arrival": "06:56",
-          "departure": "06:57",
-          "ride_min": 82.6
+          "arrival": "07:06",
+          "departure": "07:07",
+          "ride_min": 82.5
         },
         {
           "id": "s091",
@@ -1167,8 +1167,8 @@
           "students": [
             "s091"
           ],
-          "arrival": "07:01",
-          "departure": "07:02",
+          "arrival": "07:11",
+          "departure": "07:12",
           "ride_min": 77.4
         },
         {
@@ -1179,8 +1179,8 @@
           "students": [
             "s085"
           ],
-          "arrival": "07:13",
-          "departure": "07:14",
+          "arrival": "07:23",
+          "departure": "07:24",
           "ride_min": 65.9
         },
         {
@@ -1191,8 +1191,8 @@
           "students": [
             "s071"
           ],
-          "arrival": "07:19",
-          "departure": "07:20",
+          "arrival": "07:29",
+          "departure": "07:30",
           "ride_min": 59.9
         },
         {
@@ -1203,8 +1203,8 @@
           "students": [
             "s084"
           ],
-          "arrival": "07:25",
-          "departure": "07:26",
+          "arrival": "07:35",
+          "departure": "07:36",
           "ride_min": 53.4
         },
         {
@@ -1215,8 +1215,8 @@
           "students": [
             "s065"
           ],
-          "arrival": "07:31",
-          "departure": "07:32",
+          "arrival": "07:41",
+          "departure": "07:42",
           "ride_min": 47.5
         },
         {
@@ -1227,8 +1227,8 @@
           "students": [
             "s082"
           ],
-          "arrival": "07:36",
-          "departure": "07:37",
+          "arrival": "07:46",
+          "departure": "07:47",
           "ride_min": 42.5
         },
         {
@@ -1239,8 +1239,8 @@
           "students": [
             "s073"
           ],
-          "arrival": "07:45",
-          "departure": "07:46",
+          "arrival": "07:55",
+          "departure": "07:56",
           "ride_min": 33.5
         },
         {
@@ -1251,8 +1251,8 @@
           "students": [
             "s079"
           ],
-          "arrival": "07:53",
-          "departure": "07:53",
+          "arrival": "08:03",
+          "departure": "08:03",
           "ride_min": 26.1
         },
         {
@@ -1263,8 +1263,8 @@
           "students": [
             "s007"
           ],
-          "arrival": "08:02",
-          "departure": "08:02",
+          "arrival": "08:12",
+          "departure": "08:12",
           "ride_min": 17.2
         },
         {
@@ -1275,8 +1275,8 @@
           "students": [
             "s035"
           ],
-          "arrival": "08:04",
-          "departure": "08:05",
+          "arrival": "08:14",
+          "departure": "08:15",
           "ride_min": 14.7
         },
         {
@@ -1287,8 +1287,8 @@
           "students": [
             "s041"
           ],
-          "arrival": "08:12",
-          "departure": "08:12",
+          "arrival": "08:22",
+          "departure": "08:22",
           "ride_min": 7.2
         }
       ]
@@ -1298,11 +1298,11 @@
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "04:56",
-      "arrival": "08:20",
-      "drive_min": 190.1,
+      "departure": "05:06",
+      "arrival": "08:30",
+      "drive_min": 190.4,
       "km": 125.8,
-      "max_ride_min": 196.7,
+      "max_ride_min": 197.0,
       "stops": [
         {
           "id": "s053",
@@ -1312,9 +1312,9 @@
           "students": [
             "s053"
           ],
-          "arrival": "05:02",
-          "departure": "05:03",
-          "ride_min": 196.7
+          "arrival": "05:12",
+          "departure": "05:13",
+          "ride_min": 197.0
         },
         {
           "id": "s115",
@@ -1324,9 +1324,9 @@
           "students": [
             "s115"
           ],
-          "arrival": "05:22",
-          "departure": "05:23",
-          "ride_min": 176.3
+          "arrival": "05:32",
+          "departure": "05:33",
+          "ride_min": 176.4
         },
         {
           "id": "s111",
@@ -1336,8 +1336,8 @@
           "students": [
             "s111"
           ],
-          "arrival": "05:28",
-          "departure": "05:29",
+          "arrival": "05:38",
+          "departure": "05:39",
           "ride_min": 170.8
         },
         {
@@ -1348,9 +1348,9 @@
           "students": [
             "s108"
           ],
-          "arrival": "05:42",
-          "departure": "05:43",
-          "ride_min": 156.7
+          "arrival": "05:52",
+          "departure": "05:53",
+          "ride_min": 156.6
         },
         {
           "id": "s097",
@@ -1360,9 +1360,9 @@
           "students": [
             "s097"
           ],
-          "arrival": "06:00",
-          "departure": "06:01",
-          "ride_min": 138.4
+          "arrival": "06:11",
+          "departure": "06:11",
+          "ride_min": 138.3
         },
         {
           "id": "s098",
@@ -1372,9 +1372,9 @@
           "students": [
             "s098"
           ],
-          "arrival": "06:06",
-          "departure": "06:07",
-          "ride_min": 132.8
+          "arrival": "06:16",
+          "departure": "06:17",
+          "ride_min": 132.7
         },
         {
           "id": "s088",
@@ -1384,8 +1384,8 @@
           "students": [
             "s088"
           ],
-          "arrival": "06:19",
-          "departure": "06:20",
+          "arrival": "06:29",
+          "departure": "06:29",
           "ride_min": 120.0
         },
         {
@@ -1396,9 +1396,9 @@
           "students": [
             "s135"
           ],
-          "arrival": "06:41",
-          "departure": "06:42",
-          "ride_min": 97.7
+          "arrival": "06:51",
+          "departure": "06:52",
+          "ride_min": 97.8
         },
         {
           "id": "s136",
@@ -1408,9 +1408,9 @@
           "students": [
             "s136"
           ],
-          "arrival": "06:45",
-          "departure": "06:46",
-          "ride_min": 93.6
+          "arrival": "06:55",
+          "departure": "06:56",
+          "ride_min": 93.8
         },
         {
           "id": "s124",
@@ -1420,9 +1420,9 @@
           "students": [
             "s124"
           ],
-          "arrival": "07:09",
-          "departure": "07:09",
-          "ride_min": 70.3
+          "arrival": "07:18",
+          "departure": "07:19",
+          "ride_min": 70.5
         },
         {
           "id": "s050",
@@ -1432,8 +1432,8 @@
           "students": [
             "s050"
           ],
-          "arrival": "07:27",
-          "departure": "07:28",
+          "arrival": "07:37",
+          "departure": "07:38",
           "ride_min": 51.4
         },
         {
@@ -1444,8 +1444,8 @@
           "students": [
             "s015"
           ],
-          "arrival": "07:34",
-          "departure": "07:35",
+          "arrival": "07:44",
+          "departure": "07:45",
           "ride_min": 44.9
         },
         {
@@ -1456,8 +1456,8 @@
           "students": [
             "s021"
           ],
-          "arrival": "07:35",
-          "departure": "07:36",
+          "arrival": "07:45",
+          "departure": "07:46",
           "ride_min": 43.6
         },
         {
@@ -1468,8 +1468,8 @@
           "students": [
             "s012"
           ],
-          "arrival": "07:39",
-          "departure": "07:39",
+          "arrival": "07:49",
+          "departure": "07:49",
           "ride_min": 40.3
         },
         {
@@ -1480,8 +1480,8 @@
           "students": [
             "s014"
           ],
-          "arrival": "07:43",
-          "departure": "07:44",
+          "arrival": "07:53",
+          "departure": "07:54",
           "ride_min": 35.6
         },
         {
@@ -1492,8 +1492,8 @@
           "students": [
             "s031"
           ],
-          "arrival": "07:47",
-          "departure": "07:47",
+          "arrival": "07:57",
+          "departure": "07:57",
           "ride_min": 32.1
         },
         {
@@ -1504,8 +1504,8 @@
           "students": [
             "s033"
           ],
-          "arrival": "07:52",
-          "departure": "07:53",
+          "arrival": "08:02",
+          "departure": "08:03",
           "ride_min": 26.7
         },
         {
@@ -1516,8 +1516,8 @@
           "students": [
             "s045"
           ],
-          "arrival": "07:59",
-          "departure": "08:00",
+          "arrival": "08:09",
+          "departure": "08:10",
           "ride_min": 19.5
         },
         {
@@ -1528,8 +1528,8 @@
           "students": [
             "s046"
           ],
-          "arrival": "08:04",
-          "departure": "08:05",
+          "arrival": "08:14",
+          "departure": "08:15",
           "ride_min": 14.8
         },
         {
@@ -1540,8 +1540,8 @@
           "students": [
             "s048"
           ],
-          "arrival": "08:06",
-          "departure": "08:07",
+          "arrival": "08:16",
+          "departure": "08:17",
           "ride_min": 12.7
         }
       ]
@@ -1551,11 +1551,11 @@
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "05:03",
-      "arrival": "08:20",
-      "drive_min": 182.9,
-      "km": 102.1,
-      "max_ride_min": 191.8,
+      "departure": "05:14",
+      "arrival": "08:30",
+      "drive_min": 182.2,
+      "km": 102.7,
+      "max_ride_min": 191.1,
       "stops": [
         {
           "id": "s019",
@@ -1565,9 +1565,9 @@
           "students": [
             "s019"
           ],
-          "arrival": "05:07",
-          "departure": "05:08",
-          "ride_min": 191.8
+          "arrival": "05:18",
+          "departure": "05:18",
+          "ride_min": 191.1
         },
         {
           "id": "s034",
@@ -1577,9 +1577,9 @@
           "students": [
             "s034"
           ],
-          "arrival": "05:09",
-          "departure": "05:10",
-          "ride_min": 189.9
+          "arrival": "05:20",
+          "departure": "05:20",
+          "ride_min": 189.2
         },
         {
           "id": "s039",
@@ -1589,9 +1589,9 @@
           "students": [
             "s039"
           ],
-          "arrival": "05:13",
-          "departure": "05:13",
-          "ride_min": 186.2
+          "arrival": "05:23",
+          "departure": "05:24",
+          "ride_min": 185.4
         },
         {
           "id": "s059",
@@ -1601,9 +1601,9 @@
           "students": [
             "s059"
           ],
-          "arrival": "05:24",
-          "departure": "05:24",
-          "ride_min": 175.1
+          "arrival": "05:34",
+          "departure": "05:35",
+          "ride_min": 174.3
         },
         {
           "id": "s056",
@@ -1613,9 +1613,9 @@
           "students": [
             "s056"
           ],
-          "arrival": "05:27",
-          "departure": "05:28",
-          "ride_min": 171.7
+          "arrival": "05:38",
+          "departure": "05:39",
+          "ride_min": 170.8
         },
         {
           "id": "s025",
@@ -1625,9 +1625,9 @@
           "students": [
             "s025"
           ],
-          "arrival": "05:40",
-          "departure": "05:40",
-          "ride_min": 159.1
+          "arrival": "05:51",
+          "departure": "05:51",
+          "ride_min": 158.2
         },
         {
           "id": "s027",
@@ -1637,9 +1637,9 @@
           "students": [
             "s027"
           ],
-          "arrival": "05:45",
-          "departure": "05:45",
-          "ride_min": 154.2
+          "arrival": "05:56",
+          "departure": "05:56",
+          "ride_min": 153.3
         },
         {
           "id": "s102",
@@ -1649,9 +1649,9 @@
           "students": [
             "s102"
           ],
-          "arrival": "06:01",
-          "departure": "06:01",
-          "ride_min": 138.1
+          "arrival": "06:12",
+          "departure": "06:12",
+          "ride_min": 137.2
         },
         {
           "id": "s120",
@@ -1661,9 +1661,9 @@
           "students": [
             "s120"
           ],
-          "arrival": "06:22",
-          "departure": "06:22",
-          "ride_min": 117.3
+          "arrival": "06:32",
+          "departure": "06:33",
+          "ride_min": 116.7
         },
         {
           "id": "s110",
@@ -1673,9 +1673,9 @@
           "students": [
             "s110"
           ],
-          "arrival": "06:26",
-          "departure": "06:27",
-          "ride_min": 112.5
+          "arrival": "06:37",
+          "departure": "06:38",
+          "ride_min": 111.9
         },
         {
           "id": "s112",
@@ -1685,9 +1685,9 @@
           "students": [
             "s112"
           ],
-          "arrival": "06:35",
-          "departure": "06:36",
-          "ride_min": 103.6
+          "arrival": "06:46",
+          "departure": "06:46",
+          "ride_min": 103.2
         },
         {
           "id": "s109",
@@ -1697,9 +1697,9 @@
           "students": [
             "s109"
           ],
-          "arrival": "06:43",
-          "departure": "06:44",
-          "ride_min": 95.8
+          "arrival": "06:54",
+          "departure": "06:54",
+          "ride_min": 95.3
         },
         {
           "id": "s070",
@@ -1709,9 +1709,9 @@
           "students": [
             "s070"
           ],
-          "arrival": "07:12",
-          "departure": "07:12",
-          "ride_min": 67.1
+          "arrival": "07:22",
+          "departure": "07:23",
+          "ride_min": 66.8
         },
         {
           "id": "s133",
@@ -1721,8 +1721,8 @@
           "students": [
             "s133"
           ],
-          "arrival": "07:33",
-          "departure": "07:34",
+          "arrival": "07:43",
+          "departure": "07:44",
           "ride_min": 45.6
         },
         {
@@ -1733,8 +1733,8 @@
           "students": [
             "s068"
           ],
-          "arrival": "07:52",
-          "departure": "07:53",
+          "arrival": "08:02",
+          "departure": "08:03",
           "ride_min": 26.9
         },
         {
@@ -1745,8 +1745,8 @@
           "students": [
             "s074"
           ],
-          "arrival": "07:53",
-          "departure": "07:54",
+          "arrival": "08:03",
+          "departure": "08:04",
           "ride_min": 25.5
         },
         {
@@ -1757,8 +1757,8 @@
           "students": [
             "s067"
           ],
-          "arrival": "07:58",
-          "departure": "07:59",
+          "arrival": "08:08",
+          "departure": "08:09",
           "ride_min": 20.5
         },
         {
@@ -1769,8 +1769,8 @@
           "students": [
             "s049"
           ],
-          "arrival": "08:05",
-          "departure": "08:06",
+          "arrival": "08:15",
+          "departure": "08:16",
           "ride_min": 13.8
         },
         {
@@ -1781,8 +1781,8 @@
           "students": [
             "s024"
           ],
-          "arrival": "08:12",
-          "departure": "08:13",
+          "arrival": "08:22",
+          "departure": "08:23",
           "ride_min": 7.0
         },
         {
@@ -1793,8 +1793,8 @@
           "students": [
             "s008"
           ],
-          "arrival": "08:15",
-          "departure": "08:16",
+          "arrival": "08:25",
+          "departure": "08:26",
           "ride_min": 3.7
         }
       ]
@@ -1805,103 +1805,103 @@
       "id": "s076",
       "bus_id": "bus1",
       "stop_id": "s076",
-      "pickup": "05:44",
-      "ride_min": 155.2,
+      "pickup": "05:54",
+      "ride_min": 155.3,
       "to_stop_km": 0.0
     },
     {
       "id": "s064",
       "bus_id": "bus1",
       "stop_id": "s064",
-      "pickup": "05:51",
-      "ride_min": 147.7,
+      "pickup": "06:01",
+      "ride_min": 147.8,
       "to_stop_km": 0.0
     },
     {
       "id": "s075",
       "bus_id": "bus1",
       "stop_id": "s075",
-      "pickup": "05:57",
-      "ride_min": 142.0,
+      "pickup": "06:07",
+      "ride_min": 141.9,
       "to_stop_km": 0.0
     },
     {
       "id": "s080",
       "bus_id": "bus1",
       "stop_id": "s080",
-      "pickup": "06:05",
-      "ride_min": 133.6,
+      "pickup": "06:16",
+      "ride_min": 133.3,
       "to_stop_km": 0.0
     },
     {
       "id": "s062",
       "bus_id": "bus1",
       "stop_id": "s062",
-      "pickup": "06:10",
-      "ride_min": 129.2,
+      "pickup": "06:20",
+      "ride_min": 128.9,
       "to_stop_km": 0.0
     },
     {
       "id": "s081",
       "bus_id": "bus1",
       "stop_id": "s081",
-      "pickup": "06:13",
-      "ride_min": 126.3,
+      "pickup": "06:23",
+      "ride_min": 126.0,
       "to_stop_km": 0.0
     },
     {
       "id": "s061",
       "bus_id": "bus1",
       "stop_id": "s061",
-      "pickup": "06:15",
-      "ride_min": 123.8,
+      "pickup": "06:25",
+      "ride_min": 123.5,
       "to_stop_km": 0.0
     },
     {
       "id": "s051",
       "bus_id": "bus1",
       "stop_id": "s051",
-      "pickup": "06:25",
-      "ride_min": 114.0,
+      "pickup": "06:35",
+      "ride_min": 113.7,
       "to_stop_km": 0.0
     },
     {
       "id": "s055",
       "bus_id": "bus1",
       "stop_id": "s055",
-      "pickup": "06:42",
-      "ride_min": 97.2,
+      "pickup": "06:52",
+      "ride_min": 96.9,
       "to_stop_km": 0.0
     },
     {
       "id": "s047",
       "bus_id": "bus1",
       "stop_id": "s047",
-      "pickup": "06:53",
-      "ride_min": 85.4,
+      "pickup": "07:04",
+      "ride_min": 85.2,
       "to_stop_km": 0.0
     },
     {
       "id": "s042",
       "bus_id": "bus1",
       "stop_id": "s042",
-      "pickup": "06:54",
-      "ride_min": 84.8,
+      "pickup": "07:04",
+      "ride_min": 84.5,
       "to_stop_km": 0.0
     },
     {
       "id": "s105",
       "bus_id": "bus1",
       "stop_id": "s105",
-      "pickup": "07:14",
-      "ride_min": 64.9,
+      "pickup": "07:24",
+      "ride_min": 64.8,
       "to_stop_km": 0.0
     },
     {
       "id": "s092",
       "bus_id": "bus1",
       "stop_id": "s092",
-      "pickup": "07:29",
+      "pickup": "07:39",
       "ride_min": 49.7,
       "to_stop_km": 0.0
     },
@@ -1909,7 +1909,7 @@
       "id": "s099",
       "bus_id": "bus1",
       "stop_id": "s099",
-      "pickup": "07:36",
+      "pickup": "07:46",
       "ride_min": 43.0,
       "to_stop_km": 0.0
     },
@@ -1917,7 +1917,7 @@
       "id": "s095",
       "bus_id": "bus1",
       "stop_id": "s095",
-      "pickup": "07:41",
+      "pickup": "07:51",
       "ride_min": 38.3,
       "to_stop_km": 0.0
     },
@@ -1925,7 +1925,7 @@
       "id": "s089",
       "bus_id": "bus1",
       "stop_id": "s089",
-      "pickup": "07:49",
+      "pickup": "07:59",
       "ride_min": 29.9,
       "to_stop_km": 0.0
     },
@@ -1933,7 +1933,7 @@
       "id": "s017",
       "bus_id": "bus1",
       "stop_id": "s017",
-      "pickup": "08:02",
+      "pickup": "08:12",
       "ride_min": 16.8,
       "to_stop_km": 0.0
     },
@@ -1941,7 +1941,7 @@
       "id": "s003",
       "bus_id": "bus1",
       "stop_id": "s003",
-      "pickup": "08:07",
+      "pickup": "08:17",
       "ride_min": 11.4,
       "to_stop_km": 0.0
     },
@@ -1949,7 +1949,7 @@
       "id": "s018",
       "bus_id": "bus1",
       "stop_id": "s018",
-      "pickup": "08:12",
+      "pickup": "08:22",
       "ride_min": 7.2,
       "to_stop_km": 0.0
     },
@@ -1957,7 +1957,7 @@
       "id": "s020",
       "bus_id": "bus1",
       "stop_id": "s020",
-      "pickup": "08:17",
+      "pickup": "08:27",
       "ride_min": 2.2,
       "to_stop_km": 0.0
     },
@@ -1965,127 +1965,127 @@
       "id": "s100",
       "bus_id": "bus2",
       "stop_id": "s100",
-      "pickup": "04:59",
-      "ride_min": 200.3,
+      "pickup": "05:09",
+      "ride_min": 200.2,
       "to_stop_km": 0.0
     },
     {
       "id": "s096",
       "bus_id": "bus2",
       "stop_id": "s096",
-      "pickup": "05:02",
-      "ride_min": 196.4,
+      "pickup": "05:13",
+      "ride_min": 196.2,
       "to_stop_km": 0.0
     },
     {
       "id": "s094",
       "bus_id": "bus2",
       "stop_id": "s094",
-      "pickup": "05:04",
-      "ride_min": 195.1,
+      "pickup": "05:14",
+      "ride_min": 194.9,
       "to_stop_km": 0.0
     },
     {
       "id": "s104",
       "bus_id": "bus2",
       "stop_id": "s104",
-      "pickup": "05:13",
-      "ride_min": 185.7,
+      "pickup": "05:23",
+      "ride_min": 185.4,
       "to_stop_km": 0.0
     },
     {
       "id": "s118",
       "bus_id": "bus2",
       "stop_id": "s118",
-      "pickup": "05:33",
-      "ride_min": 166.0,
+      "pickup": "05:43",
+      "ride_min": 165.6,
       "to_stop_km": 0.0
     },
     {
       "id": "s107",
       "bus_id": "bus2",
       "stop_id": "s107",
-      "pickup": "05:46",
-      "ride_min": 153.0,
+      "pickup": "05:56",
+      "ride_min": 152.6,
       "to_stop_km": 0.0
     },
     {
       "id": "s127",
       "bus_id": "bus2",
       "stop_id": "s127",
-      "pickup": "06:19",
-      "ride_min": 119.7,
+      "pickup": "06:29",
+      "ride_min": 119.4,
       "to_stop_km": 0.0
     },
     {
       "id": "s126",
       "bus_id": "bus2",
       "stop_id": "s126",
-      "pickup": "06:23",
-      "ride_min": 115.6,
+      "pickup": "06:34",
+      "ride_min": 115.3,
       "to_stop_km": 0.0
     },
     {
       "id": "s125",
       "bus_id": "bus2",
       "stop_id": "s125",
-      "pickup": "06:30",
-      "ride_min": 109.1,
+      "pickup": "06:40",
+      "ride_min": 108.9,
       "to_stop_km": 0.0
     },
     {
       "id": "s130",
       "bus_id": "bus2",
       "stop_id": "s130",
-      "pickup": "06:34",
-      "ride_min": 104.5,
+      "pickup": "06:45",
+      "ride_min": 104.3,
       "to_stop_km": 0.0
     },
     {
       "id": "s121",
       "bus_id": "bus2",
       "stop_id": "s121",
-      "pickup": "06:37",
-      "ride_min": 101.5,
+      "pickup": "06:48",
+      "ride_min": 101.3,
       "to_stop_km": 0.0
     },
     {
       "id": "s129",
       "bus_id": "bus2",
       "stop_id": "s129",
-      "pickup": "06:42",
-      "ride_min": 97.1,
+      "pickup": "06:52",
+      "ride_min": 96.9,
       "to_stop_km": 0.0
     },
     {
       "id": "s137",
       "bus_id": "bus2",
       "stop_id": "s137",
-      "pickup": "06:56",
-      "ride_min": 82.9,
+      "pickup": "07:06",
+      "ride_min": 82.8,
       "to_stop_km": 0.0
     },
     {
       "id": "s134",
       "bus_id": "bus2",
       "stop_id": "s134",
-      "pickup": "07:10",
-      "ride_min": 68.8,
+      "pickup": "07:20",
+      "ride_min": 68.7,
       "to_stop_km": 0.0
     },
     {
       "id": "s077",
       "bus_id": "bus2",
       "stop_id": "s077",
-      "pickup": "07:27",
-      "ride_min": 52.1,
+      "pickup": "07:37",
+      "ride_min": 52.0,
       "to_stop_km": 0.0
     },
     {
       "id": "s078",
       "bus_id": "bus2",
       "stop_id": "s078",
-      "pickup": "07:34",
+      "pickup": "07:44",
       "ride_min": 44.8,
       "to_stop_km": 0.0
     },
@@ -2093,7 +2093,7 @@
       "id": "s069",
       "bus_id": "bus2",
       "stop_id": "s069",
-      "pickup": "07:43",
+      "pickup": "07:53",
       "ride_min": 35.8,
       "to_stop_km": 0.0
     },
@@ -2101,7 +2101,7 @@
       "id": "s052",
       "bus_id": "bus2",
       "stop_id": "s052",
-      "pickup": "07:53",
+      "pickup": "08:03",
       "ride_min": 25.9,
       "to_stop_km": 0.0
     },
@@ -2109,7 +2109,7 @@
       "id": "s026",
       "bus_id": "bus2",
       "stop_id": "s026",
-      "pickup": "07:58",
+      "pickup": "08:08",
       "ride_min": 20.9,
       "to_stop_km": 0.0
     },
@@ -2117,103 +2117,103 @@
       "id": "s030",
       "bus_id": "bus2",
       "stop_id": "s030",
-      "pickup": "08:08",
-      "ride_min": 10.9,
+      "pickup": "08:18",
+      "ride_min": 11.0,
       "to_stop_km": 0.0
     },
     {
       "id": "s036",
       "bus_id": "bus3",
       "stop_id": "s036",
-      "pickup": "04:52",
-      "ride_min": 206.6,
+      "pickup": "05:02",
+      "ride_min": 206.4,
       "to_stop_km": 0.0
     },
     {
       "id": "s060",
       "bus_id": "bus3",
       "stop_id": "s060",
-      "pickup": "05:02",
-      "ride_min": 196.4,
+      "pickup": "05:13",
+      "ride_min": 196.0,
       "to_stop_km": 0.0
     },
     {
       "id": "s032",
       "bus_id": "bus3",
       "stop_id": "s032",
-      "pickup": "05:14",
-      "ride_min": 184.7,
+      "pickup": "05:25",
+      "ride_min": 184.0,
       "to_stop_km": 0.0
     },
     {
       "id": "s114",
       "bus_id": "bus3",
       "stop_id": "s114",
-      "pickup": "05:46",
-      "ride_min": 152.6,
+      "pickup": "05:57",
+      "ride_min": 151.9,
       "to_stop_km": 0.0
     },
     {
       "id": "s119",
       "bus_id": "bus3",
       "stop_id": "s119",
-      "pickup": "06:03",
-      "ride_min": 135.9,
+      "pickup": "06:14",
+      "ride_min": 135.3,
       "to_stop_km": 0.0
     },
     {
       "id": "s106",
       "bus_id": "bus3",
       "stop_id": "s106",
-      "pickup": "06:28",
-      "ride_min": 111.3,
+      "pickup": "06:38",
+      "ride_min": 111.1,
       "to_stop_km": 0.0
     },
     {
       "id": "s090",
       "bus_id": "bus3",
       "stop_id": "s090",
-      "pickup": "06:42",
-      "ride_min": 96.6,
+      "pickup": "06:52",
+      "ride_min": 96.4,
       "to_stop_km": 0.0
     },
     {
       "id": "s066",
       "bus_id": "bus3",
       "stop_id": "s066",
-      "pickup": "06:53",
-      "ride_min": 86.2,
+      "pickup": "07:03",
+      "ride_min": 86.0,
       "to_stop_km": 0.0
     },
     {
       "id": "s072",
       "bus_id": "bus3",
       "stop_id": "s072",
-      "pickup": "06:58",
-      "ride_min": 80.8,
+      "pickup": "07:08",
+      "ride_min": 80.7,
       "to_stop_km": 0.0
     },
     {
       "id": "s063",
       "bus_id": "bus3",
       "stop_id": "s063",
-      "pickup": "07:00",
-      "ride_min": 78.9,
+      "pickup": "07:10",
+      "ride_min": 78.8,
       "to_stop_km": 0.0
     },
     {
       "id": "s132",
       "bus_id": "bus3",
       "stop_id": "s132",
-      "pickup": "07:17",
-      "ride_min": 62.2,
+      "pickup": "07:27",
+      "ride_min": 62.1,
       "to_stop_km": 0.0
     },
     {
       "id": "s054",
       "bus_id": "bus3",
       "stop_id": "s054",
-      "pickup": "07:41",
+      "pickup": "07:51",
       "ride_min": 37.5,
       "to_stop_km": 0.0
     },
@@ -2221,7 +2221,7 @@
       "id": "s009",
       "bus_id": "bus3",
       "stop_id": "s009",
-      "pickup": "07:50",
+      "pickup": "08:00",
       "ride_min": 28.9,
       "to_stop_km": 0.0
     },
@@ -2229,7 +2229,7 @@
       "id": "s023",
       "bus_id": "bus3",
       "stop_id": "s023",
-      "pickup": "07:53",
+      "pickup": "08:03",
       "ride_min": 25.4,
       "to_stop_km": 0.0
     },
@@ -2237,7 +2237,7 @@
       "id": "s006",
       "bus_id": "bus3",
       "stop_id": "s006",
-      "pickup": "07:59",
+      "pickup": "08:09",
       "ride_min": 20.0,
       "to_stop_km": 0.0
     },
@@ -2245,15 +2245,15 @@
       "id": "s004",
       "bus_id": "bus3",
       "stop_id": "s004",
-      "pickup": "08:03",
-      "ride_min": 15.3,
+      "pickup": "08:13",
+      "ride_min": 15.4,
       "to_stop_km": 0.0
     },
     {
       "id": "s038",
       "bus_id": "bus3",
       "stop_id": "s038",
-      "pickup": "08:08",
+      "pickup": "08:18",
       "ride_min": 10.7,
       "to_stop_km": 0.0
     },
@@ -2261,7 +2261,7 @@
       "id": "s005",
       "bus_id": "bus3",
       "stop_id": "s005",
-      "pickup": "08:11",
+      "pickup": "08:21",
       "ride_min": 7.7,
       "to_stop_km": 0.0
     },
@@ -2269,7 +2269,7 @@
       "id": "s013",
       "bus_id": "bus3",
       "stop_id": "s013",
-      "pickup": "08:13",
+      "pickup": "08:23",
       "ride_min": 5.9,
       "to_stop_km": 0.0
     },
@@ -2277,7 +2277,7 @@
       "id": "s016",
       "bus_id": "bus3",
       "stop_id": "s016",
-      "pickup": "08:15",
+      "pickup": "08:25",
       "ride_min": 3.4,
       "to_stop_km": 0.0
     },
@@ -2285,31 +2285,31 @@
       "id": "s086",
       "bus_id": "bus4",
       "stop_id": "s086",
-      "pickup": "04:51",
-      "ride_min": 207.5,
+      "pickup": "05:02",
+      "ride_min": 207.1,
       "to_stop_km": 0.0
     },
     {
       "id": "s087",
       "bus_id": "bus4",
       "stop_id": "s087",
-      "pickup": "04:58",
-      "ride_min": 200.9,
+      "pickup": "05:08",
+      "ride_min": 200.5,
       "to_stop_km": 0.0
     },
     {
       "id": "s117",
       "bus_id": "bus4",
       "stop_id": "s117",
-      "pickup": "05:29",
-      "ride_min": 170.2,
+      "pickup": "05:39",
+      "ride_min": 170.1,
       "to_stop_km": 0.0
     },
     {
       "id": "s083",
       "bus_id": "bus4",
       "stop_id": "s083",
-      "pickup": "05:55",
+      "pickup": "06:05",
       "ride_min": 143.5,
       "to_stop_km": 0.0
     },
@@ -2317,31 +2317,31 @@
       "id": "s131",
       "bus_id": "bus4",
       "stop_id": "s131",
-      "pickup": "06:19",
-      "ride_min": 119.8,
+      "pickup": "06:29",
+      "ride_min": 119.9,
       "to_stop_km": 0.0
     },
     {
       "id": "s128",
       "bus_id": "bus4",
       "stop_id": "s128",
-      "pickup": "06:39",
-      "ride_min": 99.5,
+      "pickup": "06:49",
+      "ride_min": 99.7,
       "to_stop_km": 0.0
     },
     {
       "id": "s122",
       "bus_id": "bus4",
       "stop_id": "s122",
-      "pickup": "06:45",
-      "ride_min": 93.9,
+      "pickup": "06:55",
+      "ride_min": 94.1,
       "to_stop_km": 0.0
     },
     {
       "id": "s044",
       "bus_id": "bus4",
       "stop_id": "s044",
-      "pickup": "07:04",
+      "pickup": "07:14",
       "ride_min": 74.8,
       "to_stop_km": 0.0
     },
@@ -2349,15 +2349,15 @@
       "id": "s043",
       "bus_id": "bus4",
       "stop_id": "s043",
-      "pickup": "07:09",
-      "ride_min": 69.9,
+      "pickup": "07:19",
+      "ride_min": 69.8,
       "to_stop_km": 0.0
     },
     {
       "id": "s057",
       "bus_id": "bus4",
       "stop_id": "s057",
-      "pickup": "07:27",
+      "pickup": "07:37",
       "ride_min": 51.9,
       "to_stop_km": 0.0
     },
@@ -2365,7 +2365,7 @@
       "id": "s058",
       "bus_id": "bus4",
       "stop_id": "s058",
-      "pickup": "07:35",
+      "pickup": "07:45",
       "ride_min": 44.2,
       "to_stop_km": 0.0
     },
@@ -2373,7 +2373,7 @@
       "id": "s037",
       "bus_id": "bus4",
       "stop_id": "s037",
-      "pickup": "07:46",
+      "pickup": "07:56",
       "ride_min": 33.0,
       "to_stop_km": 0.0
     },
@@ -2381,7 +2381,7 @@
       "id": "s040",
       "bus_id": "bus4",
       "stop_id": "s040",
-      "pickup": "07:50",
+      "pickup": "08:00",
       "ride_min": 28.9,
       "to_stop_km": 0.0
     },
@@ -2389,7 +2389,7 @@
       "id": "s029",
       "bus_id": "bus4",
       "stop_id": "s029",
-      "pickup": "07:52",
+      "pickup": "08:02",
       "ride_min": 26.5,
       "to_stop_km": 0.0
     },
@@ -2397,7 +2397,7 @@
       "id": "s001",
       "bus_id": "bus4",
       "stop_id": "s001",
-      "pickup": "07:54",
+      "pickup": "08:04",
       "ride_min": 25.0,
       "to_stop_km": 0.0
     },
@@ -2405,7 +2405,7 @@
       "id": "s002",
       "bus_id": "bus4",
       "stop_id": "s002",
-      "pickup": "07:55",
+      "pickup": "08:05",
       "ride_min": 24.3,
       "to_stop_km": 0.0
     },
@@ -2413,7 +2413,7 @@
       "id": "s010",
       "bus_id": "bus4",
       "stop_id": "s010",
-      "pickup": "08:00",
+      "pickup": "08:10",
       "ride_min": 18.4,
       "to_stop_km": 0.0
     },
@@ -2421,7 +2421,7 @@
       "id": "s011",
       "bus_id": "bus4",
       "stop_id": "s011",
-      "pickup": "08:07",
+      "pickup": "08:17",
       "ride_min": 12.1,
       "to_stop_km": 0.0
     },
@@ -2429,7 +2429,7 @@
       "id": "s022",
       "bus_id": "bus4",
       "stop_id": "s022",
-      "pickup": "08:11",
+      "pickup": "08:21",
       "ride_min": 8.0,
       "to_stop_km": 0.0
     },
@@ -2437,7 +2437,7 @@
       "id": "s028",
       "bus_id": "bus4",
       "stop_id": "s028",
-      "pickup": "08:14",
+      "pickup": "08:24",
       "ride_min": 4.4,
       "to_stop_km": 0.0
     },
@@ -2445,63 +2445,63 @@
       "id": "s140",
       "bus_id": "bus5",
       "stop_id": "s140",
-      "pickup": "05:00",
-      "ride_min": 199.0,
+      "pickup": "05:10",
+      "ride_min": 198.5,
       "to_stop_km": 0.0
     },
     {
       "id": "s138",
       "bus_id": "bus5",
       "stop_id": "s138",
-      "pickup": "05:03",
-      "ride_min": 196.2,
+      "pickup": "05:13",
+      "ride_min": 195.7,
       "to_stop_km": 0.0
     },
     {
       "id": "s139",
       "bus_id": "bus5",
       "stop_id": "s139",
-      "pickup": "05:11",
-      "ride_min": 187.6,
+      "pickup": "05:22",
+      "ride_min": 187.1,
       "to_stop_km": 0.0
     },
     {
       "id": "s123",
       "bus_id": "bus5",
       "stop_id": "s123",
-      "pickup": "05:31",
-      "ride_min": 168.2,
+      "pickup": "05:41",
+      "ride_min": 167.7,
       "to_stop_km": 0.0
     },
     {
       "id": "s116",
       "bus_id": "bus5",
       "stop_id": "s116",
-      "pickup": "06:10",
-      "ride_min": 128.6,
+      "pickup": "06:21",
+      "ride_min": 128.1,
       "to_stop_km": 0.0
     },
     {
       "id": "s113",
       "bus_id": "bus5",
       "stop_id": "s113",
-      "pickup": "06:24",
-      "ride_min": 115.2,
+      "pickup": "06:34",
+      "ride_min": 114.9,
       "to_stop_km": 0.0
     },
     {
       "id": "s103",
       "bus_id": "bus5",
       "stop_id": "s103",
-      "pickup": "06:41",
-      "ride_min": 97.4,
+      "pickup": "06:52",
+      "ride_min": 97.3,
       "to_stop_km": 0.0
     },
     {
       "id": "s101",
       "bus_id": "bus5",
       "stop_id": "s101",
-      "pickup": "06:46",
+      "pickup": "06:56",
       "ride_min": 92.8,
       "to_stop_km": 0.0
     },
@@ -2509,15 +2509,15 @@
       "id": "s093",
       "bus_id": "bus5",
       "stop_id": "s093",
-      "pickup": "06:56",
-      "ride_min": 82.6,
+      "pickup": "07:06",
+      "ride_min": 82.5,
       "to_stop_km": 0.0
     },
     {
       "id": "s091",
       "bus_id": "bus5",
       "stop_id": "s091",
-      "pickup": "07:01",
+      "pickup": "07:11",
       "ride_min": 77.4,
       "to_stop_km": 0.0
     },
@@ -2525,7 +2525,7 @@
       "id": "s085",
       "bus_id": "bus5",
       "stop_id": "s085",
-      "pickup": "07:13",
+      "pickup": "07:23",
       "ride_min": 65.9,
       "to_stop_km": 0.0
     },
@@ -2533,7 +2533,7 @@
       "id": "s071",
       "bus_id": "bus5",
       "stop_id": "s071",
-      "pickup": "07:19",
+      "pickup": "07:29",
       "ride_min": 59.9,
       "to_stop_km": 0.0
     },
@@ -2541,7 +2541,7 @@
       "id": "s084",
       "bus_id": "bus5",
       "stop_id": "s084",
-      "pickup": "07:25",
+      "pickup": "07:35",
       "ride_min": 53.4,
       "to_stop_km": 0.0
     },
@@ -2549,7 +2549,7 @@
       "id": "s065",
       "bus_id": "bus5",
       "stop_id": "s065",
-      "pickup": "07:31",
+      "pickup": "07:41",
       "ride_min": 47.5,
       "to_stop_km": 0.0
     },
@@ -2557,7 +2557,7 @@
       "id": "s082",
       "bus_id": "bus5",
       "stop_id": "s082",
-      "pickup": "07:36",
+      "pickup": "07:46",
       "ride_min": 42.5,
       "to_stop_km": 0.0
     },
@@ -2565,7 +2565,7 @@
       "id": "s073",
       "bus_id": "bus5",
       "stop_id": "s073",
-      "pickup": "07:45",
+      "pickup": "07:55",
       "ride_min": 33.5,
       "to_stop_km": 0.0
     },
@@ -2573,7 +2573,7 @@
       "id": "s079",
       "bus_id": "bus5",
       "stop_id": "s079",
-      "pickup": "07:53",
+      "pickup": "08:03",
       "ride_min": 26.1,
       "to_stop_km": 0.0
     },
@@ -2581,7 +2581,7 @@
       "id": "s007",
       "bus_id": "bus5",
       "stop_id": "s007",
-      "pickup": "08:02",
+      "pickup": "08:12",
       "ride_min": 17.2,
       "to_stop_km": 0.0
     },
@@ -2589,7 +2589,7 @@
       "id": "s035",
       "bus_id": "bus5",
       "stop_id": "s035",
-      "pickup": "08:04",
+      "pickup": "08:14",
       "ride_min": 14.7,
       "to_stop_km": 0.0
     },
@@ -2597,7 +2597,7 @@
       "id": "s041",
       "bus_id": "bus5",
       "stop_id": "s041",
-      "pickup": "08:12",
+      "pickup": "08:22",
       "ride_min": 7.2,
       "to_stop_km": 0.0
     },
@@ -2605,23 +2605,23 @@
       "id": "s053",
       "bus_id": "bus6",
       "stop_id": "s053",
-      "pickup": "05:02",
-      "ride_min": 196.7,
+      "pickup": "05:12",
+      "ride_min": 197.0,
       "to_stop_km": 0.0
     },
     {
       "id": "s115",
       "bus_id": "bus6",
       "stop_id": "s115",
-      "pickup": "05:22",
-      "ride_min": 176.3,
+      "pickup": "05:32",
+      "ride_min": 176.4,
       "to_stop_km": 0.0
     },
     {
       "id": "s111",
       "bus_id": "bus6",
       "stop_id": "s111",
-      "pickup": "05:28",
+      "pickup": "05:38",
       "ride_min": 170.8,
       "to_stop_km": 0.0
     },
@@ -2629,31 +2629,31 @@
       "id": "s108",
       "bus_id": "bus6",
       "stop_id": "s108",
-      "pickup": "05:42",
-      "ride_min": 156.7,
+      "pickup": "05:52",
+      "ride_min": 156.6,
       "to_stop_km": 0.0
     },
     {
       "id": "s097",
       "bus_id": "bus6",
       "stop_id": "s097",
-      "pickup": "06:00",
-      "ride_min": 138.4,
+      "pickup": "06:11",
+      "ride_min": 138.3,
       "to_stop_km": 0.0
     },
     {
       "id": "s098",
       "bus_id": "bus6",
       "stop_id": "s098",
-      "pickup": "06:06",
-      "ride_min": 132.8,
+      "pickup": "06:16",
+      "ride_min": 132.7,
       "to_stop_km": 0.0
     },
     {
       "id": "s088",
       "bus_id": "bus6",
       "stop_id": "s088",
-      "pickup": "06:19",
+      "pickup": "06:29",
       "ride_min": 120.0,
       "to_stop_km": 0.0
     },
@@ -2661,31 +2661,31 @@
       "id": "s135",
       "bus_id": "bus6",
       "stop_id": "s135",
-      "pickup": "06:41",
-      "ride_min": 97.7,
+      "pickup": "06:51",
+      "ride_min": 97.8,
       "to_stop_km": 0.0
     },
     {
       "id": "s136",
       "bus_id": "bus6",
       "stop_id": "s136",
-      "pickup": "06:45",
-      "ride_min": 93.6,
+      "pickup": "06:55",
+      "ride_min": 93.8,
       "to_stop_km": 0.0
     },
     {
       "id": "s124",
       "bus_id": "bus6",
       "stop_id": "s124",
-      "pickup": "07:09",
-      "ride_min": 70.3,
+      "pickup": "07:18",
+      "ride_min": 70.5,
       "to_stop_km": 0.0
     },
     {
       "id": "s050",
       "bus_id": "bus6",
       "stop_id": "s050",
-      "pickup": "07:27",
+      "pickup": "07:37",
       "ride_min": 51.4,
       "to_stop_km": 0.0
     },
@@ -2693,7 +2693,7 @@
       "id": "s015",
       "bus_id": "bus6",
       "stop_id": "s015",
-      "pickup": "07:34",
+      "pickup": "07:44",
       "ride_min": 44.9,
       "to_stop_km": 0.0
     },
@@ -2701,7 +2701,7 @@
       "id": "s021",
       "bus_id": "bus6",
       "stop_id": "s021",
-      "pickup": "07:35",
+      "pickup": "07:45",
       "ride_min": 43.6,
       "to_stop_km": 0.0
     },
@@ -2709,7 +2709,7 @@
       "id": "s012",
       "bus_id": "bus6",
       "stop_id": "s012",
-      "pickup": "07:39",
+      "pickup": "07:49",
       "ride_min": 40.3,
       "to_stop_km": 0.0
     },
@@ -2717,7 +2717,7 @@
       "id": "s014",
       "bus_id": "bus6",
       "stop_id": "s014",
-      "pickup": "07:43",
+      "pickup": "07:53",
       "ride_min": 35.6,
       "to_stop_km": 0.0
     },
@@ -2725,7 +2725,7 @@
       "id": "s031",
       "bus_id": "bus6",
       "stop_id": "s031",
-      "pickup": "07:47",
+      "pickup": "07:57",
       "ride_min": 32.1,
       "to_stop_km": 0.0
     },
@@ -2733,7 +2733,7 @@
       "id": "s033",
       "bus_id": "bus6",
       "stop_id": "s033",
-      "pickup": "07:52",
+      "pickup": "08:02",
       "ride_min": 26.7,
       "to_stop_km": 0.0
     },
@@ -2741,7 +2741,7 @@
       "id": "s045",
       "bus_id": "bus6",
       "stop_id": "s045",
-      "pickup": "07:59",
+      "pickup": "08:09",
       "ride_min": 19.5,
       "to_stop_km": 0.0
     },
@@ -2749,7 +2749,7 @@
       "id": "s046",
       "bus_id": "bus6",
       "stop_id": "s046",
-      "pickup": "08:04",
+      "pickup": "08:14",
       "ride_min": 14.8,
       "to_stop_km": 0.0
     },
@@ -2757,7 +2757,7 @@
       "id": "s048",
       "bus_id": "bus6",
       "stop_id": "s048",
-      "pickup": "08:06",
+      "pickup": "08:16",
       "ride_min": 12.7,
       "to_stop_km": 0.0
     },
@@ -2765,111 +2765,111 @@
       "id": "s019",
       "bus_id": "bus7",
       "stop_id": "s019",
-      "pickup": "05:07",
-      "ride_min": 191.8,
+      "pickup": "05:18",
+      "ride_min": 191.1,
       "to_stop_km": 0.0
     },
     {
       "id": "s034",
       "bus_id": "bus7",
       "stop_id": "s034",
-      "pickup": "05:09",
-      "ride_min": 189.9,
+      "pickup": "05:20",
+      "ride_min": 189.2,
       "to_stop_km": 0.0
     },
     {
       "id": "s039",
       "bus_id": "bus7",
       "stop_id": "s039",
-      "pickup": "05:13",
-      "ride_min": 186.2,
+      "pickup": "05:23",
+      "ride_min": 185.4,
       "to_stop_km": 0.0
     },
     {
       "id": "s059",
       "bus_id": "bus7",
       "stop_id": "s059",
-      "pickup": "05:24",
-      "ride_min": 175.1,
+      "pickup": "05:34",
+      "ride_min": 174.3,
       "to_stop_km": 0.0
     },
     {
       "id": "s056",
       "bus_id": "bus7",
       "stop_id": "s056",
-      "pickup": "05:27",
-      "ride_min": 171.7,
+      "pickup": "05:38",
+      "ride_min": 170.8,
       "to_stop_km": 0.0
     },
     {
       "id": "s025",
       "bus_id": "bus7",
       "stop_id": "s025",
-      "pickup": "05:40",
-      "ride_min": 159.1,
+      "pickup": "05:51",
+      "ride_min": 158.2,
       "to_stop_km": 0.0
     },
     {
       "id": "s027",
       "bus_id": "bus7",
       "stop_id": "s027",
-      "pickup": "05:45",
-      "ride_min": 154.2,
+      "pickup": "05:56",
+      "ride_min": 153.3,
       "to_stop_km": 0.0
     },
     {
       "id": "s102",
       "bus_id": "bus7",
       "stop_id": "s102",
-      "pickup": "06:01",
-      "ride_min": 138.1,
+      "pickup": "06:12",
+      "ride_min": 137.2,
       "to_stop_km": 0.0
     },
     {
       "id": "s120",
       "bus_id": "bus7",
       "stop_id": "s120",
-      "pickup": "06:22",
-      "ride_min": 117.3,
+      "pickup": "06:32",
+      "ride_min": 116.7,
       "to_stop_km": 0.0
     },
     {
       "id": "s110",
       "bus_id": "bus7",
       "stop_id": "s110",
-      "pickup": "06:26",
-      "ride_min": 112.5,
+      "pickup": "06:37",
+      "ride_min": 111.9,
       "to_stop_km": 0.0
     },
     {
       "id": "s112",
       "bus_id": "bus7",
       "stop_id": "s112",
-      "pickup": "06:35",
-      "ride_min": 103.6,
+      "pickup": "06:46",
+      "ride_min": 103.2,
       "to_stop_km": 0.0
     },
     {
       "id": "s109",
       "bus_id": "bus7",
       "stop_id": "s109",
-      "pickup": "06:43",
-      "ride_min": 95.8,
+      "pickup": "06:54",
+      "ride_min": 95.3,
       "to_stop_km": 0.0
     },
     {
       "id": "s070",
       "bus_id": "bus7",
       "stop_id": "s070",
-      "pickup": "07:12",
-      "ride_min": 67.1,
+      "pickup": "07:22",
+      "ride_min": 66.8,
       "to_stop_km": 0.0
     },
     {
       "id": "s133",
       "bus_id": "bus7",
       "stop_id": "s133",
-      "pickup": "07:33",
+      "pickup": "07:43",
       "ride_min": 45.6,
       "to_stop_km": 0.0
     },
@@ -2877,7 +2877,7 @@
       "id": "s068",
       "bus_id": "bus7",
       "stop_id": "s068",
-      "pickup": "07:52",
+      "pickup": "08:02",
       "ride_min": 26.9,
       "to_stop_km": 0.0
     },
@@ -2885,7 +2885,7 @@
       "id": "s074",
       "bus_id": "bus7",
       "stop_id": "s074",
-      "pickup": "07:53",
+      "pickup": "08:03",
       "ride_min": 25.5,
       "to_stop_km": 0.0
     },
@@ -2893,7 +2893,7 @@
       "id": "s067",
       "bus_id": "bus7",
       "stop_id": "s067",
-      "pickup": "07:58",
+      "pickup": "08:08",
       "ride_min": 20.5,
       "to_stop_km": 0.0
     },
@@ -2901,7 +2901,7 @@
       "id": "s049",
       "bus_id": "bus7",
       "stop_id": "s049",
-      "pickup": "08:05",
+      "pickup": "08:15",
       "ride_min": 13.8,
       "to_stop_km": 0.0
     },
@@ -2909,7 +2909,7 @@
       "id": "s024",
       "bus_id": "bus7",
       "stop_id": "s024",
-      "pickup": "08:12",
+      "pickup": "08:22",
       "ride_min": 7.0,
       "to_stop_km": 0.0
     },
@@ -2917,7 +2917,7 @@
       "id": "s008",
       "bus_id": "bus7",
       "stop_id": "s008",
-      "pickup": "08:15",
+      "pickup": "08:25",
       "ride_min": 3.7,
       "to_stop_km": 0.0
     }
