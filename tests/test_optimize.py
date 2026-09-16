@@ -1,13 +1,21 @@
 """Score function and order search for the stdlib solver, on the hand-matrix world."""
 
+import time
 from datetime import date, datetime
 
 import pytest
 
 from busroutes.config import Settings
 from busroutes.evaluate import evaluate, evaluate_bus
-from busroutes.models import BusPlan, Point, Scenario, Stop, load_scenario
-from busroutes.optimize import Score, optimize_order, order_stops_for_bus, score_bus, score_scenario
+from busroutes.models import Bus, BusPlan, Point, Scenario, Stop, load_scenario, scenario_to_dict
+from busroutes.optimize import (
+    Score,
+    optimize_assign,
+    optimize_order,
+    order_stops_for_bus,
+    score_bus,
+    score_scenario,
+)
 from busroutes.ordering import order_stops
 from tests.conftest import HAND_POINTS, HandMatrixClient
 
@@ -225,3 +233,135 @@ def test_evaluate_auto_matrix_uses_ride_time_order(
     assert SETTINGS.ordering == "matrix"
     assert [s.stop.id for s in result.buses[0].stops] == ["z", "y", "x", "w"]
     assert max(result.ride_times_s()) == Z_FIRST_MAX_RIDE_S
+
+
+NORTH = frozenset({"s001", "s002"})
+SOUTH = frozenset({"s003", "s004"})
+
+
+def _assignment_sets(scenario: Scenario) -> set[frozenset[str]]:
+    return {frozenset(s.id for s in plan.stops) for plan in scenario.buses}
+
+
+def _bus_of(scenario: Scenario, stop_id: str) -> str:
+    for plan in scenario.buses:
+        if any(s.id == stop_id for s in plan.stops):
+            return plan.bus_id
+    raise AssertionError(f"{stop_id} missing")
+
+
+def test_optimize_assign_repairs_mixed_north_south_pairing(school, students, buses, fake_client):
+    """Start is geographically mixed: bus1 [s001, s003] (NNE+SSW) and bus2 [s002, s004].
+
+    Expect geographic pairing: {s001, s002} on one bus and {s003, s004} on the other,
+    with a strictly lower lexicographic scenario score. Existing 4-student FakeGeoClient
+    world (two buses, capacity 2).
+    """
+    scenario = _two_buses("mixed", ["s001", "s003"], ["s002", "s004"], students, buses)
+    travel = _travel(fake_client)
+    start_score = score_scenario(scenario, buses, school, travel, SETTINGS)
+    orig_bus1 = [s.id for s in scenario.buses[0].stops]
+    orig_bus2 = [s.id for s in scenario.buses[1].stops]
+    orig_stops = scenario.buses[0].stops
+
+    result = optimize_assign(scenario, buses, school, travel, SETTINGS, seed=0, max_seconds=0)
+
+    assert result is not scenario
+    assert scenario.buses[0].stops is orig_stops
+    assert [s.id for s in scenario.buses[0].stops] == orig_bus1
+    assert [s.id for s in scenario.buses[1].stops] == orig_bus2
+    assert _assignment_sets(result) == {NORTH, SOUTH}
+    assert score_scenario(result, buses, school, travel, SETTINGS) < start_score
+    assert result.ordering == "given"
+    assert all(plan.ordering == "given" for plan in result.buses)
+
+
+def test_optimize_assign_never_exceeds_capacity(school, students, fake_client):
+    local_buses = {
+        "bus1": Bus(id="bus1", capacity=1, start=school.point),
+        "bus2": Bus(id="bus2", capacity=3, start=school.point),
+    }
+    scenario = load_scenario(
+        {
+            "name": "cap",
+            "ordering": "given",
+            "buses": [
+                {"bus_id": "bus1", "stops": ["s001"]},
+                {"bus_id": "bus2", "stops": ["s002", "s003", "s004"]},
+            ],
+        },
+        students,
+        local_buses,
+    )
+    result = optimize_assign(
+        scenario, local_buses, school, _travel(fake_client), SETTINGS, seed=0, max_seconds=0
+    )
+    for plan in result.buses:
+        assert len(plan.student_ids) <= local_buses[plan.bus_id].capacity
+
+
+def test_optimize_assign_leaves_pinned_bus_untouched(school, students, buses, fake_client):
+    scenario = load_scenario(
+        {
+            "name": "pin-bus",
+            "ordering": "given",
+            "buses": [
+                {"bus_id": "bus1", "stops": ["s001", "s002"], "pinned": True},
+                {"bus_id": "bus2", "stops": ["s003", "s004"]},
+            ],
+        },
+        students,
+        buses,
+    )
+    result = optimize_assign(
+        scenario, buses, school, _travel(fake_client), SETTINGS, seed=0, max_seconds=0
+    )
+    assert [s.id for s in result.buses[0].stops] == ["s001", "s002"]
+    assert result.buses[0].pinned is True
+
+
+def test_optimize_assign_keeps_pinned_stop_on_start_bus(school, students, buses, fake_client):
+    scenario = load_scenario(
+        {
+            "name": "pin-stop",
+            "ordering": "given",
+            "pinned_stops": ["s001"],
+            "buses": [
+                {"bus_id": "bus1", "stops": ["s001", "s003"]},
+                {"bus_id": "bus2", "stops": ["s002", "s004"]},
+            ],
+        },
+        students,
+        buses,
+    )
+    start_bus = _bus_of(scenario, "s001")
+    result = optimize_assign(
+        scenario, buses, school, _travel(fake_client), SETTINGS, seed=0, max_seconds=0
+    )
+    assert _bus_of(result, "s001") == start_bus
+
+
+def test_optimize_assign_same_seed_is_byte_identical(school, students, buses, fake_client):
+    scenario = _two_buses("mixed", ["s001", "s003"], ["s002", "s004"], students, buses)
+    kwargs = dict(
+        scenario=scenario,
+        buses=buses,
+        school=school,
+        travel=_travel(fake_client),
+        settings=SETTINGS,
+        seed=0,
+        max_seconds=0,
+    )
+    first = scenario_to_dict(optimize_assign(**kwargs))
+    second = scenario_to_dict(optimize_assign(**kwargs))
+    assert first == second
+
+
+def test_optimize_assign_max_seconds_zero_returns_quickly(school, students, buses, fake_client):
+    scenario = _two_buses("mixed", ["s001", "s003"], ["s002", "s004"], students, buses)
+    t0 = time.monotonic()
+    result = optimize_assign(
+        scenario, buses, school, _travel(fake_client), SETTINGS, seed=0, max_seconds=0
+    )
+    assert time.monotonic() - t0 < 1.0
+    assert result.ordering == "given"
