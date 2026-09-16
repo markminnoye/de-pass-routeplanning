@@ -274,7 +274,7 @@ class TomTomClient:
         dry_run: bool = False,
         cells_dir: Path | None = None,
     ) -> None:
-        if not api_key:
+        if not api_key and not dry_run:
             raise TomTomError("TOMTOM_API_KEY ontbreekt")
         self._key = api_key
         self._cache_dir = Path(cache_dir) if cache_dir else None

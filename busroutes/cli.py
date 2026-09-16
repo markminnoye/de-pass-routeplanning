@@ -4,11 +4,20 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from datetime import date
 from pathlib import Path
 
-from busroutes.config import REPO_ROOT, ConfigError, load_settings, resolve_data_dir
+from busroutes.config import (
+    DEFAULT_ENV_PATH,
+    REPO_ROOT,
+    ConfigError,
+    load_settings,
+    read_env_file,
+    resolve_data_dir,
+)
+from busroutes.datapack import add_points, fetch_matrix, pack_status
 from busroutes.evaluate import evaluate
 from busroutes.models import ScenarioError, load_samples, load_scenario_file
 from busroutes.offline import OfflineClient, OfflineError
@@ -88,6 +97,82 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _warn_samples(args: argparse.Namespace) -> None:
+    if getattr(args, "samples", None) is not None:
+        print("Waarschuwing: --samples is verouderd; gebruik --data.", file=sys.stderr)
+
+
+def _pack_dir(args: argparse.Namespace) -> Path:
+    if args.data is not None or args.samples is not None:
+        return resolve_data_dir(args.data, args.samples)
+    env = {**read_env_file(DEFAULT_ENV_PATH), **os.environ}
+    return resolve_data_dir(env=env)
+
+
+def _data_overrides(args: argparse.Namespace) -> dict[str, object]:
+    if args.data is not None or args.samples is not None:
+        return {"data_dir": resolve_data_dir(args.data, args.samples)}
+    return {}
+
+
+def _add_data_dir_flags(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--data", type=Path, help="datapakket (school/students/buses/matrix)")
+    parser.add_argument(
+        "--samples",
+        type=Path,
+        default=None,
+        help="verouderd: alias van --data",
+    )
+
+
+def cmd_data_status(args: argparse.Namespace) -> int:
+    _warn_samples(args)
+    print(pack_status(_pack_dir(args)).format(), end="")
+    return 0
+
+
+def cmd_data_fetch_matrix(args: argparse.Namespace) -> int:
+    _warn_samples(args)
+    data_dir = _pack_dir(args)
+    cells_dir = data_dir / "matrix"
+    if args.dry_run:
+        client: GeoClient = TomTomClient("", None, dry_run=True, cells_dir=cells_dir)
+    else:
+        settings = load_settings(**_data_overrides(args))
+        client = TomTomClient(
+            settings.api_key,
+            settings.cache_dir,
+            settings.traffic,
+            cells_dir=cells_dir,
+        )
+    fetch_matrix(data_dir, client)
+    print(usage_report(client.usage, dry_run=args.dry_run))
+    return 0
+
+
+def cmd_data_add_points(args: argparse.Namespace) -> int:
+    _warn_samples(args)
+    data_dir = _pack_dir(args)
+    try:
+        entries = json.loads(Path(args.json).read_text())
+    except FileNotFoundError as exc:
+        raise ScenarioError(f"{args.json}: ontbreekt") from exc
+    except (OSError, ValueError) as exc:
+        raise ScenarioError(f"{args.json}: ongeldig JSON") from exc
+    if not isinstance(entries, list):
+        raise ScenarioError(f"{args.json}: verwacht een JSON-lijst van punten")
+    settings = load_settings(**_data_overrides(args))
+    client = TomTomClient(
+        settings.api_key,
+        settings.cache_dir,
+        settings.traffic,
+        cells_dir=data_dir / "matrix",
+    )
+    add_points(data_dir, entries, client)
+    print(usage_report(client.usage))
+    return 0
+
+
 def cmd_compare(args: argparse.Namespace) -> int:
     metrics = [json.loads(Path(p).read_text()) for p in args.metrics]
     md = compare_markdown(metrics)
@@ -143,6 +228,24 @@ def build_parser() -> argparse.ArgumentParser:
     cp.add_argument("metrics", nargs="+", help="metrics.json per scenario")
     cp.add_argument("--out", type=Path, help="schrijf de markdown-tabel ook naar dit bestand")
     cp.set_defaults(func=cmd_compare)
+
+    data = sub.add_parser("data", help="inspecteer of vul een datapakket")
+    data_sub = data.add_subparsers(dest="data_command", required=True)
+    st = data_sub.add_parser("status", help="tel punten en ontbrekende matrixparen")
+    _add_data_dir_flags(st)
+    st.set_defaults(func=cmd_data_status)
+    fm = data_sub.add_parser("fetch-matrix", help="haal ontbrekende matrixparen op")
+    _add_data_dir_flags(fm)
+    fm.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="niets ophalen, alleen tellen wat deze run aan TomTom-transacties zou kosten",
+    )
+    fm.set_defaults(func=cmd_data_fetch_matrix)
+    ap = data_sub.add_parser("add-points", help="voeg leerlingen of opstapplaatsen toe")
+    ap.add_argument("json", type=Path, help="JSON-lijst met nieuwe punten")
+    _add_data_dir_flags(ap)
+    ap.set_defaults(func=cmd_data_add_points)
     return parser
 
 

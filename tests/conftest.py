@@ -21,6 +21,7 @@ class FakeGeoClient:
     def __init__(self) -> None:
         self.route_calls: list[list[Point]] = []
         self.matrix_calls: list[tuple[list[Point], list[Point]]] = []
+        self.snap_calls: list[Point] = []
         self.usage = Usage()
 
     def route(self, points: list[Point], depart_at: datetime) -> RouteResult:
@@ -40,6 +41,11 @@ class FakeGeoClient:
     def matrix(self, origins: list[Point], destinations: list[Point]) -> list[list[int]]:
         self.matrix_calls.append((list(origins), list(destinations)))
         return [[round(haversine_m(o, d) / self.speed_m_s) for d in destinations] for o in origins]
+
+    def snap_to_street(self, point: Point, radius_m: int = 1000) -> Point:
+        del radius_m
+        self.snap_calls.append(point)
+        return point
 
 
 @pytest.fixture

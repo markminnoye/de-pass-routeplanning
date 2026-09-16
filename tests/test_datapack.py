@@ -3,8 +3,14 @@ from pathlib import Path
 
 import pytest
 
+from busroutes.cli import main
 from busroutes.config import REPO_ROOT, ConfigError, load_settings, resolve_data_dir
+from busroutes.datapack import add_points, pack_points
 from busroutes.models import Point, ScenarioError, load_data_pack, load_samples
+from busroutes.tomtom import _point_key
+from tests.conftest import FakeGeoClient
+from tests.test_cli import isolate_from_repo_env
+from tests.test_offline import write_origin_row
 
 
 def write_pack(directory: Path, *, pickup_points: bool = True) -> Path:
@@ -125,3 +131,111 @@ def test_load_samples_still_returns_three_tuple(tmp_path):
     pack = load_data_pack(tmp_path)
     school, students, buses = load_samples(tmp_path)
     assert (school, students, buses) == (pack.school, pack.students, pack.buses)
+
+
+def test_data_status_counts_two_missing_pairs_without_api_key(tmp_path, monkeypatch, capsys):
+    isolate_from_repo_env(monkeypatch)
+    write_pack(tmp_path, pickup_points=False)
+    school = Point(1.0, 2.0)
+    student = Point(1.1, 2.1)
+    write_origin_row(
+        tmp_path / "matrix",
+        school,
+        {_point_key(school): 0, _point_key(student): 10},
+    )
+    code = main(["data", "status", "--data", str(tmp_path)])
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "2" in out
+    assert "ontbrek" in out.lower()
+
+
+def test_data_fetch_matrix_dry_run_works_without_api_key(tmp_path, monkeypatch, capsys):
+    isolate_from_repo_env(monkeypatch)
+    write_pack(tmp_path, pickup_points=False)
+    code = main(["data", "fetch-matrix", "--dry-run", "--data", str(tmp_path)])
+    assert code == 0
+    captured = capsys.readouterr()
+    assert captured.out
+    assert list(tmp_path.joinpath("matrix").rglob("*.json")) == []
+
+
+def test_add_points_writes_student_snaps_and_fetches_only_new_row_and_column(tmp_path):
+    write_pack(tmp_path, pickup_points=False)
+    existing = pack_points(load_data_pack(tmp_path))
+    client = FakeGeoClient()
+    add_points(
+        tmp_path,
+        [{"id": "s002", "lat": 1.2, "lon": 2.2, "kind": "student", "zone": "z"}],
+        client,
+    )
+    students = json.loads((tmp_path / "students.json").read_text())
+    assert {s["id"] for s in students} == {"s001", "s002"}
+    assert client.snap_calls == [Point(1.2, 2.2)]
+    requested = sum(len(origins) * len(dests) for origins, dests in client.matrix_calls)
+    assert 2 * len(existing) <= requested <= 2 * len(existing) + 1
+
+
+def test_data_add_points_subcommand_exists():
+    from busroutes.cli import build_parser
+
+    args = build_parser().parse_args(["data", "add-points", "new.json", "--data", "pack"])
+    assert args.json.name == "new.json"
+    assert args.data.name == "pack"
+
+
+def test_data_status_missing_pack_file_is_scenario_error(tmp_path, monkeypatch, capsys):
+    isolate_from_repo_env(monkeypatch)
+    write_pack(tmp_path)
+    (tmp_path / "school.json").unlink()
+    code = main(["data", "status", "--data", str(tmp_path)])
+    assert code == 1
+    err = capsys.readouterr().err
+    assert "school.json" in err
+    assert err.startswith("Fout:")
+
+
+def test_data_geocode_does_not_exist():
+    from busroutes.cli import build_parser
+
+    with pytest.raises(SystemExit):
+        build_parser().parse_args(["data", "geocode", "addresses.csv"])
+
+
+def test_data_fetch_matrix_without_dry_run_requires_key(tmp_path, monkeypatch, capsys):
+    isolate_from_repo_env(monkeypatch)
+    monkeypatch.setenv("BUSROUTES_REFERENCE_DATE", "2026-09-15")
+    write_pack(tmp_path, pickup_points=False)
+    code = main(["data", "fetch-matrix", "--data", str(tmp_path)])
+    assert code == 1
+    assert "TOMTOM_API_KEY" in capsys.readouterr().err
+
+
+def test_add_points_uses_original_point_when_snap_returns_none(tmp_path, capsys):
+    write_pack(tmp_path, pickup_points=False)
+
+    class NoSnap(FakeGeoClient):
+        def snap_to_street(self, point: Point, radius_m: int = 1000) -> Point | None:
+            del radius_m
+            self.snap_calls.append(point)
+            return None
+
+    add_points(
+        tmp_path,
+        [{"id": "s002", "lat": 1.2, "lon": 2.2, "kind": "student"}],
+        NoSnap(),
+    )
+    student = next(
+        s for s in json.loads((tmp_path / "students.json").read_text()) if s["id"] == "s002"
+    )
+    assert student["lat"] == 1.2 and student["lon"] == 2.2
+    assert "straat" in capsys.readouterr().err.lower()
+
+
+def test_pack_points_includes_bus_start_that_is_not_school(tmp_path):
+    write_pack(tmp_path, pickup_points=False)
+    buses = json.loads((tmp_path / "buses.json").read_text())
+    buses.append({"id": "bus2", "capacity": 10, "start": {"lat": 9.0, "lon": 9.0}})
+    (tmp_path / "buses.json").write_text(json.dumps(buses))
+    points = pack_points(load_data_pack(tmp_path))
+    assert Point(9.0, 9.0) in points

@@ -281,3 +281,9 @@ def test_matrix_cell_error_is_reported(tmp_path):
     client = TomTomClient("k", None, fetch=fetch)
     with pytest.raises(TomTomError, match="NO_ROUTE_FOUND"):
         client.matrix([Point(1, 1)], [Point(2, 2)])
+
+
+def test_empty_api_key_is_allowed_only_when_dry_run():
+    TomTomClient("", None, dry_run=True)
+    with pytest.raises(TomTomError, match="TOMTOM_API_KEY ontbreekt"):
+        TomTomClient("", None)
