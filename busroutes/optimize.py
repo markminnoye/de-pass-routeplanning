@@ -1,6 +1,8 @@
-"""Stdlib solver scoring: lexicographic (max ride, sum ride, total drive)."""
+"""Stdlib solver: lexicographic ride-time score and per-bus 2-opt/or-opt order search."""
 
 from __future__ import annotations
+
+from dataclasses import replace
 
 from busroutes.config import Settings
 from busroutes.models import Bus, Point, Scenario, School, Stop
@@ -52,3 +54,64 @@ def score_scenario(
         sum_ride += bus_sum
         total_drive += bus_drive
     return (max_ride, sum_ride, total_drive)
+
+
+def order_stops_for_bus(
+    stops: list[Stop],
+    start: Point,
+    school: Point,
+    travel,
+    settings: Settings,
+) -> list[Stop]:
+    """Improve the given visiting order with 2-opt and or-opt on score_bus."""
+    if len(stops) <= 1:
+        return list(stops)
+    best = list(stops)
+    best_score = score_bus(best, start, school, travel, settings)
+    improved = True
+    while improved:
+        improved = False
+        n = len(best)
+        for i in range(n - 1):
+            for j in range(i + 1, n):
+                candidate = best[:i] + best[i : j + 1][::-1] + best[j + 1 :]
+                cand_score = score_bus(candidate, start, school, travel, settings)
+                if cand_score < best_score:
+                    best = candidate
+                    best_score = cand_score
+                    improved = True
+        for length in (1, 2, 3):
+            for i in range(n - length + 1):
+                segment = best[i : i + length]
+                remaining = best[:i] + best[i + length :]
+                for pos in range(len(remaining) + 1):
+                    if pos == i:
+                        continue
+                    candidate = remaining[:pos] + segment + remaining[pos:]
+                    cand_score = score_bus(candidate, start, school, travel, settings)
+                    if cand_score < best_score:
+                        best = candidate
+                        best_score = cand_score
+                        improved = True
+    return best
+
+
+def optimize_order(
+    scenario: Scenario,
+    buses: dict[str, Bus],
+    school: School,
+    travel,
+    settings: Settings,
+) -> Scenario:
+    """Reorder stops on each bus; assignment is unchanged. Result is ordering=given."""
+    plans = [
+        replace(
+            plan,
+            stops=order_stops_for_bus(
+                plan.stops, buses[plan.bus_id].start, school.point, travel, settings
+            ),
+            ordering="given",
+        )
+        for plan in scenario.buses
+    ]
+    return replace(scenario, buses=plans, ordering="given")

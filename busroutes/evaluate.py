@@ -11,6 +11,7 @@ from busroutes.config import Settings
 from busroutes.geo import haversine_m
 from busroutes.models import Bus, BusPlan, Point, Scenario, School, Stop, Student
 from busroutes.offline import OfflineClient
+from busroutes.optimize import order_stops_for_bus
 from busroutes.ordering import Matrix, OrderingStrategy, order_stops
 from busroutes.tomtom import GeoClient, RouteResult
 
@@ -178,13 +179,28 @@ def _cost_matrix(points: list[Point], client: GeoClient, strategy: OrderingStrat
     return [[round(haversine_m(a, b)) for b in points] for a in points]
 
 
+def _travel_from_matrix(points: list[Point], matrix: Matrix):
+    index: dict[tuple[float, float], int] = {}
+    for i, p in enumerate(points):
+        index.setdefault((p.lat, p.lon), i)
+
+    def travel(a: Point, b: Point) -> int:
+        return matrix[index[(a.lat, a.lon)]][index[(b.lat, b.lon)]]
+
+    return travel
+
+
 def _ordered_stops(
-    plan: BusPlan, bus: Bus, school: School, client: GeoClient, strategy: OrderingStrategy
+    plan: BusPlan, bus: Bus, school: School, client: GeoClient, settings: Settings
 ) -> list[Stop]:
     if plan.ordering == "given" or len(plan.stops) <= 1:
         return list(plan.stops)
     points = [bus.start, *[s.point for s in plan.stops], school.point]
-    matrix = _cost_matrix(points, client, strategy)
+    if settings.ordering == "matrix":
+        matrix = client.matrix(points, points)
+        travel = _travel_from_matrix(points, matrix)
+        return order_stops_for_bus(plan.stops, bus.start, school.point, travel, settings)
+    matrix = _cost_matrix(points, client, settings.ordering)
     start, end = 0, len(points) - 1
     order = order_stops(list(range(1, end)), start, end, matrix)
     return [plan.stops[i - 1] for i in order]
@@ -200,7 +216,7 @@ def evaluate_bus(
     arrival: datetime,
     depart_at: datetime,
 ) -> BusResult:
-    stops = _ordered_stops(plan, bus, school, client, settings.ordering)
+    stops = _ordered_stops(plan, bus, school, client, settings)
     if not stops:
         return BusResult(
             bus=bus, route=RouteResult(legs=[]), stops=[], departure=arrival, arrival=arrival
