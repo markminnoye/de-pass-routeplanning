@@ -1,6 +1,6 @@
 # Plan: hybride optimalisatie — datapakket, offline-modus, stdlib-solver, skill-herwerking
 
-Status: 🔄 actief — WP0 ✅, WP1 ✅ (spec), WP2 ✅ (16/09/2026, branch `wp2-datapakket-offline`), WP3 🔄 (branch `wp3-stdlib-solver`). Volgende na WP3: WP5 skill; WP4 mag parallel.
+Status: 🔄 actief — WP0 ✅, WP1 ✅ (spec), WP2 ✅ (16/09/2026, branch `wp2-datapakket-offline`), WP3 ✅ (16/09/2026, branch `wp3-stdlib-solver`). Volgende: WP5 skill; WP4 mag parallel.
 
 ## Context
 
