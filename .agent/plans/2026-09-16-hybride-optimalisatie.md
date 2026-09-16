@@ -1,5 +1,7 @@
 # Plan: hybride optimalisatie — datapakket, offline-modus, stdlib-solver, skill-herwerking
 
+Status: 🔄 actief — WP0 ✅ (16/09/2026), WP1 spec geschreven (`docs/superpowers/specs/2026-09-16-hybride-optimalisatie-design.md`), wacht op review.
+
 ## Context
 
 De evaluator v1 en de Cowork-plugin staan (alle plannen in `.agent/plans/INDEX.md` ✅,
@@ -97,8 +99,8 @@ Agent-opdracht (na WP2, werkt op de matrix van het datapakket):
   `ordering: auto` (matrix-strategie) — `haversine`-strategie blijft bestaan.
 - **Niveau B `--assign`**: verdeling + volgorde. Local search: relocate/swap van stops
   tussen bussen, capaciteit hard, daarna A per bus. Respecteert in het invoer-scenario
-  **vaste elementen**: `"pinned": true` op een bus (raak niet aan) of op een stop (blijft
-  op die bus); opstapplaatsen blijven één stop met hun leerlingen. Deterministisch
+  **vaste elementen**: `"pinned": true` op een bus (raak niet aan) of scenario-veld
+  `"pinned_stops": [...]` (die stops blijven op hun bus); opstapplaatsen blijven één stop met hun leerlingen. Deterministisch
   (vaste seed, `--seed`), tijdslimiet `--max-seconds` (default 30).
 - Output: `scenarios/<naam>-optimized.json` (bestaand formaat, `ordering: given`) +
   samenvatting vóór/na op stdout (offline-cijfers). Geen TomTom-call.
