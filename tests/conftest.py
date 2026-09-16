@@ -8,7 +8,7 @@ import pytest
 
 from busroutes.geo import haversine_m
 from busroutes.models import Bus, Point, School, Student
-from busroutes.tomtom import RouteLeg, RouteResult, Usage
+from busroutes.tomtom import RouteLeg, RouteResult, Usage, _point_key
 
 SCHOOL = Point(50.7782, 4.8960)
 
@@ -75,3 +75,96 @@ def buses() -> dict[str, Bus]:
 @pytest.fixture
 def fake_client() -> FakeGeoClient:
     return FakeGeoClient()
+
+
+# Hand-matrix world (WP3 solver). Dummy coords are unique only so `_point_key`
+# distinguishes them; they are not geographic. Letters match the travel-time
+# table: S = school, W/X/Y/Z = stops `w`/`x`/`y`/`z` (one student each).
+HAND_POINTS = {
+    "S": Point(50.000000, 4.000000),
+    "W": Point(50.100000, 4.100000),
+    "X": Point(50.200000, 4.200000),
+    "Y": Point(50.300000, 4.300000),
+    "Z": Point(50.400000, 4.400000),
+}
+
+_HAND_LABELS = ("S", "W", "X", "Y", "Z")
+_HAND_SPECIFIC = {
+    ("S", "W"): 10,
+    ("S", "Z"): 5000,
+    ("W", "S"): 40,
+    ("W", "X"): 400,
+    ("X", "W"): 30,
+    ("X", "Y"): 400,
+    ("Y", "X"): 30,
+    ("Y", "Z"): 400,
+    ("Z", "S"): 40,
+    ("Z", "Y"): 30,
+}
+_HAND_FILL_S = 50_000
+
+
+def _hand_seconds() -> dict[tuple[str, str], int]:
+    """Complete 5×5: specified cells, 0 on the diagonal, 50000 everywhere else."""
+    seconds: dict[tuple[str, str], int] = {}
+    for origin in _HAND_LABELS:
+        for dest in _HAND_LABELS:
+            key = (_point_key(HAND_POINTS[origin]), _point_key(HAND_POINTS[dest]))
+            if origin == dest:
+                seconds[key] = 0
+            else:
+                seconds[key] = _HAND_SPECIFIC.get((origin, dest), _HAND_FILL_S)
+    return seconds
+
+
+class HandMatrixClient:
+    """GeoClient backed by a fixed asymmetric in-memory travel-time matrix."""
+
+    def __init__(self, seconds: dict[tuple[str, str], int] | None = None) -> None:
+        self._seconds = seconds if seconds is not None else _hand_seconds()
+        self.usage = Usage()
+
+    def _lookup(self, origin: Point, dest: Point) -> int:
+        return self._seconds[_point_key(origin), _point_key(dest)]
+
+    def route(self, points: list[Point], depart_at: datetime) -> RouteResult:
+        del depart_at
+        legs = [
+            RouteLeg(travel_time_s=self._lookup(a, b), length_m=0, points=[a, b])
+            for a, b in zip(points, points[1:], strict=False)
+        ]
+        return RouteResult(legs=legs)
+
+    def matrix(self, origins: list[Point], destinations: list[Point]) -> list[list[int]]:
+        return [[self._lookup(o, d) for d in destinations] for o in origins]
+
+    def snap_to_street(self, point: Point, radius_m: int = 1000) -> Point:
+        del radius_m
+        return point
+
+
+@pytest.fixture
+def hand_school() -> School:
+    return School(id="school", name="de pass", point=HAND_POINTS["S"], target_arrival=time(8, 20))
+
+
+@pytest.fixture
+def hand_students() -> dict[str, Student]:
+    return {
+        label.lower(): Student(id=label.lower(), point=HAND_POINTS[label], zone="hand")
+        for label in "WXYZ"
+    }
+
+
+@pytest.fixture
+def hand_buses() -> dict[str, Bus]:
+    start = HAND_POINTS["S"]
+    return {
+        "bus1": Bus(id="bus1", capacity=10, start=start),
+        "bus2": Bus(id="bus2", capacity=10, start=start),
+    }
+
+
+@pytest.fixture
+def hand_client() -> HandMatrixClient:
+    return HandMatrixClient()
