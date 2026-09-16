@@ -301,13 +301,18 @@ def test_optimize_assign_never_exceeds_capacity(school, students, fake_client):
 
 
 def test_optimize_assign_leaves_pinned_bus_untouched(school, students, buses, fake_client):
+    """Mixed start with bus1 pinned: without the pin, assign would regroup geographically.
+
+    With the pin, bus1 must keep the same stops in the same order (s001 then s003).
+    Bus2 may still be reordered.
+    """
     scenario = load_scenario(
         {
             "name": "pin-bus",
             "ordering": "given",
             "buses": [
-                {"bus_id": "bus1", "stops": ["s001", "s002"], "pinned": True},
-                {"bus_id": "bus2", "stops": ["s003", "s004"]},
+                {"bus_id": "bus1", "stops": ["s001", "s003"], "pinned": True},
+                {"bus_id": "bus2", "stops": ["s002", "s004"]},
             ],
         },
         students,
@@ -316,7 +321,7 @@ def test_optimize_assign_leaves_pinned_bus_untouched(school, students, buses, fa
     result = optimize_assign(
         scenario, buses, school, _travel(fake_client), SETTINGS, seed=0, max_seconds=0
     )
-    assert [s.id for s in result.buses[0].stops] == ["s001", "s002"]
+    assert [s.id for s in result.buses[0].stops] == ["s001", "s003"]
     assert result.buses[0].pinned is True
 
 
@@ -350,7 +355,6 @@ def test_optimize_assign_same_seed_is_byte_identical(school, students, buses, fa
         travel=_travel(fake_client),
         settings=SETTINGS,
         seed=0,
-        max_seconds=0,
     )
     first = scenario_to_dict(optimize_assign(**kwargs))
     second = scenario_to_dict(optimize_assign(**kwargs))
