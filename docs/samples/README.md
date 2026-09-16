@@ -1,6 +1,10 @@
 # Fictieve testset
 
-Alles in deze map is **verzonnen** en deterministisch gegenereerd door
+Deze map is het **voorbeeld-datapakket**: school, leerlingen, bussen, opstapplaatsen
+én de reistijdmatrix. De evaluator gebruikt het als default (`BUSROUTES_DATA_DIR` /
+`--data docs/samples`). Een eigen pakket volgt dezelfde layout.
+
+Alles hierin is **verzonnen** en deterministisch gegenereerd door
 `scripts/generate_testset.py` (vaste seed). Er staan geen echte adressen of namen in;
 de punten liggen willekeurig verspreid rond echte dorpskernen in de regio Hoegaarden en
 worden daarna op de dichtstbijzijnde gewone straat gelegd (TomTom reverse geocoding,
@@ -10,11 +14,14 @@ Regenereren: `uv run python scripts/generate_testset.py` (byte-identieke output;
 reverse-geocoding zit in `.cache/tomtom/`, dus enkel de allereerste keer is een
 `TOMTOM_API_KEY` en netwerk nodig).
 
-`expected/*.metrics.json` bevat de referentie-output van de drie scenario's (DoD:
+`expected/*.metrics.json` is de TomTom-referentie van de drie scenario's (DoD:
 regressie + reproduceerbaarheid). Controleren: `BUSROUTES_REGRESSION=1 uv run pytest
 tests/test_regression.py`. Vernieuwen na een bewuste wijziging: de drie scenario's
 opnieuw doorrekenen met `BUSROUTES_REFERENCE_DATE` gelijk aan de datum in het
 bestand en `out/<naam>/metrics.json` hierheen kopiëren.
+
+`expected/offline/*.metrics.json` is de offline-referentie (`evaluate --offline`);
+die draait altijd in pytest, zonder TomTom-key.
 
 Zie AGENTS.md, sectie "Privacy": echte leerlingdata komt hier nooit in.
 
@@ -49,6 +56,13 @@ hangt hier niet van af, totale rijtijd/km wel.
 Vaste opstapplaatsen die in de voorbeeldscenario's gebruikt worden (`id`, `lat`, `lon`,
 `name`), al op de straat gesnapt. Hergebruik deze coördinaten in eigen scenario's zodat
 resultaten vergelijkbaar blijven.
+
+### `matrix/`
+
+Gecachete TomTom-reistijden per oorsprongspunt: `matrix/<digest>/<lat,lon>.json`
+(zelfde formaat als de oude `.cache/tomtom/cells/`). `evaluate --offline` leest
+alleen deze map; ontbrekende paren falen met het commando
+`busroutes data fetch-matrix --dry-run`. Status: `busroutes data status`.
 
 ### Output (`out/<naam>/metrics.json`)
 

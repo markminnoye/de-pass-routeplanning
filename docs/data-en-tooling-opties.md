@@ -222,6 +222,11 @@ Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's
 - **Kaart-basemap: OpenStreetMap.de**, met Esri straten als tweede laag. Niet `tile.openstreetmap.org`: lokaal geopende `map.html` heeft geen HTTP-Referer en OSMF blokkeert die requests (403). CARTO Voyager toont zonder key een "API KEY REQUIRED"-watermerk.
 - **Publieke OV-haltes als overlay**: De Lijn, TEC en NMBS via Overpass API, gefilterd op Belgische operator-tags (`ref:De_Lijn`, `ref:TEC` / `network=TEC*`, `railway=station|halt` + NMBS/SNCB of `uic_ref` 88…). Resultaat gecachet in `.cache/overpass/`. Mislukte fetch → waarschuwing, scenario gaat door, kaart zonder overlay. In `map.html` uitzetbaar via Leaflet layer control.
 
+## Beslissingen (16/09/2026)
+
+- **Offline-modus:** `evaluate --offline` rekent een scenario door op de matrix in het datapakket, zonder TomTom-key of netwerk. Tijden komen uit de cellen; km zijn hemelsbreed × wegenfactor (`km_estimated: true`); de kaart toont rechte lijnen. Definitieve cijfers en wegen blijven `evaluate` (TomTom `calculateRoute`).
+- **Matrix in het datapakket:** de reistijdmatrix leeft in `<data>/matrix/` (default `docs/samples/matrix/`), niet meer alleen in `.cache/tomtom/cells/`. Eén keer ophalen: ±8.000 transacties voor de ~141 punten van de fictieve set; een nieuw punt kost ±280 transacties (rij + kolom). Daarna is offline-evaluatie onbeperkt en gratis.
+
 ## Voorgestelde stack
 
 1. **Geocoding + verkeersbewuste reistijdmatrix**: TomTom-connector.
@@ -234,6 +239,7 @@ Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's
 1. ~~TomTom REST-toegang~~ ✅ 14/09/2026 (key in `.env`, Matrix v2 smoke-test OK). **Nog te doen door Mark**: TomTom Maps MCP-connector activeren — via de connectorinstellingen op claude.ai, of lokaal met `claude mcp add tomtom -e TOMTOM_API_KEY=... -- npx @tomtom-org/tomtom-mcp@latest` (zie [quick-setup](https://docs.tomtom.com/tomtom-maps-mcp/documentation/quick-setup)).
 2. ~~Fictieve testset opbouwen~~ ✅ 14/09/2026 — `docs/samples/` (140 leerlingpunten, 7 bussen, 3 referentiescenario's, `expected/`).
 3. ~~Eerste versie van de scenario-evaluator~~ ✅ 14/09/2026 — `busroutes` CLI (`evaluate`/`compare`) + skill `.claude/skills/scenario-evaluator/`. Vervolgwensen staan onderaan `.agent/plans/2026-09-14-testset-en-evaluator-v1.md`.
-4. Optioneel uitbreiden met OR-Tools voor het "volledig geoptimaliseerde" scenario ter vergelijking.
-5. (Apart spoor, optioneel) Google's js-route-optimization-app deployen op een eigen GCP-project om de API zelf te verkennen via de GUI.
-6. Zodra de echte leerlingdata beschikbaar is: adres, school, gewenste aankomsttijd, evt. vaste opstapplaats + buscapaciteiten per bus aanleveren.
+4. ~~Offline-modus + matrix in het datapakket~~ ✅ 16/09/2026 — `evaluate --offline`, `busroutes data status|fetch-matrix|add-points`, matrix in `docs/samples/matrix/`.
+5. Stdlib-solver (`busroutes optimize`) in latere werkpakketten — vervangt het eerdere OR-Tools-punt voor het "volledig geoptimaliseerde" scenario. OR-Tools/VROOM blijven een benchmark-spoor, niet de plugin-solver.
+6. (Apart spoor, optioneel) Google's js-route-optimization-app deployen op een eigen GCP-project om de API zelf te verkennen via de GUI.
+7. Zodra de echte leerlingdata beschikbaar is: adres, school, gewenste aankomsttijd, evt. vaste opstapplaats + buscapaciteiten per bus aanleveren.

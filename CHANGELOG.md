@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Datapakket (`BUSROUTES_DATA_DIR` / `--data`, default `docs/samples/` inclusief `matrix/`)
+- `evaluate --offline`: scenario's doorrekenen zonder TomTom-key
+- `busroutes data status|fetch-matrix|add-points`
+
 ### Changed
+- Matrix-cache default is `<data>/matrix` (was `.cache/tomtom/cells/`)
 - Default ordening terug naar `matrix` (beslissing 15/09/2026: exactheid boven credits);
   `haversine` blijft als goedkope verkenmodus (`--ordering haversine` / `BUSROUTES_ORDERING`)
 - Plugin-pakket is weer `de-pass-routeplanning.plugin` (Desktop: `.zip` = skill, `.plugin` = plugin)
