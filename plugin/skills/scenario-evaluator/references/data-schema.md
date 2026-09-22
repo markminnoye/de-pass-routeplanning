@@ -1,7 +1,9 @@
 # Data- en scenarioformaat
 
-Alle bestanden hieronder horen in `docs/samples/` in de werkmap (zie SKILL.md, "Eenmalige
-setup"), behalve scenario's zelf die in `scenarios/` komen.
+Dit is de layout van een datapakket. Pad: `BUSROUTES_DATA_DIR` of `--data`. Zonder die
+instelling is de default `docs/samples/`. De plugin bevat dit pakket niet. De fictieve
+set in de repo is alleen het voorbeeld. Scenario's zelf staan in `scenarios/`, niet in
+het pakket.
 
 ## `school.json`
 

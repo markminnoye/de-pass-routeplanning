@@ -1,6 +1,6 @@
 # Plan: hybride optimalisatie — datapakket, offline-modus, stdlib-solver, skill-herwerking
 
-Status: 🔄 actief — WP0 ✅, WP1 ✅ (spec), WP2 ✅ (16/09/2026, branch `wp2-datapakket-offline`), WP3 ✅ (16/09/2026, branch `wp3-stdlib-solver`), WP4 ✅ (22/09/2026, branch `wp4-benchmark-spike`). Volgende: WP5 skill.
+Status: 🔄 actief — WP0 ✅, WP1 ✅ (spec), WP2 ✅ (16/09/2026, branch `wp2-datapakket-offline`), WP3 ✅ (16/09/2026, branch `wp3-stdlib-solver`), WP4 ✅ (22/09/2026, branch `wp4-benchmark-spike`), WP5 ✅ (22/09/2026, branch `wp5-skill`). Volgende: WP6, geblokkeerd tot de school data levert.
 
 ## Context
 
@@ -135,7 +135,7 @@ hosten / OR-Tools lokaal). Scripts onder `scripts/bench_*.py`, niet in `busroute
 niet in de plugin; `bench`-dependency-groep staat los van `dev` zodat de DoD niet
 zwaarder wordt.
 
-### WP5 — Skill herschrijven (`skills/scenario-evaluator/SKILL.md` + plugin-kopie)
+### WP5 — Skill herschrijven (`skills/scenario-evaluator/SKILL.md` + plugin-kopie) ✅ 22/09/2026
 Agent-opdracht (met `superpowers:writing-skills`, na WP2+WP3):
 - Beslissingstabel hierboven als kern; werkwijze: pakket controleren → scenario → offline
   → optimize → pas dan TomTom → kaart als artifact → compare.

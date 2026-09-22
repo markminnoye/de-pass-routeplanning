@@ -178,6 +178,35 @@ def test_generic_skill_requires_map_as_primary_output():
     assert "Kaartbeeld tonen in het gesprek" not in generic
 
 
+def test_generic_skill_decision_table_replaces_connector():
+    generic = (ROOT / "skills" / "scenario-evaluator" / "SKILL.md").read_text()
+    for needle in (
+        "evaluate --offline",
+        "optimize --order",
+        "optimize --assign",
+        "data status",
+        "data add-points",
+        "fetch-matrix --dry-run",
+        "Wat je nooit doet",
+        "BUSROUTES_DATA_DIR",
+    ):
+        assert needle in generic
+    assert "TomTom Maps-connector" not in generic
+    lowered = generic.lower()
+    assert "pyvroom" not in lowered
+    assert "or-tools" not in lowered
+    assert "vroom" not in lowered
+
+
+def test_plugin_includes_every_busroutes_module():
+    bp = load_build_plugin()
+    paths = bp.Paths(ROOT)
+    src = {p.name for p in paths.busroutes_src.glob("*.py")}
+    dst = {p.name for p in (paths.skill_dst / "references" / "busroutes").glob("*.py")}
+    assert src == dst
+    assert {"optimize.py", "offline.py", "datapack.py"} <= src
+
+
 def test_generic_skill_has_version_check_repo_skill_does_not():
     generic = (ROOT / "skills" / "scenario-evaluator" / "SKILL.md").read_text()
     repo = (ROOT / ".claude" / "skills" / "scenario-evaluator" / "SKILL.md").read_text()

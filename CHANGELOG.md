@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `busroutes data status|fetch-matrix|add-points`
 
 ### Changed
+- Scenario-evaluator-skill: één beslissingstabel (offline, daarna `optimize`, pas dan één TomTom-`evaluate`); de TomTom-connector-sectie is weg; het datapakket staat buiten de plugin
 - Matrix-cache default is `<data>/matrix` (was `.cache/tomtom/cells/`)
 - Default ordening terug naar `matrix` (beslissing 15/09/2026: exactheid boven credits);
   `haversine` blijft als goedkope verkenmodus (`--ordering haversine` / `BUSROUTES_ORDERING`)

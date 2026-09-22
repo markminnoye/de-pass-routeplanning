@@ -1,22 +1,22 @@
 # de-pass-routeplanning
 
-Cowork-plugin om schoolbus-scenario's voor "de pass" (Hoegaarden) door te rekenen en te
-vergelijken: rittijd per kind, kilometers, bezetting, aankomsttijden en een kaart per
-scenario. Geen solver — jij (of Claude, in overleg) bedenkt een verdeling van kinderen
-over de bussen, de plugin rekent hem door en maakt scenario's onderling vergelijkbaar.
+Cowork-plugin om schoolbus-scenario's voor "de pass" (Hoegaarden) te bouwen, offline te
+vergelijken, de volgorde of de verdeling te verbeteren, en daarna een kaart met echte
+wegen te tonen: rittijd per kind, kilometers, bezetting en aankomsttijden.
 
 ## Wat je nodig hebt
 
 - **Niets te installeren.** De plugin bevat een zelfstandige Python-tool
   (`skills/scenario-evaluator/references/busroutes/`) zonder externe dependencies — die
   draait in Claude's eigen werkomgeving.
-- **Een gratis TomTom API-sleutel.** Aanmaken op
-  [developer.tomtom.com](https://developer.tomtom.com/). Claude vraagt hiernaar bij het
-  eerste gebruik en bewaart hem lokaal in de werkmap (niet in deze plugin, niet gedeeld).
-- **Je eigen schooldata**: adres/coördinaten en gewenste aankomsttijd van de school, de
-  leerlingenlijst (adres of coördinaten per kind) en de buscapaciteiten. Claude vraagt
-  hiernaar en zet het in het juiste formaat — zie
-  `skills/scenario-evaluator/references/data-schema.md` voor het exacte schema.
+- **Een TomTom API-sleutel**, alleen voor de definitieve kaart en voor een nieuw punt.
+  Aanmaken op [developer.tomtom.com](https://developer.tomtom.com/). Claude bewaart hem
+  in de werkmap (niet in deze plugin, niet gedeeld).
+- **Het datapakket van de school**, buiten deze plugin en buiten git: een map met
+  school, leerlingen, bussen, opstapplaatsen en `matrix/`. Wijs die map aan met
+  `BUSROUTES_DATA_DIR` of `--data`. Zonder die instelling zoekt de tool in
+  `docs/samples/`. De fictieve set in de git-repository is alleen het voorbeeld; die
+  zit niet in dit bestand. Schema: `skills/scenario-evaluator/references/data-schema.md`.
 
 ## Gebruik
 
@@ -26,11 +26,12 @@ Vraag Claude gewoon om een scenario door te rekenen of te vergelijken, bijvoorbe
 - "Vergelijk regiobus-per-zone met vaste-opstapplaatsen — welke geeft de kortste ritten?"
 - "Wat als we bus 6 een vaste opstapplaats in Leuven geven in plaats van deur-aan-deur?"
 
-Claude schrijft het scenario, rekent het door met verkeersbewuste TomTom-reistijden, en
-toont als hoofdresultaat een HTML-kaart (`map.html`) met de busroutes, stops en tijden
-(in Claude als artifact). Daarna de langste/gemiddelde rit per kind en, bij meerdere
-scenario's, een vergelijkingstabel. Op de kaart staan ook publieke De Lijn-, TEC- en
-NMBS-haltes (aan/uit te zetten). Leaflet-CSS zit in de pagina; JS komt van cdnjs.
+Claude volgt één commando per vraag: eerst offline, dan eventueel de volgorde of de
+verdeling, en pas daarna één TomTom-run voor de echte wegen. Hoofdresultaat is een
+HTML-kaart (`map.html`, in Claude als artifact) met de busroutes, stops en tijden.
+Daarna de langste en gemiddelde rit per kind en, bij meerdere scenario's, een
+vergelijkingstabel. Op de kaart staan ook publieke De Lijn-, TEC- en NMBS-haltes
+(aan/uit te zetten). Leaflet-CSS zit in de pagina; JS komt van cdnjs.
 
 ## Updates
 
@@ -42,16 +43,6 @@ Zolang er nog geen GitHub Release is, zegt Claude niets en werkt de plugin gewoo
 
 ## Privacy
 
-Leerlingadressen zijn gevoelige gegevens van minderjarigen. Ze verlaten je eigen omgeving
-enkel als geocoding/routing-aanvraag naar TomTom (nodig om reistijden te berekenen) — niet
-naar enige andere dienst. Bewaar de werkmap (met de leerlingdata en de TomTom-cache) niet
+Het datapakket hoort bij de school: niet in deze plugin, niet in git. TomTom krijgt
+coördinaten, alleen voor de definitieve kaart of een nieuw punt. Bewaar de werkmap niet
 op een plek die breder gedeeld wordt dan nodig.
-
-## Achtergrond
-
-Gebouwd voor het routeoptimalisatie-project van "de pass": zie de discussie over
-geodata-bronnen (TomTom), waarom niet Google Route Optimization (die optimaliseert op
-vlootkost, niet op rittijd per kind) en de architectuurkeuzes in het projectdossier.
-OR-Tools voor een volledig geoptimaliseerde verdeling (in plaats van een door mensen
-bedacht scenario) staat genoteerd als mogelijke volgende stap, maar zit niet in deze
-plugin.
