@@ -270,7 +270,7 @@ svg .teal{color:var(--accent-2)}
       <div class="step-body">
         <p class="step-tag">Eenmalig</p>
         <h2>TomTom vult de matrix</h2>
-        <p>Van elk punt naar elk ander punt komt de reistijd bij TomTom vandaan. Die tabel, de matrix, wordt één keer opgehaald en blijft bij de school, naast de invoer. Een paar dat al bekend is, wordt niet opnieuw betaald. Een nieuwe opstapplaats vult een rij en een kolom aan, en je ziet eerst wat dat kost.</p>
+        <p>Van elk punt naar elk ander punt komt de reistijd bij TomTom vandaan. Die tabel, de matrix, wordt één keer opgehaald en blijft bij de school, naast de invoer. Een paar dat al bekend is, haalt TomTom niet opnieuw op. Een nieuwe opstapplaats vult een rij en een kolom aan. Je ziet eerst hoeveel nieuwe reistijden TomTom daarvoor moet ophalen. Die haalt TomTom pas op nadat je akkoord geeft.</p>
         <figure role="img" aria-label="De punten uit stap 1 gaan naar TomTom. Terug komt een tabel met de reistijd van elk punt naar elk ander punt.">
           <svg viewBox="0 0 640 168" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -424,7 +424,7 @@ svg .teal{color:var(--accent-2)}
         <p class="step-tag">TomTom</p>
         <h2>De weg op de kaart</h2>
         <p>Dit is geen nieuwe matrix. Voor het scenario dat vastligt, rekent TomTom één keer de rit in de volgorde van de stops, met de weg erbij. Dezelfde vraag op dezelfde datum geeft dezelfde cijfers. Die stap ziet ook de tijd om te keren na een stop. De matrix ziet dat niet.</p>
-        <figure role="img" aria-label="De route volgt de weg na één TomTom-berekening. Een nieuwe opstapplaats toont eerst de kost.">
+        <figure role="img" aria-label="De route volgt de weg na één TomTom-berekening. Een nieuwe opstapplaats toont eerst hoeveel reistijden TomTom moet ophalen.">
           <svg viewBox="0 0 640 156" xmlns="http://www.w3.org/2000/svg">
             <rect x="430" y="8" width="186" height="26" rx="13" fill="var(--accent-2-soft)" stroke="currentColor" class="teal" stroke-width="1.2"/>
             <text x="523" y="25" text-anchor="middle" font-size="11" class="mono teal">één berekening · dezelfde datum</text>
@@ -442,7 +442,7 @@ svg .teal{color:var(--accent-2)}
             <text x="480" y="52" text-anchor="middle" font-size="11" class="muted">Leuven</text>
             <text x="599" y="54" text-anchor="middle" font-size="11" class="muted">school</text>
             <text x="36" y="146" font-size="12" class="teal">de weg, niet een rechte lijn</text>
-            <text x="340" y="146" font-size="12" class="muted">nieuwe opstapplaats → eerst de kost</text>
+            <text x="340" y="146" font-size="12" class="muted">nieuwe opstapplaats → eerst hoeveel reistijden</text>
           </svg>
           <figcaption>TomTom rekent de echte tijden. De schatting ervoor was geen TomTom-berekening.</figcaption>
         </figure>

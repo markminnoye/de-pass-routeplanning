@@ -9,7 +9,7 @@ Je stelt een vraag in gewone taal, bijvoorbeeld een bus die kinderen uit één s
 Dezelfde volgorde staat uitgetekend in de [routepijplijn](docs/routepijplijn.html).
 
 1. **De invoer, eenmalig.** Waar de school is en hoe laat de bussen er moeten zijn, waar elk kind opstapt, en hoeveel kinderen er in elke bus passen. Die map blijft bij de school en zit niet in de plugin.
-2. **De matrix.** TomTom levert één keer de reistijd van elk punt naar elk ander punt. Die tabel blijft bij de school. Een nieuwe opstapplaats vult een rij en een kolom aan, en je ziet eerst wat dat kost.
+2. **De matrix.** TomTom levert één keer de reistijd van elk punt naar elk ander punt. Die tabel blijft bij de school. Een nieuwe opstapplaats vult een rij en een kolom aan. Je ziet eerst hoeveel nieuwe reistijden TomTom daarvoor moet ophalen. Die haalt TomTom pas op nadat je akkoord geeft.
 3. **Beschrijf het scenario.** Welke kinderen op welke bus, waar ze opstappen, en of een bus of een opstapplaats moet blijven zoals hij is.
 4. **Eerst een schatting.** De tijden komen uit de matrix. De kaart toont nog rechte lijnen, en de kilometers zijn een schatting.
 5. **Een kortere rit, als je dat wilt.** De plugin gebruikt dezelfde matrix: een betere volgorde van de stops, of een andere verdeling over de bussen. Een bus of een opstapplaats kun je vastzetten. Daarna opnieuw een schatting.
