@@ -192,14 +192,6 @@ def cmd_compare(args: argparse.Namespace) -> int:
     return 0
 
 
-def _force_given(scenario: Scenario) -> Scenario:
-    return replace(
-        scenario,
-        ordering="given",
-        buses=[replace(plan, ordering="given") for plan in scenario.buses],
-    )
-
-
 def _offline_travel(client: OfflineClient):
     def travel(a: Point, b: Point) -> int:
         if (a.lat, a.lon) == (b.lat, b.lon):
@@ -223,7 +215,9 @@ def cmd_optimize(args: argparse.Namespace) -> int:
     scenario = load_scenario_file(args.scenario, students, buses)
     client = OfflineClient(settings.data_dir / "matrix")
     travel = _offline_travel(client)
-    before = evaluate(_force_given(scenario), school, students, buses, client, settings)
+    # 'Vóór' is what `evaluate --offline` reports for the input as-is (auto buses
+    # already ordered), so the delta shown is only what optimize adds.
+    before = evaluate(scenario, school, students, buses, client, settings)
     mode = "order" if args.order else "assign"
     if args.order:
         optimized = optimize_order(scenario, buses, school, travel, settings)

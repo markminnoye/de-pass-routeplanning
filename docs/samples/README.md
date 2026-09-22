@@ -104,8 +104,9 @@ thuisstop — die verplaatsing zit **niet** in `ride_min`).
       niet padkost.
     - **haversine** (`--ordering haversine`): oude padkost-heuristiek (nearest neighbour +
       2-opt op hemelsbrede afstand).
-- `"pinned": true` op een bus-object: `optimize --assign` raakt die bus niet aan (geen
-  herverdeling en geen herordening). Ontbrekend of `false` → niet vastgezet.
+- `"pinned": true` op een bus-object: `optimize` (`--order` én `--assign`) raakt die bus
+  niet aan: geen herverdeling, geen herordening, en een `"ordering": "auto"` blijft `auto`.
+  Ontbrekend of `false` → niet vastgezet.
 - `"pinned_stops": ["s041", "pp-tienen-station"]` (scenario-veld): die stops blijven op hun
   huidige bus; de volgorde op die bus mag wel wijzigen, tenzij de bus zelf `pinned` is.
   Ontbrekend → leeg.

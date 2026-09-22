@@ -203,6 +203,67 @@ def test_optimize_order_writes_given_json_without_api_key(tmp_path, monkeypatch,
     assert "total_drive_min" in captured.out
 
 
+NEAR = {"id": "s001", "lat": 50.7900, "lon": 4.9000, "zone": "test"}
+FAR = {"id": "s002", "lat": 50.8000, "lon": 4.9100, "zone": "test"}
+
+
+def write_auto_pack(directory: Path) -> Path:
+    """Two stops, scenario ordering=auto, file order near-then-far (the worse order).
+
+    Cells (with the 0-diagonal TomTom also stores): school→near 300, school→far 600,
+    near↔far 300, near→school 300, far→school 600. Near-first: rides 300+40+600 = 940 s
+    (near) and 600 s (far). Far-first: 300+40+300 = 640 s (far) and 300 s (near), so
+    niveau A flips the file order and 'vóór' must already reflect that.
+    """
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / "school.json").write_text(json.dumps(SCHOOL))
+    (directory / "students.json").write_text(json.dumps([NEAR, FAR]))
+    (directory / "buses.json").write_text(json.dumps([BUS]))
+    (directory / "scenario.json").write_text(
+        json.dumps(
+            {
+                "name": "auto",
+                "ordering": "auto",
+                "buses": [{"bus_id": "bus1", "stops": ["s001", "s002"]}],
+            }
+        )
+    )
+    school = Point(SCHOOL["lat"], SCHOOL["lon"])
+    near = Point(NEAR["lat"], NEAR["lon"])
+    far = Point(FAR["lat"], FAR["lon"])
+    cells = directory / "matrix"
+    s, n, f = _point_key(school), _point_key(near), _point_key(far)
+    write_origin_row(cells, school, {s: 0, n: 300, f: 600})
+    write_origin_row(cells, near, {n: 0, f: 300, s: 300})
+    write_origin_row(cells, far, {f: 0, n: 300, s: 600})
+    return directory
+
+
+def _printed_before_after(stdout: str, key: str) -> tuple[float, float]:
+    line = next(line for line in stdout.splitlines() if line.startswith(f"{key} "))
+    before, after = line[len(key) + 1 :].split(" → ")
+    return float(before), float(after)
+
+
+def test_optimize_before_figures_match_evaluate_offline(tmp_path, monkeypatch, capsys):
+    """'Vóór' is what evaluate --offline reports for the input scenario, not the
+    file order forced to 'given'; for an ordering=auto scenario --order is a no-op
+    in the numbers and must print equal before/after."""
+    isolate_from_repo_env(monkeypatch)
+    pack = write_auto_pack(tmp_path / "pack")
+    out_dir = tmp_path / "out"
+    assert main(evaluate_argv(pack, out_dir, "--offline")) == 0
+    evaluated = json.loads((out_dir / "metrics.json").read_text())["summary"]
+    capsys.readouterr()
+
+    assert main(optimize_argv(pack, "--order", "--out", str(tmp_path / "opt.json"))) == 0
+    out = capsys.readouterr().out
+    for key in ("max_ride_min", "avg_ride_min", "total_drive_min"):
+        before, after = _printed_before_after(out, key)
+        assert before == evaluated[key], key
+        assert after == evaluated[key], key
+
+
 def test_optimize_assign_seed_zero_is_deterministic(tmp_path, monkeypatch):
     isolate_from_repo_env(monkeypatch)
     pack = write_mini_pack(tmp_path / "pack")

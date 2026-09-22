@@ -217,6 +217,66 @@ def test_optimize_order_is_idempotent(hand_school, hand_students, hand_buses, ha
     assert [_stop_ids(p.stops) for p in first.buses] == [_stop_ids(p.stops) for p in second.buses]
 
 
+def test_optimize_order_leaves_pinned_bus_untouched(
+    hand_school, hand_students, hand_buses, hand_client
+):
+    """Spec §4: pinned = verdeling én volgorde onaangeraakt, ook bij --order.
+
+    w-first is the worst order on the hand matrix (order search flips it to z-first),
+    so any reordering of the pinned bus is visible.
+    """
+    scenario = load_scenario(
+        {
+            "name": "pin-order",
+            "ordering": "given",
+            "buses": [
+                {"bus_id": "bus1", "stops": ["w", "x", "y", "z"], "pinned": True},
+                {"bus_id": "bus2", "stops": []},
+            ],
+        },
+        hand_students,
+        hand_buses,
+    )
+    result = optimize_order(scenario, hand_buses, hand_school, _travel(hand_client), SETTINGS)
+    assert _stop_ids(result.buses[0].stops) == ["w", "x", "y", "z"]
+    assert result.buses[0].pinned is True
+
+
+@pytest.mark.parametrize("mode", ["order", "assign"])
+def test_pinned_bus_keeps_auto_ordering(mode, hand_school, hand_students, hand_buses, hand_client):
+    """A pinned bus in an ordering=auto scenario keeps 'auto', so evaluate still
+    orders it the same way before and after; unpinned buses become 'given'."""
+    scenario = load_scenario(
+        {
+            "name": "pin-auto",
+            "ordering": "auto",
+            "buses": [
+                {"bus_id": "bus1", "stops": ["w", "x"], "pinned": True},
+                {"bus_id": "bus2", "stops": ["y", "z"]},
+            ],
+        },
+        hand_students,
+        hand_buses,
+    )
+    travel = _travel(hand_client)
+    if mode == "order":
+        result = optimize_order(scenario, hand_buses, hand_school, travel, SETTINGS)
+    else:
+        result = optimize_assign(
+            scenario, hand_buses, hand_school, travel, SETTINGS, seed=0, max_seconds=0
+        )
+    assert result.ordering == "given"
+    assert result.buses[0].ordering == "auto"
+    assert _stop_ids(result.buses[0].stops) == ["w", "x"]
+    assert result.buses[1].ordering == "given"
+    assert scenario_to_dict(result)["buses"][0] == {
+        "bus_id": "bus1",
+        "stops": ["w", "x"],
+        "ordering": "auto",
+        "pinned": True,
+    }
+
+
 def test_evaluate_auto_matrix_uses_ride_time_order(
     hand_school, hand_students, hand_buses, hand_client
 ):
@@ -346,13 +406,69 @@ def test_optimize_assign_keeps_pinned_stop_on_start_bus(school, students, buses,
     assert _bus_of(result, "s001") == start_bus
 
 
-def test_optimize_assign_same_seed_is_byte_identical(school, students, buses, fake_client):
-    scenario = _two_buses("mixed", ["s001", "s003"], ["s002", "s004"], students, buses)
+def test_optimize_assign_starts_from_ordered_input(
+    hand_school, hand_students, hand_buses, hand_client
+):
+    """One bus, no assignment move possible: assign must still return the niveau-A
+    order, so 'na' is never worse than the 'vóór' that evaluate reports."""
+    scenario = _given("w-first", ["w", "x", "y", "z"], hand_students, hand_buses)
+    result = optimize_assign(
+        scenario, hand_buses, hand_school, _travel(hand_client), SETTINGS, seed=0, max_seconds=0
+    )
+    assert _stop_ids(result.buses[0].stops) == ["z", "y", "x", "w"]
+
+
+def _record_perturbations(monkeypatch) -> list[tuple[set[frozenset[str]], set[frozenset[str]]]]:
+    """Wrap optimize._perturb and record (assignment in, assignment out) per call."""
+    import busroutes.optimize as opt
+
+    real = opt._perturb
+    trail: list[tuple[set[frozenset[str]], set[frozenset[str]]]] = []
+
+    def recording(scenario, *args, **kwargs):
+        out = real(scenario, *args, **kwargs)
+        trail.append((_assignment_sets(scenario), _assignment_sets(out)))
+        return out
+
+    monkeypatch.setattr(opt, "_perturb", recording)
+    return trail
+
+
+def test_optimize_assign_perturbation_moves_stops_and_follows_seed(
+    monkeypatch, hand_school, hand_students, hand_buses, hand_client
+):
+    """Hand world has free capacity (cap 10), so perturbation really moves stops.
+
+    Same seed → identical perturbation trail; different seed → different trail.
+    Guards against an RNG that ignores the seed and against a vacuous perturb.
+    """
+    scenario = _two_buses("split", ["w", "x"], ["y", "z"], hand_students, hand_buses)
+    travel = _travel(hand_client)
+
+    def run(seed: int) -> list[tuple[set[frozenset[str]], set[frozenset[str]]]]:
+        trail = _record_perturbations(monkeypatch)
+        optimize_assign(scenario, hand_buses, hand_school, travel, SETTINGS, seed=seed)
+        monkeypatch.undo()
+        return trail
+
+    seed0_a = run(0)
+    seed0_b = run(0)
+    seed1 = run(1)
+    assert len(seed0_a) >= 200
+    assert any(before != after for before, after in seed0_a)
+    assert seed0_a == seed0_b
+    assert seed0_a != seed1
+
+
+def test_optimize_assign_same_seed_is_byte_identical(
+    hand_school, hand_students, hand_buses, hand_client
+):
+    scenario = _two_buses("split", ["w", "x"], ["y", "z"], hand_students, hand_buses)
     kwargs = dict(
         scenario=scenario,
-        buses=buses,
-        school=school,
-        travel=_travel(fake_client),
+        buses=hand_buses,
+        school=hand_school,
+        travel=_travel(hand_client),
         settings=SETTINGS,
         seed=0,
     )

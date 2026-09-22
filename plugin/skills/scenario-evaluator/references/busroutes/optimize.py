@@ -105,18 +105,9 @@ def optimize_order(
     travel,
     settings: Settings,
 ) -> Scenario:
-    """Reorder stops on each bus; assignment is unchanged. Result is ordering=given."""
-    plans = [
-        replace(
-            plan,
-            stops=order_stops_for_bus(
-                plan.stops, buses[plan.bus_id].start, school.point, travel, settings
-            ),
-            ordering="given",
-        )
-        for plan in scenario.buses
-    ]
-    return replace(scenario, buses=plans, ordering="given")
+    """Reorder stops on each unpinned bus; assignment is unchanged. Result is ordering=given."""
+    plans = [_apply_order(plan, buses, school, travel, settings) for plan in scenario.buses]
+    return _with_plans(scenario, plans)
 
 
 def _student_count(stops: list[Stop]) -> int:
@@ -124,7 +115,18 @@ def _student_count(stops: list[Stop]) -> int:
 
 
 def _clone_plans(plans: list[BusPlan]) -> list[BusPlan]:
-    return [replace(plan, stops=list(plan.stops), ordering="given") for plan in plans]
+    return [_frozen(plan) for plan in plans]
+
+
+def _frozen(plan: BusPlan) -> BusPlan:
+    """Copy with the stop list materialised as 'given'.
+
+    A pinned bus is left untouched, ordering included: if it was 'auto' it stays
+    'auto', so evaluate keeps ordering it the same way before and after.
+    """
+    if plan.pinned:
+        return replace(plan, stops=list(plan.stops))
+    return replace(plan, stops=list(plan.stops), ordering="given")
 
 
 def _with_plans(scenario: Scenario, plans: list[BusPlan]) -> Scenario:
@@ -139,7 +141,7 @@ def _apply_order(
     settings: Settings,
 ) -> BusPlan:
     if plan.pinned:
-        return replace(plan, stops=list(plan.stops), ordering="given")
+        return _frozen(plan)
     ordered = order_stops_for_bus(
         plan.stops, buses[plan.bus_id].start, school.point, travel, settings
     )
@@ -338,11 +340,16 @@ def optimize_assign(
     seed: int = 0,
     max_seconds: float = 30.0,
 ) -> Scenario:
-    """Reassign unpinned stops across unpinned buses, then reorder with order_stops_for_bus."""
+    """Reassign unpinned stops across unpinned buses, then reorder with order_stops_for_bus.
+
+    The search starts from niveau A of the input (every unpinned bus reordered), which
+    is exactly what evaluate reports for an ordering=auto scenario, so the result is
+    never worse than the 'vóór' figure the CLI prints.
+    """
     pinned_stops = set(scenario.pinned_stops)
     rng = random.Random(seed)
     started = time.monotonic()
-    current = _with_plans(scenario, _clone_plans(scenario.buses))
+    current = optimize_order(scenario, buses, school, travel, settings)
     current = _local_search(current, buses, school, travel, settings, pinned_stops)
     best = current
     best_score = score_scenario(best, buses, school, travel, settings)
