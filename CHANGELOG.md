@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-22
+
 ### Added
 - `optimize --assign --max-perturbations` (default 1000): reproduceerbaar stoppunt naast de 200-stall-regel
 
@@ -78,7 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initiële evaluator- en plugin-basis (nog niet als GitHub Release gepubliceerd).
 
-[Unreleased]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.1.0...v0.2.0
