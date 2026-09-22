@@ -9,6 +9,10 @@ dependencies = []
 busroutes = "busroutes.cli:main"
 
 [dependency-groups]
+bench = [
+    "ortools>=9.15.6755",
+    "pyvroom>=1.15.2",
+]
 dev = [
     "pytest>=8",
     "ruff>=0.6",

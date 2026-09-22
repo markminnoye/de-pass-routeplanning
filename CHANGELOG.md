@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Benchmark `scripts/bench_solvers.py` (dependency-groep `bench`, niet in CI): stdlib-ordening
+  tegen pyvroom en OR-Tools op de sample-matrix, gescoord met `evaluate --offline`
 - `busroutes optimize --order|--assign`: stdlib-solver op de matrix (geen TomTom); schrijft
   een scenario-JSON met `ordering: given` en een vóór/na-samenvatting op offline-cijfers
   ("vóór" = wat `evaluate --offline` voor het invoerscenario geeft; `--assign` start vanaf

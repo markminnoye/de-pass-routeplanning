@@ -227,11 +227,33 @@ Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's
 - **Offline-modus:** `evaluate --offline` rekent een scenario door op de matrix in het datapakket, zonder TomTom-key of netwerk. Tijden komen uit de cellen; km zijn hemelsbreed × wegenfactor (`km_estimated: true`); de kaart toont rechte lijnen. Definitieve cijfers en wegen blijven `evaluate` (TomTom `calculateRoute`).
 - **Matrix in het datapakket:** de reistijdmatrix leeft in `<data>/matrix/` (default `docs/samples/matrix/`), niet meer alleen in `.cache/tomtom/cells/`. Eén keer ophalen: ±8.000 transacties voor de ~141 punten van de fictieve set; een nieuw punt kost ±280 transacties (rij + kolom). Daarna is offline-evaluatie onbeperkt en gratis.
 
+## Benchmark solvers (22/09/2026)
+
+Zelfde matrix (`docs/samples/matrix`), dezelfde stops per bus, score via `evaluate --offline` (dwell inbegrepen). Alleen **volgorde**: `--assign` zou stops tussen bussen verplaatsen, en daarvoor ontbreken op `regiobus-per-zone` 13.420 van de 18.496 paren. De VROOM-demoserver en Google Route Optimization zijn niet aangeroepen (OSRM in plaats van deze matrix, respectievelijk geen GCP-project). Geen extra TomTom-`evaluate`: de rangorde gaat over de matrix-score, niet over een tweede verkeersdag.
+
+| Scenario | Solver | max rit (min) | gem. rit (min) | ritten > 60 min | km | rekentijd (s) |
+|---|---|---:|---:|---:|---:|---:|
+| regiobus-per-zone | stdlib | 110.0 | 40.9 | 32 | 230.4 | 0.29 |
+| regiobus-per-zone | pyvroom | 117.7 | 42.2 | 37 | 226.2 | 1.10 |
+| regiobus-per-zone | ortools | 117.7 | 44.0 | 37 | 229.7 | 7.12 |
+| opstapplaatsen | stdlib | 99.3 | 34.1 | 18 | 205.2 | 0.19 |
+| opstapplaatsen | pyvroom | 101.8 | 32.4 | 20 | 204.5 | 0.68 |
+| opstapplaatsen | ortools | 102.9 | 34.0 | 20 | 206.9 | 7.10 |
+| spreiding-gemengd | stdlib | 180.6 | 72.4 | 76 | 709.3 | 0.26 |
+| spreiding-gemengd | pyvroom | 191.1 | 88.9 | 90 | 691.6 | 1.55 |
+| spreiding-gemengd | ortools | 194.4 | 97.4 | 95 | 689.4 | 7.12 |
+
+Stdlib is `optimize --order` (2-opt/or-opt op de langste kinderrit). pyvroom 1.15 minimaliseert route-duur, met een dalende `max_travel_time` tot de rit nog haalbaar is. OR-Tools 9.15 gebruikt een tijd-dimensie, boogkost = reistijd + dwell, en `GlobalSpanCost` (1 s zoektijd per bus). Km zijn de offline-schatting (hemelsbreed × 1,3). Rekentijd is de zoektocht op een matrix die al in het geheugen staat.
+
+**Aanbeveling: de stdlib-solver blijft de plugin-solver.** Op alle drie de scenario's heeft hij de laagste langste rit en de minste ritten boven 60 minuten. pyvroom en OR-Tools rijden iets minder kilometers en maken de langste rit langer: zij optimaliseren routeduur, niet de rit van het kind. Op `opstapplaatsen` heeft pyvroom een lager gemiddelde (32,4 tegen 34,1) en toch een hogere maximumrit; de lexicografische doelfunctie kiest het maximum eerst.
+
+Installatie (`uv sync --group bench`, niet in CI): OR-Tools ±66 MB, pyvroom-extensie ±10 MB plus numpy ±22 MB en pandas ±44 MB. Het script is `scripts/bench_solvers.py` (253 regels), buiten `busroutes/` en buiten de plugin. VROOM hosten of OR-Tools in de plugin meeleveren volgt niet uit deze vergelijking. Een `--assign`-benchmark wordt pas zinvol als `fetch-matrix` de ontbrekende paren heeft aangevuld.
+
 ## Voorgestelde stack
 
 1. **Geocoding + verkeersbewuste reistijdmatrix**: TomTom-connector.
 2. **Scenario-evaluatie (licht, direct bruikbaar)**: agent + TomTom Matrix Routing, voor manueel gedefinieerde indelingen (zones, vaste opstapplaatsen, "bus naar Leuven").
-3. **Volledige optimalisatie (optioneel, voor het "beste" scenario)**: OR-Tools (Python, direct bruikbaar in deze sessie), met een doelfunctie gericht op kortste rit per kind.
+3. **Volledige optimalisatie**: stdlib-solver in `busroutes optimize` (langste rit per kind). Benchmark 22/09: pyvroom en OR-Tools verliezen op die score; ze blijven buiten de plugin. Zie "Benchmark solvers".
 4. **Visualisatie**: Leaflet-artifact per scenario, gevoed met GeoJSON; OSM-basemap plus Overpass-overlay voor De Lijn / TEC / NMBS.
 
 ## Volgende stappen
@@ -240,6 +262,7 @@ Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's
 2. ~~Fictieve testset opbouwen~~ ✅ 14/09/2026 — `docs/samples/` (140 leerlingpunten, 7 bussen, 3 referentiescenario's, `expected/`).
 3. ~~Eerste versie van de scenario-evaluator~~ ✅ 14/09/2026 — `busroutes` CLI (`evaluate`/`compare`) + skill `.claude/skills/scenario-evaluator/`. Vervolgwensen staan onderaan `.agent/plans/2026-09-14-testset-en-evaluator-v1.md`.
 4. ~~Offline-modus + matrix in het datapakket~~ ✅ 16/09/2026 — `evaluate --offline`, `busroutes data status|fetch-matrix|add-points`, matrix in `docs/samples/matrix/`.
-5. ~~Stdlib-solver (`busroutes optimize`)~~ ✅ 16/09/2026 (WP3) — `optimize --order|--assign` op de matrix, zonder TomTom. OR-Tools/VROOM blijven benchmark (WP4), niet de plugin-solver.
-6. (Apart spoor, optioneel) Google's js-route-optimization-app deployen op een eigen GCP-project om de API zelf te verkennen via de GUI.
-7. Zodra de echte leerlingdata beschikbaar is: adres, school, gewenste aankomsttijd, evt. vaste opstapplaats + buscapaciteiten per bus aanleveren.
+5. ~~Stdlib-solver (`busroutes optimize`)~~ ✅ 16/09/2026 (WP3) — `optimize --order|--assign` op de matrix, zonder TomTom.
+6. ~~Benchmark pyvroom / OR-Tools~~ ✅ 22/09/2026 (WP4) — stdlib wint op langste rit bij volgorde-per-bus. `--assign`-vergelijking wacht op een volledige matrix.
+7. (Apart spoor, optioneel) Google's js-route-optimization-app deployen op een eigen GCP-project om de API zelf te verkennen via de GUI.
+8. Zodra de echte leerlingdata beschikbaar is: adres, school, gewenste aankomsttijd, evt. vaste opstapplaats + buscapaciteiten per bus aanleveren.

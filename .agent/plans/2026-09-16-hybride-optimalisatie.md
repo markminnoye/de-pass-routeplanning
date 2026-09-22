@@ -1,6 +1,6 @@
 # Plan: hybride optimalisatie — datapakket, offline-modus, stdlib-solver, skill-herwerking
 
-Status: 🔄 actief — WP0 ✅, WP1 ✅ (spec), WP2 ✅ (16/09/2026, branch `wp2-datapakket-offline`), WP3 ✅ (16/09/2026, branch `wp3-stdlib-solver`). Volgende: WP5 skill; WP4 mag parallel.
+Status: 🔄 actief — WP0 ✅, WP1 ✅ (spec), WP2 ✅ (16/09/2026, branch `wp2-datapakket-offline`), WP3 ✅ (16/09/2026, branch `wp3-stdlib-solver`), WP4 ✅ (22/09/2026, branch `wp4-benchmark-spike`). Volgende: WP5 skill.
 
 ## Context
 
@@ -108,7 +108,13 @@ Agent-opdracht (na WP2, werkt op de matrix van het datapakket):
   B verplaatst een verkeerd ingedeeld kind; pinned blijft staan; capaciteit gerespecteerd;
   seed → identieke output.
 
-### WP4 — Benchmark-spike (throwaway, parallel aan WP3 na WP2)
+### WP4 — Benchmark-spike (throwaway, parallel aan WP3 na WP2) ✅ 22/09/2026
+Resultaat: op volgorde per bus wint de stdlib-solver op alle drie de referentiescenario's
+(laagste langste rit, minste ritten > 60 min). `--assign` is niet vergeleken: de
+sample-matrix dekt elke bus, niet de paren tussen bussen (13.420 van 18.496 ontbrekend
+op `regiobus-per-zone`). Geen TomTom-`evaluate`, geen VROOM-demo, geen Google Route
+Optimization. Cijfers en aanbeveling: `docs/data-en-tooling-opties.md`.
+
 Agent-opdracht: op de **fictieve** set de solver van WP3 vergelijken met echte
 VRP-solvers, allemaal gevoed met **dezelfde matrix uit het datapakket** (zodat enkel de
 solver verschilt, niet de reistijden), en allemaal beoordeeld via `evaluate --offline` +
