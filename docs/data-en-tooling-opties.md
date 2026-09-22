@@ -217,6 +217,8 @@ Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's
 - **Gemini/"Grounding with Google Maps"**: vermoedelijk hetzelfde agent-over-Maps-API-patroon als wat wij met Claude opzetten, geen aparte VRP-oplosser — niet bevestigd via de video zelf (kon niet bekeken worden), wel via Google's eigen documentatie over dat patroon.
 - Een aparte MCP-server voor Google Maps hosten is voor dit project waarschijnlijk niet nodig — één REST-call rechtstreeks vanuit de skill volstaat.
 
+De optimalisatie- en connector-keuze in deze lijst is bijgesteld op 16/09 en 22/09: de plugin-solver is de stdlib-solver, en de scenario-evaluator volgt één CLI-tabel zonder TomTom-connector. Zie de beslissingen van die data.
+
 ## Beslissingen (15/09/2026)
 
 - **Kaart-basemap: OpenStreetMap.de**, met Esri straten als tweede laag. Niet `tile.openstreetmap.org`: lokaal geopende `map.html` heeft geen HTTP-Referer en OSMF blokkeert die requests (403). CARTO Voyager toont zonder key een "API KEY REQUIRED"-watermerk.
@@ -249,20 +251,29 @@ Stdlib is `optimize --order` (2-opt/or-opt op de langste kinderrit). pyvroom 1.1
 
 Installatie (`uv sync --group bench`, niet in CI): OR-Tools ±66 MB, pyvroom-extensie ±10 MB plus numpy ±22 MB en pandas ±44 MB. Het script is `scripts/bench_solvers.py` (253 regels), buiten `busroutes/` en buiten de plugin. VROOM hosten of OR-Tools in de plugin meeleveren volgt niet uit deze vergelijking. Een `--assign`-benchmark wordt pas zinvol als `fetch-matrix` de ontbrekende paren heeft aangevuld.
 
+## Beslissingen (22/09/2026) — skill
+
+- **Eén commando per vraag.** De scenario-evaluator-skill (`skills/scenario-evaluator/SKILL.md`, dezelfde tekst in de plugin) is een tabel: scenario-JSON, `evaluate --offline`, `optimize --order` of `--assign`, pas dan één `evaluate` (ongeveer 7 TomTom-calls), daarna `map.html` en `compare`. `data status` / `add-points` / `fetch-matrix --dry-run` voor het pakket.
+- **Geen TomTom-connector in de skill.** Een losse reistijd is een scenario plus `evaluate --offline`. De connector activeren is geen stap meer voor deze evaluator.
+- **Datapakket buiten de plugin.** `BUSROUTES_DATA_DIR` of `--data`, default `docs/samples/`. De fictieve set is alleen het voorbeeld. Echte leerlingdata komt niet in git en niet in de plugin.
+- **Ontbrekend matrixpaar is een fout.** De voorbeeldmatrix dekt de drie referentiescenario's per bus, niet de paren tussen bussen. Dan `data status` en `fetch-matrix --dry-run`, niet stil terugvallen op haversine en niet de matrix opnieuw kopen zonder opdracht.
+- **`--assign` noemen, niet beloven.** De zoeklimiet (`--max-seconds`, default 30) is een stop. Dat 140 stops binnen die tijd klaar zijn, belooft de skill niet. De schaalfix staat in `.agent/plans/2026-09-17-wp3-fix-tasks.md` en is nog niet gestart.
+
 ## Voorgestelde stack
 
-1. **Geocoding + verkeersbewuste reistijdmatrix**: TomTom-connector.
-2. **Scenario-evaluatie (licht, direct bruikbaar)**: agent + TomTom Matrix Routing, voor manueel gedefinieerde indelingen (zones, vaste opstapplaatsen, "bus naar Leuven").
+1. **Geocoding + verkeersbewuste reistijdmatrix**: TomTom REST, eenmaal opgeslagen in het datapakket. De skill spreekt TomTom daarna alleen aan voor de definitieve kaart (`evaluate`) of een nieuw punt (`data add-points`).
+2. **Scenario-evaluatie**: `evaluate --offline` op de matrix, daarna één `evaluate` met echte wegen.
 3. **Volledige optimalisatie**: stdlib-solver in `busroutes optimize` (langste rit per kind). Benchmark 22/09: pyvroom en OR-Tools verliezen op die score; ze blijven buiten de plugin. Zie "Benchmark solvers".
-4. **Visualisatie**: Leaflet-artifact per scenario, gevoed met GeoJSON; OSM-basemap plus Overpass-overlay voor De Lijn / TEC / NMBS.
+4. **Visualisatie**: Leaflet-pagina per scenario (`out/<naam>/map.html`), gevoed met GeoJSON; OSM-basemap plus Overpass-overlay voor De Lijn / TEC / NMBS.
 
 ## Volgende stappen
 
-1. ~~TomTom REST-toegang~~ ✅ 14/09/2026 (key in `.env`, Matrix v2 smoke-test OK). **Nog te doen door Mark**: TomTom Maps MCP-connector activeren — via de connectorinstellingen op claude.ai, of lokaal met `claude mcp add tomtom -e TOMTOM_API_KEY=... -- npx @tomtom-org/tomtom-mcp@latest` (zie [quick-setup](https://docs.tomtom.com/tomtom-maps-mcp/documentation/quick-setup)).
+1. ~~TomTom REST-toegang~~ ✅ 14/09/2026 (key in `.env`, Matrix v2 smoke-test OK). De TomTom Maps-connector activeren is geen stap meer voor de evaluator (beslissing 22/09).
 2. ~~Fictieve testset opbouwen~~ ✅ 14/09/2026 — `docs/samples/` (140 leerlingpunten, 7 bussen, 3 referentiescenario's, `expected/`).
-3. ~~Eerste versie van de scenario-evaluator~~ ✅ 14/09/2026 — `busroutes` CLI (`evaluate`/`compare`) + skill `.claude/skills/scenario-evaluator/`. Vervolgwensen staan onderaan `.agent/plans/2026-09-14-testset-en-evaluator-v1.md`.
+3. ~~Eerste versie van de scenario-evaluator~~ ✅ 14/09/2026 — `busroutes` CLI (`evaluate`/`compare`) + skill. Vervolgwensen staan onderaan `.agent/plans/2026-09-14-testset-en-evaluator-v1.md`.
 4. ~~Offline-modus + matrix in het datapakket~~ ✅ 16/09/2026 — `evaluate --offline`, `busroutes data status|fetch-matrix|add-points`, matrix in `docs/samples/matrix/`.
 5. ~~Stdlib-solver (`busroutes optimize`)~~ ✅ 16/09/2026 (WP3) — `optimize --order|--assign` op de matrix, zonder TomTom.
 6. ~~Benchmark pyvroom / OR-Tools~~ ✅ 22/09/2026 (WP4) — stdlib wint op langste rit bij volgorde-per-bus. `--assign`-vergelijking wacht op een volledige matrix.
-7. (Apart spoor, optioneel) Google's js-route-optimization-app deployen op een eigen GCP-project om de API zelf te verkennen via de GUI.
-8. Zodra de echte leerlingdata beschikbaar is: adres, school, gewenste aankomsttijd, evt. vaste opstapplaats + buscapaciteiten per bus aanleveren.
+7. ~~Skill herschreven naar één beslissingstabel~~ ✅ 22/09/2026 (WP5).
+8. Schaalfix `optimize --assign` (plan `2026-09-17-wp3-fix-tasks.md`, nog niet gestart).
+9. Zodra de school data levert (WP6): adressen of coördinaten, buscapaciteiten, beltijd, eventuele vaste opstapplaatsen. Daarna `data geocode` en `fetch-matrix` (eerst `--dry-run`). Google's route-optimization-demo op een eigen GCP-project hoort niet bij dit pad.

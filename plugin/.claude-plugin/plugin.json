@@ -1,7 +1,7 @@
 {
   "name": "de-pass-routeplanning",
-  "version": "0.2.1",
-  "description": "Schoolbus-scenario's voor \"de pass\" (Hoegaarden) doorrekenen en vergelijken: rittijd per kind, kilometers, bezetting, aankomsttijden en een kaart per scenario.",
+  "version": "0.3.0",
+  "description": "Schoolbus-scenario's voor \"de pass\" (Hoegaarden): offline vergelijken, volgorde of verdeling verbeteren, daarna een kaart met echte wegen.",
   "author": {
     "name": "Mark Minnoye"
   },

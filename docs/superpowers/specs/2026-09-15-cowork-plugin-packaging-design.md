@@ -74,7 +74,7 @@ Atomaire sync: schrijf naar een temp-map, vervang `plugin/skills/scenario-evalua
 
 ### Generieke skill
 
-Nieuwe map `skills/scenario-evaluator/`, inhoud gebaseerd op de Cowork-bijlage (werkmap, `python3 -m busroutes.cli`, gebruiker levert schooldata, schema in `references/data-schema.md`), plus de versie-check hieronder. Optionele TomTom Maps-connector blijft een korte tabel (Claude-specifiek extraatje; zonder connector werkt de CLI).
+Nieuwe map `skills/scenario-evaluator/`, inhoud gebaseerd op de Cowork-bijlage (werkmap, `python3 -m busroutes.cli`, gebruiker levert schooldata, schema in `references/data-schema.md`), plus de versie-check hieronder. De korte TomTom-connector-tabel uit dit ontwerp is op 22/09/2026 (WP5) uit de skill gehaald; de CLI-tabel is de enige weg.
 
 ### Repo-skill
 

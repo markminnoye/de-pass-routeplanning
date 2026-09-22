@@ -220,7 +220,7 @@ in git komt) in `docs/data-en-tooling-opties.md` en AGENTS.md.
   seed → byte-identieke output; `--max-seconds` wordt gerespecteerd.
 - Regressie: `docs/samples/expected/` blijft de TomTom-referentie; erbij komt
   `expected/offline/` die in CI zonder key draait.
-- Skill-test met subagenten (WP5): drie opdrachten uit het plan; agent volgt de tabel.
+- Skill-test met subagenten (WP5): drie opdrachten uit het plan; agent volgt de tabel. Uitgevoerd 22/09/2026.
 
 ## Buiten scope
 

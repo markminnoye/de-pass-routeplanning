@@ -136,6 +136,9 @@ niet in de plugin; `bench`-dependency-groep staat los van `dev` zodat de DoD nie
 zwaarder wordt.
 
 ### WP5 — Skill herschrijven (`skills/scenario-evaluator/SKILL.md` + plugin-kopie) ✅ 22/09/2026
+
+Uitgevoerd op branch `wp5-skill`: beslissingstabel in de skill en de plugin-kopie, connector-sectie weg, datapakket via `BUSROUTES_DATA_DIR`. Skill-tests (subagenten): Leuven-bus als scenario-JSON met `"ordering": "given"`, volgorde van bus 6 via `optimize --order`, verdeling met bus1 vast stopt op `OfflineError` en `fetch-matrix --dry-run` (geen aankoop, geen connector). Kaart + cijfers geleverd. `--assign` op 140 stops is niet beloofd; dat blijft `.agent/plans/2026-09-17-wp3-fix-tasks.md`.
+
 Agent-opdracht (met `superpowers:writing-skills`, na WP2+WP3):
 - Beslissingstabel hierboven als kern; werkwijze: pakket controleren → scenario → offline
   → optimize → pas dan TomTom → kaart als artifact → compare.
@@ -170,6 +173,10 @@ WP6 pas zodra de school data levert (na WP2)
 ```
 
 ## Verificatie (einde van het geheel)
+
+Stand 22/09/2026, na WP5: punten 4 (skill-test in de repo, nog niet in een geïnstalleerde Cowork-sessie) en 5 zijn gedaan. Punt 3 wacht op een volledige matrix en op de schaalfix. Punt 1 draait in CI zonder de opt-in regressie (`BUSROUTES_REGRESSION=1`); `docs/samples/expected/` is bij WP5 niet gewijzigd.
+
+
 
 1. DoD groen; `BUSROUTES_REGRESSION=1 uv run pytest tests/test_regression.py` groen met
    vernieuwde expected.

@@ -13,8 +13,8 @@
 
 ### Architectuur — drie lagen
 
-1. **Geodata** (geocoding + verkeersbewuste reistijdmatrix) → TomTom, **hybride**: de MCP-connector voor interactief verkennen (geocoden, snelle routecheck, kaartbeeld), Python/REST (`busroutes/tomtom.py`: Matrix Routing v2 + `calculateRoute`, met disk-cache) voor de batch-evaluatie. Nooit een volledig scenario (7 routes) via de connector doorrekenen.
-2. **Optimalisatie** (toewijzing kinderen→bus + volgorde per bus) → OR-Tools, doelfunctie = kortste individuele rittijd. Zie `@docs/data-en-tooling-opties.md` voor waarom niet Google Route Optimization (die optimaliseert op vlootkost, geen ingebouwd per-passagier-objectief).
+1. **Geodata** (geocoding + verkeersbewuste reistijdmatrix) → TomTom via Python/REST (`busroutes/tomtom.py`: Matrix Routing v2 + `calculateRoute`, met disk-cache). De matrix staat in het datapakket (`BUSROUTES_DATA_DIR` / `--data`, default `docs/samples/`) en wordt één keer opgehaald. De scenario-evaluator-skill gebruikt de TomTom-connector niet: één CLI-commando per vraag (`skills/scenario-evaluator/SKILL.md`).
+2. **Optimalisatie** (toewijzing kinderen→bus + volgorde per bus) → stdlib-solver in `busroutes optimize` (`--order` / `--assign`), doelfunctie = kortste individuele rittijd. Benchmark 22/09/2026: pyvroom en OR-Tools verliezen op die score en blijven buiten de plugin. Zie `@docs/data-en-tooling-opties.md`. Google Route Optimization optimaliseert op vlootkost en is geen ingebouwd per-passagier-objectief.
 3. **Visualisatie** → Leaflet.js + OpenStreetMap.de-tiles (niet tile.openstreetmap.org, die 403 geeft op lokaal `file://`), gevoed met GeoJSON, als lokaal `map.html` per scenario, met een togglebare overlay van De Lijn / TEC / NMBS-haltes (Overpass). Let op: een Claude-artifact blokkeert externe afbeeldingen, dus tiles laden daar niet — artifact-publicatie vergt ingebedde tiles (later).
 
 Deze lagen zijn complementair: laag 1 levert data, laag 2 lost het combinatorische toewijzingsprobleem op, laag 3 toont het resultaat. Een kaarten-API (TomTom/Google Maps) lost nooit laag 2 op.
@@ -23,7 +23,7 @@ Deze lagen zijn complementair: laag 1 levert data, laag 2 lost het combinatorisc
 
 - Regiobus die kinderen uit één streek verzamelt (bv. Leuven).
 - Vaste opstapplaatsen voor zones met veel kinderen.
-- Volledig geoptimaliseerde verdeling (OR-Tools).
+- Volledig geoptimaliseerde verdeling (`busroutes optimize --assign`; vaste bussen/stops mogen). `--assign` op de volledige schoolset is nog niet geschaald (plan `2026-09-17-wp3-fix-tasks.md`, nog niet gestart) en de voorbeeldmatrix dekt niet alle paren tussen bussen.
 
 Per scenario tonen: max. en gemiddelde reistijd/leerling, totale rijtijd, km, bezettingsgraad, aankomsttijden.
 
@@ -36,7 +36,7 @@ Per scenario tonen: max. en gemiddelde reistijd/leerling, totale rijtijd, km, be
 
 ### Privacy
 
-Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Cloud-geocoding (TomTom e.a.) stuurt adressen naar een externe dienst. Gebruik in ontwikkeling en demo's uitsluitend fictieve/steekproef-adressen tot er een bewuste beslissing is over hoe met echte leerlingdata wordt omgegaan (zie `@docs/data-en-tooling-opties.md`, sectie "Aandachtspunt: privacy van kinderdata").
+Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Cloud-geocoding (TomTom e.a.) stuurt adressen naar een externe dienst. Het datapakket bewaart coördinaten en willekeurige ids, geen adressen, en hoort niet in git en niet in de plugin. Gebruik in ontwikkeling en demo's uitsluitend het fictieve voorbeeld in `docs/samples/` tot de school data levert (WP6). Zie `@docs/data-en-tooling-opties.md`, sectie "Aandachtspunt: privacy van kinderdata".
 
 ### Environment & Configuration
 
@@ -57,4 +57,4 @@ Vraag amendementen aan `@docs/data-en-tooling-opties.md` (of dit bestand) bij ni
 
 ### Volgende stappen
 
-Zie het einde van `@docs/data-en-tooling-opties.md` voor de actuele actielijst (TomTom-connector activeren, testset opbouwen, scenario-evaluator-skill bouwen, enz.).
+Zie het einde van `@docs/data-en-tooling-opties.md`. Open: echte leerlingdata (WP6, geblokkeerd) en de schaalfix van `optimize --assign`.
