@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import random
 import time
-from dataclasses import replace
+from collections.abc import Iterable
+from dataclasses import dataclass, replace
+from typing import Literal
 
 from busroutes.config import Settings
 from busroutes.models import Bus, BusPlan, Point, Scenario, School, Stop
 
 Score = tuple[int, int, int]  # (max_ride_s, sum_ride_s, total_drive_s)
+StopReason = Literal["stall", "max_perturbations", "max_seconds", "none"]
 
 
 def _dwell_s(stop: Stop, settings: Settings) -> int:
@@ -38,6 +41,19 @@ def score_bus(
     return (max(rides), sum(rides), total_drive)
 
 
+def combine_scores(scores: Iterable[Score]) -> Score:
+    """Lexicographic scenario score from per-bus scores: max, then sums."""
+    max_ride = 0
+    sum_ride = 0
+    total_drive = 0
+    for bus_max, bus_sum, bus_drive in scores:
+        if bus_max > max_ride:
+            max_ride = bus_max
+        sum_ride += bus_sum
+        total_drive += bus_drive
+    return (max_ride, sum_ride, total_drive)
+
+
 def score_scenario(
     scenario: Scenario,
     buses: dict[str, Bus],
@@ -45,17 +61,10 @@ def score_scenario(
     travel,
     settings: Settings,
 ) -> Score:
-    max_ride = 0
-    sum_ride = 0
-    total_drive = 0
-    for plan in scenario.buses:
-        bus_max, bus_sum, bus_drive = score_bus(
-            plan.stops, buses[plan.bus_id].start, school.point, travel, settings
-        )
-        max_ride = max(max_ride, bus_max)
-        sum_ride += bus_sum
-        total_drive += bus_drive
-    return (max_ride, sum_ride, total_drive)
+    return combine_scores(
+        score_bus(plan.stops, buses[plan.bus_id].start, school.point, travel, settings)
+        for plan in scenario.buses
+    )
 
 
 def order_stops_for_bus(
@@ -168,6 +177,52 @@ def _best_insert(
     return best
 
 
+def _past(deadline: float | None) -> bool:
+    return deadline is not None and time.monotonic() > deadline
+
+
+def _plan_score(
+    plan: BusPlan,
+    buses: dict[str, Bus],
+    school: School,
+    travel,
+    settings: Settings,
+) -> Score:
+    return score_bus(plan.stops, buses[plan.bus_id].start, school.point, travel, settings)
+
+
+def _score_plans(
+    plans: list[BusPlan],
+    buses: dict[str, Bus],
+    school: School,
+    travel,
+    settings: Settings,
+) -> list[Score]:
+    return [_plan_score(plan, buses, school, travel, settings) for plan in plans]
+
+
+def _with_replaced(scores: list[Score], replacements: dict[int, Score]) -> Score:
+    merged = [replacements.get(i, score) for i, score in enumerate(scores)]
+    return combine_scores(merged)
+
+
+def _commit_move(
+    scenario: Scenario,
+    plans: list[BusPlan],
+    buses: dict[str, Bus],
+    school: School,
+    travel,
+    settings: Settings,
+    scores: list[Score],
+    touched: tuple[int, ...],
+) -> Scenario:
+    new_plans = list(plans)
+    for index in touched:
+        new_plans[index] = _apply_order(new_plans[index], buses, school, travel, settings)
+        scores[index] = _plan_score(new_plans[index], buses, school, travel, settings)
+    return _with_plans(scenario, new_plans)
+
+
 def _first_improving_relocate(
     scenario: Scenario,
     buses: dict[str, Bus],
@@ -175,15 +230,22 @@ def _first_improving_relocate(
     travel,
     settings: Settings,
     pinned_stops: set[str],
+    deadline: float | None,
+    scores: list[Score],
 ) -> Scenario | None:
     plans = scenario.buses
-    current_score = score_scenario(scenario, buses, school, travel, settings)
+    current_score = combine_scores(scores)
     for src_i, src in enumerate(plans):
         if src.pinned:
             continue
+        src_start = buses[src.bus_id].start
         for stop_i, stop in enumerate(src.stops):
+            if _past(deadline):
+                return None
             if stop.id in pinned_stops:
                 continue
+            src_stops = src.stops[:stop_i] + src.stops[stop_i + 1 :]
+            src_score = score_bus(src_stops, src_start, school.point, travel, settings)
             for dst_i, dst in enumerate(plans):
                 if dst_i == src_i or dst.pinned:
                     continue
@@ -197,16 +259,24 @@ def _first_improving_relocate(
                     travel,
                     settings,
                 )
-                new_plans = list(plans)
-                new_plans[src_i] = replace(
-                    src, stops=src.stops[:stop_i] + src.stops[stop_i + 1 :], ordering="given"
+                dst_score = score_bus(
+                    inserted, buses[dst.bus_id].start, school.point, travel, settings
                 )
-                new_plans[dst_i] = replace(dst, stops=inserted, ordering="given")
-                new_plans[src_i] = _apply_order(new_plans[src_i], buses, school, travel, settings)
-                new_plans[dst_i] = _apply_order(new_plans[dst_i], buses, school, travel, settings)
-                candidate = _with_plans(scenario, new_plans)
-                if score_scenario(candidate, buses, school, travel, settings) < current_score:
-                    return candidate
+                estimate = _with_replaced(scores, {src_i: src_score, dst_i: dst_score})
+                if estimate < current_score:
+                    new_plans = list(plans)
+                    new_plans[src_i] = replace(src, stops=src_stops, ordering="given")
+                    new_plans[dst_i] = replace(dst, stops=inserted, ordering="given")
+                    return _commit_move(
+                        scenario,
+                        new_plans,
+                        buses,
+                        school,
+                        travel,
+                        settings,
+                        scores,
+                        (src_i, dst_i),
+                    )
     return None
 
 
@@ -217,19 +287,25 @@ def _first_improving_swap(
     travel,
     settings: Settings,
     pinned_stops: set[str],
+    deadline: float | None,
+    scores: list[Score],
 ) -> Scenario | None:
     plans = scenario.buses
-    current_score = score_scenario(scenario, buses, school, travel, settings)
+    current_score = combine_scores(scores)
     for i, plan_i in enumerate(plans):
         if plan_i.pinned:
             continue
-        for j in range(i + 1, len(plans)):
-            plan_j = plans[j]
-            if plan_j.pinned:
+        start_i = buses[plan_i.bus_id].start
+        for a, stop_a in enumerate(plan_i.stops):
+            if _past(deadline):
+                return None
+            if stop_a.id in pinned_stops:
                 continue
-            for a, stop_a in enumerate(plan_i.stops):
-                if stop_a.id in pinned_stops:
+            for j in range(i + 1, len(plans)):
+                plan_j = plans[j]
+                if plan_j.pinned:
                     continue
+                start_j = buses[plan_j.bus_id].start
                 for b, stop_b in enumerate(plan_j.stops):
                     if stop_b.id in pinned_stops:
                         continue
@@ -243,18 +319,31 @@ def _first_improving_swap(
                         continue
                     if cap_j > buses[plan_j.bus_id].capacity:
                         continue
-                    stops_i = list(plan_i.stops)
-                    stops_j = list(plan_j.stops)
-                    stops_i[a] = stop_b
-                    stops_j[b] = stop_a
-                    new_plans = list(plans)
-                    new_plans[i] = replace(plan_i, stops=stops_i, ordering="given")
-                    new_plans[j] = replace(plan_j, stops=stops_j, ordering="given")
-                    new_plans[i] = _apply_order(new_plans[i], buses, school, travel, settings)
-                    new_plans[j] = _apply_order(new_plans[j], buses, school, travel, settings)
-                    candidate = _with_plans(scenario, new_plans)
-                    if score_scenario(candidate, buses, school, travel, settings) < current_score:
-                        return candidate
+                    rest_i = plan_i.stops[:a] + plan_i.stops[a + 1 :]
+                    rest_j = plan_j.stops[:b] + plan_j.stops[b + 1 :]
+                    inserted_i = _best_insert(
+                        stop_b, rest_i, start_i, school.point, travel, settings
+                    )
+                    inserted_j = _best_insert(
+                        stop_a, rest_j, start_j, school.point, travel, settings
+                    )
+                    score_i = score_bus(inserted_i, start_i, school.point, travel, settings)
+                    score_j = score_bus(inserted_j, start_j, school.point, travel, settings)
+                    estimate = _with_replaced(scores, {i: score_i, j: score_j})
+                    if estimate < current_score:
+                        new_plans = list(plans)
+                        new_plans[i] = replace(plan_i, stops=inserted_i, ordering="given")
+                        new_plans[j] = replace(plan_j, stops=inserted_j, ordering="given")
+                        return _commit_move(
+                            scenario,
+                            new_plans,
+                            buses,
+                            school,
+                            travel,
+                            settings,
+                            scores,
+                            (i, j),
+                        )
     return None
 
 
@@ -265,12 +354,24 @@ def _local_search(
     travel,
     settings: Settings,
     pinned_stops: set[str],
+    deadline: float | None = None,
+    scores: list[Score] | None = None,
 ) -> Scenario:
+    if _past(deadline):
+        return scenario
+    if scores is None:
+        scores = _score_plans(scenario.buses, buses, school, travel, settings)
     current = scenario
     while True:
-        neighbor = _first_improving_relocate(current, buses, school, travel, settings, pinned_stops)
-        if neighbor is None:
-            neighbor = _first_improving_swap(current, buses, school, travel, settings, pinned_stops)
+        if _past(deadline):
+            return current
+        neighbor = _first_improving_relocate(
+            current, buses, school, travel, settings, pinned_stops, deadline, scores
+        )
+        if neighbor is None and not _past(deadline):
+            neighbor = _first_improving_swap(
+                current, buses, school, travel, settings, pinned_stops, deadline, scores
+            )
         if neighbor is None:
             return current
         current = neighbor
@@ -291,6 +392,7 @@ def _perturb(
     settings: Settings,
     pinned_stops: set[str],
     rng: random.Random,
+    scores: list[Score] | None = None,
 ) -> Scenario:
     plans = _clone_plans(scenario.buses)
     movable = [
@@ -327,7 +429,21 @@ def _perturb(
         affected.update((src_i, dst_i))
     for i in sorted(affected):
         plans[i] = _apply_order(plans[i], buses, school, travel, settings)
+        if scores is not None:
+            scores[i] = _plan_score(plans[i], buses, school, travel, settings)
     return _with_plans(scenario, plans)
+
+
+@dataclass(frozen=True)
+class OptimizeResult:
+    """Assignment search outcome. Attribute access forwards to the scenario."""
+
+    scenario: Scenario
+    perturbations: int
+    stopped_by: StopReason
+
+    def __getattr__(self, name: str):
+        return getattr(self.scenario, name)
 
 
 def optimize_assign(
@@ -339,31 +455,58 @@ def optimize_assign(
     *,
     seed: int = 0,
     max_seconds: float = 30.0,
-) -> Scenario:
+    max_perturbations: int = 1000,
+) -> OptimizeResult:
     """Reassign unpinned stops across unpinned buses, then reorder with order_stops_for_bus.
 
     The search starts from niveau A of the input (every unpinned bus reordered), which
     is exactly what evaluate reports for an ordering=auto scenario, so the result is
     never worse than the 'vóór' figure the CLI prints.
+
+    Candidates are scored by best insertion. Niveau A runs only after a move is accepted.
+    The perturbation loop stops at 200 stalls or max_perturbations (reproducible).
+    max_seconds is an emergency brake: when it trips, stopped_by is "max_seconds".
+    max_seconds <= 0 runs the initial search only and does not enter the loop.
     """
     pinned_stops = set(scenario.pinned_stops)
     rng = random.Random(seed)
     started = time.monotonic()
+    deadline = None if max_seconds <= 0 else started + max_seconds
     current = optimize_order(scenario, buses, school, travel, settings)
-    current = _local_search(current, buses, school, travel, settings, pinned_stops)
-    best = current
-    best_score = score_scenario(best, buses, school, travel, settings)
+    scores = _score_plans(current.buses, buses, school, travel, settings)
+    current = _local_search(
+        current, buses, school, travel, settings, pinned_stops, deadline, scores
+    )
     if max_seconds <= 0:
-        return best
+        return OptimizeResult(current, 0, "none")
+    if _past(deadline):
+        return OptimizeResult(current, 0, "max_seconds")
+    best = current
+    best_score = combine_scores(scores)
     stall = 0
-    while stall < 200 and (time.monotonic() - started) < max_seconds:
-        perturbed = _perturb(best, buses, school, travel, settings, pinned_stops, rng)
-        perturbed = _local_search(perturbed, buses, school, travel, settings, pinned_stops)
-        scored = score_scenario(perturbed, buses, school, travel, settings)
+    perturbations = 0
+    stopped_by: StopReason = "stall"
+    while stall < 200 and perturbations < max_perturbations:
+        if _past(deadline):
+            stopped_by = "max_seconds"
+            break
+        perturbations += 1
+        saved = list(scores)
+        perturbed = _perturb(best, buses, school, travel, settings, pinned_stops, rng, scores)
+        perturbed = _local_search(
+            perturbed, buses, school, travel, settings, pinned_stops, deadline, scores
+        )
+        scored = combine_scores(scores)
         if scored < best_score:
             best = perturbed
             best_score = scored
             stall = 0
         else:
             stall += 1
-    return best
+            scores[:] = saved
+        if _past(deadline):
+            stopped_by = "max_seconds"
+            break
+    else:
+        stopped_by = "max_perturbations" if perturbations >= max_perturbations else "stall"
+    return OptimizeResult(best, perturbations, stopped_by)

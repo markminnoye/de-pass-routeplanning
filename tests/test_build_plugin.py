@@ -139,10 +139,37 @@ def test_zip_contains_plugin_layout_not_samples(tmp_path: Path):
 
 def test_main_verify_tag_matches_pyproject(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     _mini_repo(tmp_path)
+    notes = tmp_path / "docs" / "release-notes"
+    notes.mkdir(parents=True)
+    (notes / "v0.1.0.md").write_text("Je ziet de ritten op een kaart.\n")
     bp = load_build_plugin()
     monkeypatch.setattr(bp, "REPO_ROOT", tmp_path)
     assert bp.main(["--verify-tag", "v0.1.0"]) == 0
     assert bp.main(["--verify-tag", "v0.2.0"]) == 1
+
+
+def test_main_verify_tag_requires_customer_release_notes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    _mini_repo(tmp_path)
+    bp = load_build_plugin()
+    monkeypatch.setattr(bp, "REPO_ROOT", tmp_path)
+    assert bp.main(["--verify-tag", "v0.1.0"]) == 1
+
+
+def test_shipped_release_notes_are_customer_facing():
+    bp = load_build_plugin()
+    paths = bp.Paths(ROOT)
+    version = bp.read_project_version(paths)
+    notes_dir = ROOT / "docs" / "release-notes"
+    shipped = list(notes_dir.glob("v*.md"))
+    assert paths.release_notes(f"v{version}") in shipped
+    for path in shipped:
+        text = path.read_text(encoding="utf-8")
+        assert text.strip()
+        assert "`" not in text
+        assert "### Added" not in text
+        assert "### Changed" not in text
 
 
 def test_plugin_name_is_kebab_case():

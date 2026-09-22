@@ -43,7 +43,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          notes="docs/release-notes/${GITHUB_REF_NAME}.md"
+          test -f "$notes"
           gh release create "${GITHUB_REF_NAME}" \
             dist/de-pass-routeplanning.plugin \
             --title "${GITHUB_REF_NAME}" \
-            --generate-notes
+            --notes-file "$notes"

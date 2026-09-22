@@ -72,6 +72,21 @@ class Paths:
     def default_zip(self) -> Path:
         return self.root / "dist" / f"{PLUGIN_NAME}.plugin"
 
+    def release_notes(self, tag: str) -> Path:
+        version = parse_version(tag)
+        name = f"v{version[0]}.{version[1]}.{version[2]}.md"
+        return self.root / "docs" / "release-notes" / name
+
+
+def require_customer_release_notes(paths: Paths, tag: str) -> None:
+    path = paths.release_notes(tag)
+    if not path.is_file():
+        raise BuildError(
+            f"ontbreekt: {path} — schrijf de Nederlandstalige releasetekst voor de school"
+        )
+    if not path.read_text(encoding="utf-8").strip():
+        raise BuildError(f"leeg: {path}")
+
 
 def read_project_version(paths: Paths) -> str:
     if not paths.pyproject.is_file():
@@ -186,7 +201,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--verify-tag",
         metavar="TAG",
-        help="exit 0 iff TAG matches pyproject version",
+        help="exit 0 iff TAG matches pyproject version and customer release notes exist",
     )
     args = parser.parse_args(argv)
     paths = Paths(REPO_ROOT)
@@ -199,6 +214,7 @@ def main(argv: list[str] | None = None) -> int:
                     file=sys.stderr,
                 )
                 return 1
+            require_customer_release_notes(paths, args.verify_tag)
             return 0
         if args.check:
             check(paths)

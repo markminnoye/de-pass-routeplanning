@@ -4,14 +4,18 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+import time
 from pathlib import Path
 
 import pytest
 
 from busroutes.cli import build_parser, main
 from busroutes.config import read_env_file
-from busroutes.models import Point
+from busroutes.models import Point, load_samples, load_scenario_file
+from busroutes.offline import OfflineClient
 from busroutes.tomtom import _point_key
+from tests.scale import write_scale_pack
 from tests.test_offline import write_origin_row
 
 SCHOOL = {
@@ -310,3 +314,144 @@ def test_optimize_out_writes_to_given_path(tmp_path, monkeypatch):
     assert not (pack / "mini-optimized.json").exists()
     payload = json.loads(out.read_text())
     assert payload["ordering"] == "given"
+
+
+def test_optimize_loads_matrix_once(tmp_path, monkeypatch):
+    isolate_from_repo_env(monkeypatch)
+    pack = write_auto_pack(tmp_path / "pack")
+    calls = {"n": 0}
+    real = OfflineClient.matrix
+
+    def counting(self, origins, destinations):
+        calls["n"] += 1
+        return real(self, origins, destinations)
+
+    monkeypatch.setattr(OfflineClient, "matrix", counting)
+    assert main(optimize_argv(pack, "--order", "--out", str(tmp_path / "order.json"))) == 0
+    order_calls = calls["n"]
+    calls["n"] = 0
+    assert main(optimize_argv(pack, "--assign", "--out", str(tmp_path / "assign.json"))) == 0
+    assert order_calls == 1
+    assert calls["n"] == 1
+
+
+def test_optimize_assign_reports_three_missing_pairs(tmp_path, monkeypatch, capsys):
+    isolate_from_repo_env(monkeypatch)
+    pack = write_auto_pack(tmp_path / "pack")
+    cells = pack / "matrix"
+    school = Point(SCHOOL["lat"], SCHOOL["lon"])
+    near = Point(NEAR["lat"], NEAR["lon"])
+    far = Point(FAR["lat"], FAR["lon"])
+    s, n, f = _point_key(school), _point_key(near), _point_key(far)
+    write_origin_row(cells, school, {s: 0, n: 300})
+    write_origin_row(cells, near, {n: 0, s: 300})
+    write_origin_row(cells, far, {f: 0, s: 600})
+    code = main(optimize_argv(pack, "--assign", "--out", str(tmp_path / "out.json")))
+    assert code == 1
+    err = capsys.readouterr().err
+    assert "3 matrixparen ontbreken" in err
+    assert "data status" in err
+
+
+def test_optimize_order_without_reference_date(tmp_path, monkeypatch, capsys):
+    isolate_from_repo_env(monkeypatch)
+    monkeypatch.setattr("busroutes.config.read_env_file", lambda path: {})
+    pack = write_mini_pack(tmp_path / "pack")
+    argv = [
+        "optimize",
+        str(pack / "scenario.json"),
+        "--data",
+        str(pack),
+        "--order",
+        "--out",
+        str(tmp_path / "out.json"),
+    ]
+    assert main(argv) == 0
+    assert "Fout:" not in capsys.readouterr().err
+
+
+def test_optimize_order_regiobus_under_3s(tmp_path, monkeypatch):
+    isolate_from_repo_env(monkeypatch)
+    root = Path(__file__).resolve().parents[1]
+    scenario = root / "docs" / "samples" / "scenarios" / "regiobus-per-zone.json"
+    started = time.perf_counter()
+    code = main(
+        [
+            "optimize",
+            str(scenario),
+            "--data",
+            str(root / "docs" / "samples"),
+            "--reference-date",
+            "2026-09-15",
+            "--order",
+            "--out",
+            str(tmp_path / "out.json"),
+        ]
+    )
+    assert code == 0
+    assert time.perf_counter() - started < 3
+
+
+def test_optimize_assign_scale_pack_moves_and_repeats(tmp_path, monkeypatch, capsys):
+    isolate_from_repo_env(monkeypatch)
+    pack = write_scale_pack(tmp_path / "pack", 12, 3)
+    out1 = tmp_path / "first.json"
+    out2 = tmp_path / "second.json"
+    assert (
+        main(
+            optimize_argv(
+                pack,
+                "--assign",
+                "--seed",
+                "0",
+                "--max-perturbations",
+                "100",
+                "--out",
+                str(out1),
+            )
+        )
+        == 0
+    )
+    out = capsys.readouterr().out
+    assert re.search(r"s\d+: was bus\d+, nu bus\d+", out)
+    assert (
+        main(
+            optimize_argv(
+                pack,
+                "--assign",
+                "--seed",
+                "0",
+                "--max-perturbations",
+                "100",
+                "--out",
+                str(out2),
+            )
+        )
+        == 0
+    )
+    assert out1.read_bytes() == out2.read_bytes()
+    status = main(["data", "status", "--data", str(pack)])
+    assert status == 0
+    assert "Ontbrekende paren: 0" in capsys.readouterr().out
+    _school, students, buses = load_samples(pack)
+    loaded = load_scenario_file(out1, students, buses)
+    for plan in loaded.buses:
+        assert len(plan.student_ids) <= buses[plan.bus_id].capacity
+
+
+def test_optimize_assign_time_limit_message(tmp_path, monkeypatch, capsys):
+    isolate_from_repo_env(monkeypatch)
+    pack = write_scale_pack(tmp_path / "pack", 40, 4)
+    code = main(
+        optimize_argv(
+            pack,
+            "--assign",
+            "--max-seconds",
+            "0.001",
+            "--out",
+            str(tmp_path / "out.json"),
+        )
+    )
+    assert code == 0
+    err = capsys.readouterr().err
+    assert "tijdslimiet" in err

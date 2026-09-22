@@ -136,11 +136,16 @@ solver aan); de `haversine`-strategie blijft de bestaande heuristiek gebruiken.
 1. Start = het invoerscenario (elke bus die in het scenario staat, ook met lege
    `stops`, is beschikbaar; bussen die er niet in staan worden niet gebruikt).
 2. Buren: *relocate* (één stop naar een andere bus, beste invoegpositie) en *swap*
-   (twee stops van verschillende bussen wisselen). Capaciteit is hard. Na elke zet
-   niveau A op de geraakte bussen. Accepteer bij lagere score.
+   (twee stops van verschillende bussen, elk via beste invoegpositie). Capaciteit
+   is hard. Kandidaten worden geschat met beste-invoegpositie; na **acceptatie**
+   van een zet niveau A op de geraakte bussen. Accepteer bij lagere score.
+   (Besloten 22/09/2026, na review 16/09/2026: niveau A per kandidaat schaalt niet.)
 3. Zit de zoektocht vast: perturbatie (willekeurig `k` stops verplaatsen, `k`=3) en
-   opnieuw; bewaar het beste. Stop bij `--max-seconds` (default 30) of als 200
-   perturbaties niets opleveren.
+   opnieuw; bewaar het beste. Stop bij 200 perturbaties zonder verbetering of
+   `--max-perturbations` (default 1000, reproduceerbaar). `--max-seconds`
+   (default 30) is een noodrem die gemeld wordt. Een volledige schoolset
+   (tot ongeveer 150 stops) draait met `--max-seconds 300` en hoort binnen
+   vijf minuten terug te zijn.
 4. `--seed` (default 0) → identieke output bij identieke invoer.
 
 **Vaste elementen** in het invoerscenario, zodat de gebruiker kan "tunen":

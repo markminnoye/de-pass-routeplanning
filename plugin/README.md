@@ -31,13 +31,13 @@ verdeling, en pas daarna één TomTom-run voor de echte wegen. Hoofdresultaat is
 HTML-kaart (`map.html`, in Claude als artifact) met de busroutes, stops en tijden.
 Daarna de langste en gemiddelde rit per kind en, bij meerdere scenario's, een
 vergelijkingstabel. Op de kaart staan ook publieke De Lijn-, TEC- en NMBS-haltes
-(aan/uit te zetten). Leaflet-CSS zit in de pagina; JS komt van cdnjs.
+(aan/uit te zetten).
 
 ## Updates
 
 Bij het doorrekenen checkt Claude of GitHub Releases een nieuwere versie heeft. Is dat
-zo, dan krijg je de downloadlink van `de-pass-routeplanning.plugin`. Verwijder de oude
-plugin in Cowork en installeer het nieuwe bestand. Cowork werkt de plugin niet zelf bij.
+zo, dan krijg je de downloadlink van `de-pass-routeplanning.plugin`. Je vervangt de
+plugin in Claude via Plugin → Add.
 
 Zolang er nog geen GitHub Release is, zegt Claude niets en werkt de plugin gewoon.
 

@@ -35,8 +35,8 @@ Altijd deze volgorde. Eén vaste referentiedatum voor de hele vergelijking (`BUS
    - "Beste verdeling, bus1 vast": `"pinned": true` op die bus. Stops die op hun bus blijven: `pinned_stops`. Daarna `optimize --assign`.
 3. `BUSROUTES_REFERENCE_DATE=2026-09-15 uv run busroutes evaluate --offline scenarios/<naam>.json`  
    Cijfers en die kaart zijn een schatting (matrix-tijden, rechte lijnen, km geschat). `metrics.json` heeft `"mode": "offline"`. Niet als definitief presenteren.
-4. Alleen als de tabelrij optimaliseren is: `optimize --order` of `optimize --assign`, met dezelfde referentiedatum. Geen TomTom-key. Output: `scenarios/<naam>-optimized.json` plus vóór/na op stdout. Daarna stap 3 op dat nieuwe bestand.  
-   `--assign` stopt bij `--max-seconds` (default 30). Dat is een tijdslimiet, geen garantie dat een volledige schoolset binnen die tijd uitgerekend is.
+4. Alleen als de tabelrij optimaliseren is: `optimize --order` of `optimize --assign`. Geen TomTom-key. `--reference-date` is voor `optimize` niet nodig. Output: `scenarios/<naam>-optimized.json` plus vóór/na op stdout. Daarna stap 3 op dat nieuwe bestand.  
+   `--assign` op een volledige schoolset (tot ongeveer 150 stops) kan enkele minuten duren en hoort binnen vijf minuten klaar te zijn. Gebruik daarvoor `--max-seconds 300`. Dat is een noodrem: als hij bijt, staat op stderr dat het resultaat van de machinesnelheid afhangt. `--max-perturbations` (default 1000) is het reproduceerbare stoppunt. Stdout meldt `Perturbaties: N (gestopt door: …)`; neem die regel op in het antwoord.
 5. Pas dan, één keer: `BUSROUTES_REFERENCE_DATE=2026-09-15 uv run busroutes evaluate scenarios/<naam>.json`  
    Ongeveer 7 TomTom-calls. Zelfde datum. Dit zijn de definitieve cijfers en de kaart met echte wegen.
 6. Toon `out/<naam>/map.html` als HTML-pagina. Daarna `uv run busroutes compare` op de `metrics.json`-bestanden. Doorslaggevend: langste en gemiddelde rit per kind.

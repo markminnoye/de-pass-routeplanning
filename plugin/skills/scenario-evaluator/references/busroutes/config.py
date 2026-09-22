@@ -108,6 +108,7 @@ def load_settings(env_path: Path = DEFAULT_ENV_PATH, **overrides) -> Settings:
         )
     cache_dir_raw = env.get("BUSROUTES_CACHE_DIR", "").strip()
     require_key = overrides.pop("require_key", True)
+    require_reference_date = overrides.pop("require_reference_date", True)
     values = {
         "api_key": load_key(env_path) if require_key else "",
         "reference_date": _reference_date(env.get("BUSROUTES_REFERENCE_DATE")),
@@ -120,12 +121,17 @@ def load_settings(env_path: Path = DEFAULT_ENV_PATH, **overrides) -> Settings:
     }
     values.update(overrides)
     if values.get("reference_date") is None:
-        raise ConfigError(
-            "referentiedatum ontbreekt: zet BUSROUTES_REFERENCE_DATE=YYYY-MM-DD of geef "
-            "--reference-date mee. Zonder vaste datum schuift departAt elke dag mee, "
-            "vervalt de TomTom-cache dagelijks en zijn scenario's niet vergelijkbaar. "
-            f"Voorstel: {next_weekday(datetime.now(BRUSSELS).date())}."
-        )
+        if not require_reference_date:
+            # optimize and data fetch/add-points do not call calculateRoute.
+            # Settings still needs a weekday; evaluate keeps requiring a real date.
+            values["reference_date"] = date(2026, 9, 15)
+        else:
+            raise ConfigError(
+                "referentiedatum ontbreekt: zet BUSROUTES_REFERENCE_DATE=YYYY-MM-DD of geef "
+                "--reference-date mee. Zonder vaste datum schuift departAt elke dag mee, "
+                "vervalt de TomTom-cache dagelijks en zijn scenario's niet vergelijkbaar. "
+                f"Voorstel: {next_weekday(datetime.now(BRUSSELS).date())}."
+            )
     return Settings(**values)
 
 

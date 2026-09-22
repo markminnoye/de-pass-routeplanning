@@ -43,14 +43,17 @@ class OfflineClient:
         for origin, dest in pairs:
             origin_key, dest_key = _point_key(origin), _point_key(dest)
             row = cache.setdefault(origin_key, self._read_cells(origin))
-            if dest_key in row:
+            if origin_key == dest_key and dest_key not in row:
+                found[(origin_key, dest_key)] = 0
+            elif dest_key in row:
                 found[(origin_key, dest_key)] = int(row[dest_key])
             else:
                 missing.add((origin_key, dest_key))
         if missing:
             raise OfflineError(
                 f"{len(missing)} matrixparen ontbreken; vul aan met "
-                "busroutes data fetch-matrix --dry-run"
+                "busroutes data fetch-matrix --dry-run. "
+                "Zie ook: busroutes data status."
             )
         return found
 

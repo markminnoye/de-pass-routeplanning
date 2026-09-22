@@ -1,0 +1,508 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>De Pass Routepijplijn</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#FAF7F1;
+  --surface:#FFFFFF;
+  --surface-2:#F1EAD9;
+  --ink:#221F1B;
+  --ink-muted:#726A5B;
+  --line:#E2D8C4;
+  --accent:#C85A26;
+  --accent-soft:#F2D8BE;
+  --accent-2:#286670;
+  --accent-2-soft:#CFE2E1;
+  --shadow: 0 1px 2px rgba(40,30,15,0.06), 0 8px 24px -12px rgba(40,30,15,0.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#19140F;
+    --surface:#211A14;
+    --surface-2:#2A2118;
+    --ink:#F2EAE0;
+    --ink-muted:#A99C88;
+    --line:#3B2F23;
+    --accent:#E88549;
+    --accent-soft:#4A2E18;
+    --accent-2:#5FA9AF;
+    --accent-2-soft:#1E3536;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#19140F;
+  --surface:#211A14;
+  --surface-2:#2A2118;
+  --ink:#F2EAE0;
+  --ink-muted:#A99C88;
+  --line:#3B2F23;
+  --accent:#E88549;
+  --accent-soft:#4A2E18;
+  --accent-2:#5FA9AF;
+  --accent-2-soft:#1E3536;
+  --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  padding-inline:20px;
+  padding-block:48px 64px;
+}
+.wrap{max-width:760px;margin:0 auto}
+
+.eyebrow{
+  font-family:"IBM Plex Mono", ui-monospace, monospace;
+  font-size:12px;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin:0 0 10px;
+}
+h1{
+  font-family:"Fraunces", Georgia, serif;
+  font-weight:600;
+  font-size:clamp(28px,5vw,40px);
+  line-height:1.08;
+  letter-spacing:-0.01em;
+  margin:0 0 14px;
+  text-wrap:balance;
+}
+.lede{
+  font-size:16px;
+  line-height:1.55;
+  color:var(--ink-muted);
+  max-width:56ch;
+  margin:0 0 22px;
+}
+.meta{
+  font-family:"IBM Plex Mono", ui-monospace, monospace;
+  font-size:11.5px;
+  color:var(--ink-muted);
+  margin:0 0 8px;
+}
+.legend{
+  display:flex;
+  gap:18px;
+  flex-wrap:wrap;
+  font-size:12.5px;
+  color:var(--ink-muted);
+  padding-block:14px;
+  border-block:1px solid var(--line);
+  margin-bottom:40px;
+}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+.dot.amber{background:var(--accent)}
+.dot.teal{background:var(--accent-2)}
+
+.pipeline{display:flex;flex-direction:column}
+
+.step{
+  display:grid;
+  grid-template-columns:44px 1fr;
+  gap:18px;
+  padding-bottom:44px;
+  position:relative;
+}
+.step:last-child{padding-bottom:0}
+.step-rail{display:flex;flex-direction:column;align-items:center}
+.step-num{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--surface);
+  border:2px solid var(--accent);
+  color:var(--accent);
+  font-family:"IBM Plex Mono", ui-monospace, monospace;
+  font-weight:500;
+  font-size:15px;
+  display:flex;align-items:center;justify-content:center;
+  flex:none;
+}
+.step.tomtom .step-num{
+  border-color:var(--accent-2);
+  color:var(--accent-2);
+}
+.step-line{
+  width:2px;flex:1;
+  background:var(--line);
+  margin-top:6px;
+  min-height:24px;
+}
+.step:last-child .step-line{display:none}
+
+.step-body{min-width:0}
+.step-tag{
+  font-family:"IBM Plex Mono", ui-monospace, monospace;
+  font-size:11px;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--ink-muted);
+  margin:2px 0 4px;
+}
+.step h2{
+  font-family:"Fraunces", Georgia, serif;
+  font-weight:600;
+  font-size:20px;
+  margin:0 0 8px;
+  letter-spacing:-0.005em;
+}
+.step p{
+  font-size:14.5px;
+  line-height:1.55;
+  color:var(--ink);
+  margin:0 0 16px;
+  max-width:58ch;
+}
+.step p b{font-weight:600}
+
+code.inline{
+  font-family:"IBM Plex Mono", ui-monospace, monospace;
+  font-size:0.92em;
+  background:var(--surface-2);
+  padding:0.1em 0.4em;
+  border-radius:4px;
+}
+
+.cmd{
+  font-family:"IBM Plex Mono", ui-monospace, monospace;
+  font-size:12px;
+  background:var(--surface-2);
+  color:var(--ink);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:10px 14px;
+  overflow-x:auto;
+  white-space:pre;
+  margin:0 0 16px;
+}
+.cmd .flag{color:var(--accent-2)}
+
+figure{margin:0;padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+figure svg{display:block;width:100%;height:auto;overflow:visible}
+figcaption{
+  font-size:12px;
+  color:var(--ink-muted);
+  margin-top:10px;
+  line-height:1.5;
+}
+figcaption em{font-style:normal;color:var(--ink)}
+
+svg text{font-family:"IBM Plex Sans", ui-sans-serif, sans-serif;fill:currentColor}
+svg text.mono{font-family:"IBM Plex Mono", ui-monospace, monospace}
+svg .muted{opacity:0.55}
+svg .amber{color:var(--accent)}
+svg .teal{color:var(--accent-2)}
+
+@media (max-width:520px){
+  body{padding-inline:16px}
+  .step{grid-template-columns:36px 1fr;gap:14px}
+  .step-num{width:32px;height:32px;font-size:13px}
+  figure{padding:12px}
+}
+</style>
+
+<div class="wrap">
+
+  <p class="eyebrow">de-pass-routeplanning · scenario-evaluator</p>
+  <h1>Hoe een schoolbusscenario een rittijd per kind wordt</h1>
+  <p class="lede">Eerst de invoer. Meteen daarna vraagt TomTom één keer de reistijd tussen alle punten: de matrix. Scenario, schatting en kortere rit rekenen daarop. De weg op de kaart komt pas als het scenario vastligt.</p>
+
+  <div class="legend">
+    <span><i class="dot amber"></i> rekenen op de matrix die er al is</span>
+    <span><i class="dot teal"></i> TomTom: de matrix één keer, later de weg op de kaart</span>
+  </div>
+
+  <div class="pipeline">
+
+    <div class="step">
+      <div class="step-rail"><div class="step-num">1</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <p class="step-tag">Invoer</p>
+        <h2>Gegevens verzamelen</h2>
+        <p>Eenmalig: waar de school is en hoe laat de bussen er moeten zijn, waar elk kind opstapt, en hoeveel kinderen er in elke bus passen. Die map blijft bij de school en zit niet in de plugin. Thuisadressen horen daar niet in.</p>
+        <figure role="img" aria-label="Drie bronnen: de school met gewenste aankomst, de kinderen met waar ze opstappen, en de bussen met hun capaciteit.">
+          <svg viewBox="0 0 640 132" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="a0" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+            <g transform="translate(96,18)" class="amber">
+              <rect x="-16" y="4" width="32" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+              <polygon points="-19,4 0,-10 19,4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <rect x="-4" y="14" width="8" height="10" fill="currentColor"/>
+            </g>
+            <text x="96" y="46" text-anchor="middle" font-size="11" class="muted">school</text>
+            <line x1="96" y1="54" x2="96" y2="78" stroke="currentColor" stroke-width="1.5" class="muted" marker-end="url(#a0)"/>
+            <rect x="16" y="82" width="160" height="32" rx="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="96" y="102" text-anchor="middle" font-size="12">waar en hoe laat</text>
+
+            <g transform="translate(320,18)" class="amber">
+              <circle cx="-14" cy="0" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+              <circle cx="0" cy="4" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+              <circle cx="14" cy="0" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+            </g>
+            <text x="320" y="46" text-anchor="middle" font-size="11" class="muted">kinderen</text>
+            <line x1="320" y1="54" x2="320" y2="78" stroke="currentColor" stroke-width="1.5" class="muted" marker-end="url(#a0)"/>
+            <rect x="230" y="82" width="180" height="32" rx="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="320" y="102" text-anchor="middle" font-size="12">waar ze opstappen</text>
+
+            <g transform="translate(544,18)" class="amber">
+              <rect x="-18" y="-8" width="36" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+              <circle cx="-10" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
+              <circle cx="10" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
+            </g>
+            <text x="544" y="46" text-anchor="middle" font-size="11" class="muted">bussen</text>
+            <line x1="544" y1="54" x2="544" y2="78" stroke="currentColor" stroke-width="1.5" class="muted" marker-end="url(#a0)"/>
+            <rect x="464" y="82" width="160" height="32" rx="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="544" y="102" text-anchor="middle" font-size="12">hoeveel plaats</text>
+          </svg>
+          <figcaption>Drie bronnen, één keer vastgelegd. Zonder deze punten is er geen matrix.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="step tomtom">
+      <div class="step-rail"><div class="step-num">2</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <p class="step-tag">Eenmalig</p>
+        <h2>TomTom vult de matrix</h2>
+        <p>Van elk punt naar elk ander punt komt de reistijd bij TomTom vandaan. Die tabel, de matrix, wordt één keer opgehaald en blijft bij de school, naast de invoer. Een paar dat al bekend is, wordt niet opnieuw betaald. Een nieuwe opstapplaats vult een rij en een kolom aan, en je ziet eerst wat dat kost.</p>
+        <figure role="img" aria-label="De punten uit stap 1 gaan naar TomTom. Terug komt een tabel met de reistijd van elk punt naar elk ander punt.">
+          <svg viewBox="0 0 640 168" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="aM" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+              </marker>
+            </defs>
+            <text x="78" y="22" text-anchor="middle" font-size="11" class="muted">punten uit stap 1</text>
+            <g class="amber">
+              <circle cx="36" cy="58" r="7" fill="var(--accent-soft)" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="36" cy="92" r="7" fill="var(--accent-soft)" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="36" cy="126" r="7" fill="var(--accent-soft)" stroke="currentColor" stroke-width="1.6"/>
+            </g>
+            <text x="52" y="62" font-size="12">school</text>
+            <text x="52" y="96" font-size="12">kind</text>
+            <text x="52" y="130" font-size="12">opstapplaats</text>
+            <line x1="168" y1="92" x2="248" y2="92" stroke="currentColor" class="teal" stroke-width="1.8" marker-end="url(#aM)"/>
+            <text x="208" y="80" text-anchor="middle" font-size="12" class="teal">TomTom</text>
+            <text x="430" y="22" text-anchor="middle" font-size="11" class="muted">matrix · reistijd per paar</text>
+            <g class="teal">
+              <rect x="300" y="40" width="36" height="28" rx="3" fill="var(--surface-2)" stroke="currentColor" stroke-width="1"/>
+              <rect x="340" y="40" width="36" height="28" rx="3" fill="var(--accent-2-soft)" stroke="currentColor" stroke-width="1"/>
+              <rect x="380" y="40" width="36" height="28" rx="3" fill="var(--accent-2-soft)" stroke="currentColor" stroke-width="1"/>
+              <rect x="420" y="40" width="36" height="28" rx="3" fill="var(--accent-2-soft)" stroke="currentColor" stroke-width="1"/>
+              <rect x="300" y="72" width="36" height="28" rx="3" fill="var(--accent-2-soft)" stroke="currentColor" stroke-width="1"/>
+              <rect x="340" y="72" width="36" height="28" rx="3" fill="var(--surface-2)" stroke="currentColor" stroke-width="1"/>
+              <rect x="380" y="72" width="36" height="28" rx="3" fill="var(--accent-2-soft)" stroke="currentColor" stroke-width="1"/>
+              <rect x="420" y="72" width="36" height="28" rx="3" fill="var(--accent-2-soft)" stroke="currentColor" stroke-width="1"/>
+              <rect x="300" y="104" width="36" height="28" rx="3" fill="var(--accent-2-soft)" stroke="currentColor" stroke-width="1"/>
+              <rect x="340" y="104" width="36" height="28" rx="3" fill="var(--accent-2-soft)" stroke="currentColor" stroke-width="1"/>
+              <rect x="380" y="104" width="36" height="28" rx="3" fill="var(--surface-2)" stroke="currentColor" stroke-width="1"/>
+              <rect x="420" y="104" width="36" height="28" rx="3" fill="var(--accent-2-soft)" stroke="currentColor" stroke-width="1"/>
+            </g>
+            <text x="500" y="78" font-size="12" class="teal">één keer</text>
+            <text x="500" y="98" font-size="12" class="muted">bewaard bij</text>
+            <text x="500" y="116" font-size="12" class="muted">de school</text>
+          </svg>
+          <figcaption>Elke cel is de reistijd van het ene punt naar het andere. De schatting en de kortere rit lezen deze tabel. Ze kopen ze niet opnieuw.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-rail"><div class="step-num">3</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <p class="step-tag">Scenario</p>
+        <h2>Beschrijf wie waar opstapt</h2>
+        <p>Welke kinderen op welke bus, deur-aan-deur of een vaste opstapplaats, en of een bus of een opstapplaats moet blijven zoals hij is. Elk kind zit op precies één bus.</p>
+        <figure role="img" aria-label="Kinderen verdeeld over drie bussen. De bus naar Leuven blijft vast.">
+          <svg viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg">
+            <text x="20" y="18" font-size="11" class="muted">kinderen</text>
+            <g class="amber">
+              <circle cx="30" cy="40" r="5"/><circle cx="55" cy="30" r="5"/><circle cx="50" cy="62" r="5"/>
+              <circle cx="25" cy="78" r="5"/><circle cx="70" cy="52" r="5"/><circle cx="40" cy="95" r="5"/>
+              <circle cx="72" cy="86" r="5"/><circle cx="20" cy="55" r="5"/><circle cx="60" cy="105" r="5"/>
+              <circle cx="35" cy="115" r="5"/>
+            </g>
+            <line x1="100" y1="40" x2="168" y2="30" stroke="currentColor" stroke-width="1.5" class="muted"/>
+            <line x1="100" y1="78" x2="168" y2="75" stroke="currentColor" stroke-width="1.5" class="muted"/>
+            <line x1="100" y1="110" x2="168" y2="120" stroke="currentColor" stroke-width="1.5" class="muted"/>
+            <rect x="172" y="10" width="168" height="40" rx="8" fill="var(--accent-soft)" stroke="currentColor" class="amber" stroke-width="1.5"/>
+            <text x="186" y="34" font-size="13" font-weight="500">bus Kumtich</text>
+            <rect x="172" y="55" width="168" height="40" rx="8" fill="var(--accent-soft)" stroke="currentColor" class="amber" stroke-width="1.5"/>
+            <text x="186" y="79" font-size="13" font-weight="500">bus centrum</text>
+            <rect x="172" y="100" width="168" height="40" rx="8" fill="var(--surface)" stroke="currentColor" class="amber" stroke-width="2"/>
+            <text x="186" y="124" font-size="13" font-weight="500">bus Leuven</text>
+            <text x="360" y="34" font-size="12" class="muted">deur-aan-deur</text>
+            <text x="360" y="79" font-size="12" class="muted">vaste opstapplaats</text>
+            <text x="360" y="124" font-size="12" class="amber">blijft vast</text>
+          </svg>
+          <figcaption>De verdeling leg je vast. Wat vast blijft, wijzigt de plugin later niet.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-rail"><div class="step-num">4</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <p class="step-tag">Schatting</p>
+        <h2>Eerst uitproberen</h2>
+        <p>Je ziet hoe lang de kinderen rijden, hoe vol de bussen zitten, hoe laat ze op school zijn, en een kaart. De tijden komen uit de matrix. De lijnen op de kaart zijn nog recht, en de kilometers zijn een schatting. Er gaat geen nieuwe vraag naar TomTom.</p>
+        <figure role="img" aria-label="Een schatting: de stops verbonden met een rechte stippellijn, nog niet de weg.">
+          <svg viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="40,70 160,48 280,88 400,56 520,72 600,64" fill="none" stroke="currentColor" class="amber" stroke-width="2.5" stroke-dasharray="7 6" stroke-linejoin="round" stroke-linecap="round"/>
+            <g class="amber">
+              <circle cx="40" cy="70" r="5" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+              <circle cx="160" cy="48" r="5" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+              <circle cx="280" cy="88" r="5" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+              <circle cx="400" cy="56" r="5" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+              <circle cx="520" cy="72" r="5" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+            </g>
+            <rect x="588" y="52" width="22" height="22" fill="var(--accent)"/>
+            <text x="599" y="42" text-anchor="middle" font-size="11" class="muted">school</text>
+            <text x="40" y="118" font-size="12" class="amber">rechte lijnen</text>
+            <text x="200" y="118" font-size="12" class="mono muted">langste rit</text>
+            <text x="360" y="118" font-size="12" class="mono muted">gemiddelde rit</text>
+            <text x="520" y="118" font-size="12" class="mono muted">hoe vol</text>
+          </svg>
+          <figcaption>Een schatting. De echte tijden op de weg komen later, één keer, bij TomTom.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-rail"><div class="step-num">5</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <p class="step-tag">Als je wilt</p>
+        <h2>Een kortere rit</h2>
+        <p>De plugin zoekt een kortere rit per kind: een betere volgorde van de stops, of een andere verdeling van de kinderen over de bussen. Een bus of een opstapplaats kun je vastzetten. Ze rekent met dezelfde matrix. Daarna krijg je opnieuw een schatting.</p>
+        <figure role="img" aria-label="Links de oude stopvolgorde, rechts een kortere volgorde. Eén bus blijft vast.">
+          <svg viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg">
+            <text x="36" y="22" font-size="12" class="muted">volgorde nu</text>
+            <polyline points="36,48 92,48 148,48 204,48" fill="none" stroke="currentColor" class="muted" stroke-width="2"/>
+            <g class="muted">
+              <circle cx="36" cy="48" r="11" fill="var(--surface)" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="92" cy="48" r="11" fill="var(--surface)" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="148" cy="48" r="11" fill="var(--surface)" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="204" cy="48" r="11" fill="var(--surface)" stroke="currentColor" stroke-width="1.5"/>
+            </g>
+            <text x="36" y="52" text-anchor="middle" font-size="11" class="mono">1</text>
+            <text x="92" y="52" text-anchor="middle" font-size="11" class="mono">2</text>
+            <text x="148" y="52" text-anchor="middle" font-size="11" class="mono">3</text>
+            <text x="204" y="52" text-anchor="middle" font-size="11" class="mono">4</text>
+            <text x="250" y="52" font-size="18" class="amber">→</text>
+            <text x="300" y="22" font-size="12" class="amber">kortere rit per kind</text>
+            <polyline points="300,48 356,48 412,48 468,48" fill="none" stroke="currentColor" class="amber" stroke-width="2.5"/>
+            <g class="amber">
+              <circle cx="300" cy="48" r="11" fill="var(--accent-soft)" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="356" cy="48" r="11" fill="var(--accent-soft)" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="412" cy="48" r="11" fill="var(--accent-soft)" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="468" cy="48" r="11" fill="var(--accent-soft)" stroke="currentColor" stroke-width="1.6"/>
+            </g>
+            <text x="300" y="52" text-anchor="middle" font-size="11" class="mono">2</text>
+            <text x="356" y="52" text-anchor="middle" font-size="11" class="mono">1</text>
+            <text x="412" y="52" text-anchor="middle" font-size="11" class="mono">4</text>
+            <text x="468" y="52" text-anchor="middle" font-size="11" class="mono">3</text>
+            <rect x="36" y="88" width="150" height="36" rx="8" fill="none" stroke="currentColor" class="muted" stroke-width="1.4"/>
+            <text x="111" y="111" text-anchor="middle" font-size="12">andere bussen</text>
+            <rect x="210" y="88" width="170" height="36" rx="8" fill="var(--surface)" stroke="currentColor" class="amber" stroke-width="2"/>
+            <text x="295" y="111" text-anchor="middle" font-size="12">deze bus blijft vast</text>
+            <text x="410" y="111" font-size="12" class="muted">daarna opnieuw een schatting</text>
+          </svg>
+          <figcaption>Volgorde of verdeling. Wat je vastzet, blijft staan.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="step tomtom">
+      <div class="step-rail"><div class="step-num">6</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <p class="step-tag">TomTom</p>
+        <h2>De weg op de kaart</h2>
+        <p>Dit is geen nieuwe matrix. Voor het scenario dat vastligt, rekent TomTom één keer de rit in de volgorde van de stops, met de weg erbij. Dezelfde vraag op dezelfde datum geeft dezelfde cijfers. Die stap ziet ook de tijd om te keren na een stop. De matrix ziet dat niet.</p>
+        <figure role="img" aria-label="De route volgt de weg na één TomTom-berekening. Een nieuwe opstapplaats toont eerst de kost.">
+          <svg viewBox="0 0 640 156" xmlns="http://www.w3.org/2000/svg">
+            <rect x="430" y="8" width="186" height="26" rx="13" fill="var(--accent-2-soft)" stroke="currentColor" class="teal" stroke-width="1.2"/>
+            <text x="523" y="25" text-anchor="middle" font-size="11" class="mono teal">één berekening · dezelfde datum</text>
+            <path d="M36,78 C90,78 110,46 170,46 C240,46 250,100 320,96 C390,92 410,58 480,62 C530,65 560,78 600,74" fill="none" stroke="currentColor" class="teal" stroke-width="2.6" stroke-linecap="round"/>
+            <g class="teal">
+              <circle cx="36" cy="78" r="5" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+              <circle cx="170" cy="46" r="5" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+              <circle cx="320" cy="96" r="5" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+              <circle cx="480" cy="62" r="5" fill="var(--surface)" stroke="currentColor" stroke-width="2"/>
+            </g>
+            <rect x="588" y="62" width="22" height="22" fill="var(--accent-2)"/>
+            <text x="36" y="100" font-size="11" class="muted">Tienen</text>
+            <text x="170" y="38" text-anchor="middle" font-size="11" class="muted">Kumtich</text>
+            <text x="320" y="118" text-anchor="middle" font-size="11" class="muted">centrum</text>
+            <text x="480" y="52" text-anchor="middle" font-size="11" class="muted">Leuven</text>
+            <text x="599" y="54" text-anchor="middle" font-size="11" class="muted">school</text>
+            <text x="36" y="146" font-size="12" class="teal">de weg, niet een rechte lijn</text>
+            <text x="340" y="146" font-size="12" class="muted">nieuwe opstapplaats → eerst de kost</text>
+          </svg>
+          <figcaption>TomTom rekent de echte tijden. De schatting ervoor was geen TomTom-berekening.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-rail"><div class="step-num">7</div></div>
+      <div class="step-body">
+        <p class="step-tag">Kaart</p>
+        <h2>Bekijk en vergelijk</h2>
+        <p>De kaart volgt de weg. Doorslaggevend zijn de langste rit en de gemiddelde rit per kind. Kilometers en het aantal bussen wegen niet mee. Vergelijk scenario's door telkens één ding te veranderen, bijvoorbeeld deur-aan-deur tegenover een vaste opstapplaats.</p>
+        <figure role="img" aria-label="Voorbeeld van twee scenario's naast elkaar. Alleen de bus naar Leuven verschilt. De getallen zijn een tekening, geen uitkomst.">
+          <svg viewBox="0 0 640 168" xmlns="http://www.w3.org/2000/svg">
+            <text x="150" y="18" text-anchor="middle" font-size="12" font-weight="500">A · deur-aan-deur</text>
+            <rect x="30" y="30" width="240" height="92" rx="10" fill="none" stroke="currentColor" class="muted" stroke-width="1.4"/>
+            <path d="M50,96 C80,60 110,90 140,58 C170,40 190,80 250,62" fill="none" stroke="currentColor" class="teal" stroke-width="2" stroke-linecap="round"/>
+            <text x="150" y="108" text-anchor="middle" font-size="12" class="mono muted">langere rit, voorbeeld</text>
+            <text x="315" y="78" text-anchor="middle" font-size="12" class="amber">één bus anders</text>
+            <text x="490" y="18" text-anchor="middle" font-size="12" font-weight="500">B · vaste stop Leuven</text>
+            <rect x="370" y="30" width="240" height="92" rx="10" fill="var(--accent-soft)" stroke="currentColor" class="amber" stroke-width="1.6"/>
+            <path d="M390,96 C420,64 450,88 490,56 C520,40 540,78 590,62" fill="none" stroke="currentColor" class="teal" stroke-width="2.4" stroke-linecap="round"/>
+            <circle cx="450" cy="80" r="5" fill="var(--accent)"/>
+            <text x="490" y="108" text-anchor="middle" font-size="12" class="mono">kortere rit, voorbeeld</text>
+            <text x="320" y="150" text-anchor="middle" font-size="11" class="muted">tekening, geen berekende uitkomst</text>
+          </svg>
+          <figcaption>Alleen wat je verandert, verschilt. De rest blijft het referentiepunt.</figcaption>
+        </figure>
+        <figure role="img" aria-label="Langste en gemiddelde rit per kind tellen. Totale kilometers en het aantal bussen niet." style="margin-top:14px">
+          <svg viewBox="0 0 640 108" xmlns="http://www.w3.org/2000/svg">
+            <g class="amber">
+              <circle cx="34" cy="28" r="9" fill="var(--accent-soft)" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M30,28 l3,4 l6,-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <text x="54" y="33" font-size="13" font-weight="500">langste rit per kind</text>
+            <g class="amber">
+              <circle cx="34" cy="68" r="9" fill="var(--accent-soft)" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M30,68 l3,4 l6,-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <text x="54" y="73" font-size="13" font-weight="500">gemiddelde rit per kind</text>
+            <line x1="300" y1="12" x2="300" y2="88" stroke="currentColor" opacity="0.15" stroke-width="1"/>
+            <g class="muted">
+              <circle cx="334" cy="28" r="9" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="330" y1="24" x2="338" y2="32" stroke="currentColor" stroke-width="1.6"/>
+              <line x1="338" y1="24" x2="330" y2="32" stroke="currentColor" stroke-width="1.6"/>
+            </g>
+            <text x="354" y="33" font-size="12.5" class="muted">totale kilometers</text>
+            <g class="muted">
+              <circle cx="334" cy="68" r="9" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <line x1="330" y1="64" x2="338" y2="72" stroke="currentColor" stroke-width="1.6"/>
+              <line x1="338" y1="64" x2="330" y2="72" stroke="currentColor" stroke-width="1.6"/>
+            </g>
+            <text x="354" y="73" font-size="12.5" class="muted">aantal bussen</text>
+          </svg>
+          <figcaption>Het uitgangspunt van de pass: voor elk kind de rit zo kort mogelijk.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body></html>

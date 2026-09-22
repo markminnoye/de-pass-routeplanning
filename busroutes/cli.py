@@ -33,6 +33,7 @@ from busroutes.optimize import optimize_assign, optimize_order
 from busroutes.overpass import load_transit_overlay
 from busroutes.render import compare_markdown, render_map_html, to_geojson
 from busroutes.tomtom import GeoClient, TomTomClient, TomTomError, usage_report
+from busroutes.travel import travel_from_matrix
 
 DEFAULT_OUT = REPO_ROOT / "out"
 
@@ -148,7 +149,7 @@ def cmd_data_fetch_matrix(args: argparse.Namespace) -> int:
     if args.dry_run:
         client: GeoClient = TomTomClient("", None, dry_run=True, cells_dir=cells_dir)
     else:
-        settings = load_settings(**_data_overrides(args))
+        settings = load_settings(require_reference_date=False, **_data_overrides(args))
         client = TomTomClient(
             settings.api_key,
             settings.cache_dir,
@@ -171,7 +172,7 @@ def cmd_data_add_points(args: argparse.Namespace) -> int:
         raise ScenarioError(f"{args.json}: ongeldig JSON") from exc
     if not isinstance(entries, list):
         raise ScenarioError(f"{args.json}: verwacht een JSON-lijst van punten")
-    settings = load_settings(**_data_overrides(args))
+    settings = load_settings(require_reference_date=False, **_data_overrides(args))
     client = TomTomClient(
         settings.api_key,
         settings.cache_dir,
@@ -192,12 +193,60 @@ def cmd_compare(args: argparse.Namespace) -> int:
     return 0
 
 
-def _offline_travel(client: OfflineClient):
-    def travel(a: Point, b: Point) -> int:
-        if (a.lat, a.lon) == (b.lat, b.lon):
-            return 0
-        return client.matrix([a], [b])[0][0]
+def _unique_points(points: list[Point]) -> list[Point]:
+    seen: set[tuple[float, float]] = set()
+    unique: list[Point] = []
+    for point in points:
+        key = (point.lat, point.lon)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(point)
+    return unique
 
+
+def _merged_travel(blocks: list[tuple[list[Point], list[list[int]]]]):
+    table: dict[tuple[tuple[float, float], tuple[float, float]], int] = {}
+    for points, matrix in blocks:
+        for i, origin in enumerate(points):
+            for j, dest in enumerate(points):
+                table[((origin.lat, origin.lon), (dest.lat, dest.lon))] = matrix[i][j]
+
+    def travel(a: Point, b: Point) -> int:
+        return table[((a.lat, a.lon), (b.lat, b.lon))]
+
+    return travel
+
+
+def _bind_matrix(client: OfflineClient, travel) -> None:
+    """Later evaluate() calls read this matrix instead of the cell files."""
+
+    def matrix(origins: list[Point], destinations: list[Point]) -> list[list[int]]:
+        return [[travel(origin, dest) for dest in destinations] for origin in origins]
+
+    client.matrix = matrix  # type: ignore[method-assign]
+
+
+def _load_optimize_travel(
+    client: OfflineClient, school, buses, scenario: Scenario, *, assign: bool
+):
+    if assign:
+        points = _unique_points(
+            [
+                school.point,
+                *[bus.start for bus in buses.values()],
+                *[stop.point for plan in scenario.buses for stop in plan.stops],
+            ]
+        )
+        travel = travel_from_matrix(points, client.matrix(points, points))
+    else:
+        blocks = []
+        for plan in scenario.buses:
+            bus = buses[plan.bus_id]
+            points = _unique_points([school.point, bus.start, *[stop.point for stop in plan.stops]])
+            blocks.append((points, client.matrix(points, points)))
+        travel = _merged_travel(blocks)
+    _bind_matrix(client, travel)
     return travel
 
 
@@ -210,11 +259,11 @@ def cmd_optimize(args: argparse.Namespace) -> int:
     overrides: dict[str, object] = _data_overrides(args)
     if args.reference_date:
         overrides["reference_date"] = args.reference_date
-    settings = load_settings(require_key=False, **overrides)
+    settings = load_settings(require_key=False, require_reference_date=False, **overrides)
     school, students, buses = load_samples(settings.data_dir)
     scenario = load_scenario_file(args.scenario, students, buses)
     client = OfflineClient(settings.data_dir / "matrix")
-    travel = _offline_travel(client)
+    travel = _load_optimize_travel(client, school, buses, scenario, assign=bool(args.assign))
     # 'Vóór' is what `evaluate --offline` reports for the input as-is (auto buses
     # already ordered), so the delta shown is only what optimize adds.
     before = evaluate(scenario, school, students, buses, client, settings)
@@ -222,7 +271,7 @@ def cmd_optimize(args: argparse.Namespace) -> int:
     if args.order:
         optimized = optimize_order(scenario, buses, school, travel, settings)
     else:
-        optimized = optimize_assign(
+        found = optimize_assign(
             scenario,
             buses,
             school,
@@ -230,7 +279,21 @@ def cmd_optimize(args: argparse.Namespace) -> int:
             settings,
             seed=args.seed,
             max_seconds=args.max_seconds,
+            max_perturbations=args.max_perturbations,
         )
+        optimized = found.scenario
+        print(f"Perturbaties: {found.perturbations} (gestopt door: {found.stopped_by})")
+        if found.stopped_by == "max_seconds":
+            limit = (
+                int(args.max_seconds) if float(args.max_seconds).is_integer() else args.max_seconds
+            )
+            print(
+                f"Let op: tijdslimiet ({limit} s) bereikt na {found.perturbations} "
+                "perturbaties; resultaat hangt af van machinesnelheid. "
+                "Verhoog --max-seconds of verlaag --max-perturbations voor een "
+                "reproduceerbare run.",
+                file=sys.stderr,
+            )
     optimized = replace(
         optimized,
         description=scenario.description + f" · geoptimaliseerd ({mode}, seed {args.seed})",
@@ -333,7 +396,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--max-seconds",
         type=float,
         default=30.0,
-        help="zoeklimiet in seconden voor --assign (default 30)",
+        help="noodrem in seconden voor --assign (default 30); een volledige schoolset: 300",
+    )
+    opt.add_argument(
+        "--max-perturbations",
+        type=int,
+        default=1000,
+        help="reproduceerbaar stoppunt voor --assign (default 1000)",
     )
     opt.add_argument(
         "--out",

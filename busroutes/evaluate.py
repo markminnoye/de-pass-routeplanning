@@ -14,6 +14,7 @@ from busroutes.offline import OfflineClient
 from busroutes.optimize import order_stops_for_bus
 from busroutes.ordering import Matrix, OrderingStrategy, order_stops
 from busroutes.tomtom import GeoClient, RouteResult
+from busroutes.travel import travel_from_matrix
 
 
 @dataclass
@@ -179,17 +180,6 @@ def _cost_matrix(points: list[Point], client: GeoClient, strategy: OrderingStrat
     return [[round(haversine_m(a, b)) for b in points] for a in points]
 
 
-def _travel_from_matrix(points: list[Point], matrix: Matrix):
-    index: dict[tuple[float, float], int] = {}
-    for i, p in enumerate(points):
-        index.setdefault((p.lat, p.lon), i)
-
-    def travel(a: Point, b: Point) -> int:
-        return matrix[index[(a.lat, a.lon)]][index[(b.lat, b.lon)]]
-
-    return travel
-
-
 def _ordered_stops(
     plan: BusPlan, bus: Bus, school: School, client: GeoClient, settings: Settings
 ) -> list[Stop]:
@@ -198,7 +188,7 @@ def _ordered_stops(
     points = [bus.start, *[s.point for s in plan.stops], school.point]
     if settings.ordering == "matrix":
         matrix = client.matrix(points, points)
-        travel = _travel_from_matrix(points, matrix)
+        travel = travel_from_matrix(points, matrix)
         return order_stops_for_bus(plan.stops, bus.start, school.point, travel, settings)
     matrix = _cost_matrix(points, client, settings.ordering)
     start, end = 0, len(points) - 1

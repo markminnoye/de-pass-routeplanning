@@ -231,7 +231,29 @@ De optimalisatie- en connector-keuze in deze lijst is bijgesteld op 16/09 en 22/
 
 ## Benchmark solvers (22/09/2026)
 
-Zelfde matrix (`docs/samples/matrix`), dezelfde stops per bus, score via `evaluate --offline` (dwell inbegrepen). Alleen **volgorde**: `--assign` zou stops tussen bussen verplaatsen, en daarvoor ontbreken op `regiobus-per-zone` 13.420 van de 18.496 paren. De VROOM-demoserver en Google Route Optimization zijn niet aangeroepen (OSRM in plaats van deze matrix, respectievelijk geen GCP-project). Geen extra TomTom-`evaluate`: de rangorde gaat over de matrix-score, niet over een tweede verkeersdag.
+### Gebruikte data
+
+Fictief voorbeeldpakket `docs/samples/`, gegenereerd door `scripts/generate_testset.py` (vaste seed). Geen echte leerlingdata. Het script is `scripts/bench_solvers.py`; het leest dit pakket vast in (`data_dir = docs/samples`, `BUSROUTES_REFERENCE_DATE=2026-09-15`).
+
+| Onderdeel | Bestand | Wat erin zit |
+|---|---|---|
+| School | `school.json` | "de pass (Hoegaarden)", aankomst `08:30` |
+| Leerlingen | `students.json` | 140 verzonnen punten rond dorpskernen in de regio, op de straat gesnapt. Zones: hoegaarden-centrum 30, tienen 24, leuven 14, meldert 10, boutersem 10, landen 10, outgaarden 8, hoksem 6, jodoigne 6, kumtich 6, bierbeek 6, linter 6, zoutleeuw 4 |
+| Bussen | `buses.json` | 7 bussen (`bus1`–`bus7`), capaciteit 30, start = de school |
+| Verdeling | `scenarios/<naam>.json` | Welke leerling op welke bus staat, vast. De benchmark wijzigt alleen de stopvolgorde per bus |
+| Reistijden | `matrix/` | Gecachte TomTom Matrix Routing v2, `departAt=any` (historisch profiel, geen specifieke verkeersdag). Per bus alleen de paren school + stops van die bus |
+
+De drie scenario's, elk met alle 140 leerlingen en alle 7 bussen:
+
+| Scenario | Verdeling in het bestand |
+|---|---|
+| `regiobus-per-zone` | Elke bus één streek. Bus6 = Leuven/Bierbeek, bus7 = Landen/Linter/Zoutleeuw. Ophalen aan huis |
+| `opstapplaatsen` | Dezelfde streken. Tienen via station en Grote Markt, Leuven via het station |
+| `spreiding-gemengd` | Leerlingen willekeurig over de bussen, zones door elkaar |
+
+Score: `evaluate --offline` op die matrix, met de standaard stilstand (30 s + 10 s per leerling). Kilometers zijn hemelsbreed × 1,3. Er is geen tweede TomTom-`evaluate` op een verkeersdag gedraaid.
+
+Alleen volgorde. Op `regiobus-per-zone` ontbreken 13.420 van de 18.496 paren tussen bussen, dus `--assign` (stops verplaatsen) is op dit pakket niet dezelfde vergelijking. De VROOM-demoserver en Google Route Optimization zijn niet aangeroepen (die demo gebruikt OSRM; voor Google is er geen GCP-project).
 
 | Scenario | Solver | max rit (min) | gem. rit (min) | ritten > 60 min | km | rekentijd (s) |
 |---|---|---:|---:|---:|---:|---:|
@@ -245,7 +267,7 @@ Zelfde matrix (`docs/samples/matrix`), dezelfde stops per bus, score via `evalua
 | spreiding-gemengd | pyvroom | 191.1 | 88.9 | 90 | 691.6 | 1.55 |
 | spreiding-gemengd | ortools | 194.4 | 97.4 | 95 | 689.4 | 7.12 |
 
-Stdlib is `optimize --order` (2-opt/or-opt op de langste kinderrit). pyvroom 1.15 minimaliseert route-duur, met een dalende `max_travel_time` tot de rit nog haalbaar is. OR-Tools 9.15 gebruikt een tijd-dimensie, boogkost = reistijd + dwell, en `GlobalSpanCost` (1 s zoektijd per bus). Km zijn de offline-schatting (hemelsbreed × 1,3). Rekentijd is de zoektocht op een matrix die al in het geheugen staat.
+Stdlib is `optimize --order` (2-opt/or-opt op de langste kinderrit). pyvroom 1.15 minimaliseert route-duur, met een dalende `max_travel_time` tot de rit nog haalbaar is. OR-Tools 9.15 gebruikt een tijd-dimensie, boogkost = reistijd + dwell, en `GlobalSpanCost` (1 s zoektijd per bus). Rekentijd is de zoektocht op een matrix die al in het geheugen staat.
 
 **Aanbeveling: de stdlib-solver blijft de plugin-solver.** Op alle drie de scenario's heeft hij de laagste langste rit en de minste ritten boven 60 minuten. pyvroom en OR-Tools rijden iets minder kilometers en maken de langste rit langer: zij optimaliseren routeduur, niet de rit van het kind. Op `opstapplaatsen` heeft pyvroom een lager gemiddelde (32,4 tegen 34,1) en toch een hogere maximumrit; de lexicografische doelfunctie kiest het maximum eerst.
 
@@ -257,7 +279,7 @@ Installatie (`uv sync --group bench`, niet in CI): OR-Tools ±66 MB, pyvroom-ext
 - **Geen TomTom-connector in de skill.** Een losse reistijd is een scenario plus `evaluate --offline`. De connector activeren is geen stap meer voor deze evaluator.
 - **Datapakket buiten de plugin.** `BUSROUTES_DATA_DIR` of `--data`, default `docs/samples/`. De fictieve set is alleen het voorbeeld. Echte leerlingdata komt niet in git en niet in de plugin.
 - **Ontbrekend matrixpaar is een fout.** De voorbeeldmatrix dekt de drie referentiescenario's per bus, niet de paren tussen bussen. Dan `data status` en `fetch-matrix --dry-run`, niet stil terugvallen op haversine en niet de matrix opnieuw kopen zonder opdracht.
-- **`--assign` noemen, niet beloven.** De zoeklimiet (`--max-seconds`, default 30) is een stop. Dat 140 stops binnen die tijd klaar zijn, belooft de skill niet. De schaalfix staat in `.agent/plans/2026-09-17-wp3-fix-tasks.md` en is nog niet gestart.
+- **`--assign` tot ongeveer 150 stops.** De skill zet daar `--max-seconds 300` op: enkele minuten, binnen vijf minuten terug. `--max-seconds` (default 30) blijft de noodrem; `--max-perturbations` (default 1000) is het reproduceerbare stoppunt. De voorbeeldmatrix dekt de paren tussen bussen niet; zonder die paren stopt `--assign`.
 
 ## Voorgestelde stack
 
@@ -275,5 +297,5 @@ Installatie (`uv sync --group bench`, niet in CI): OR-Tools ±66 MB, pyvroom-ext
 5. ~~Stdlib-solver (`busroutes optimize`)~~ ✅ 16/09/2026 (WP3) — `optimize --order|--assign` op de matrix, zonder TomTom.
 6. ~~Benchmark pyvroom / OR-Tools~~ ✅ 22/09/2026 (WP4) — stdlib wint op langste rit bij volgorde-per-bus. `--assign`-vergelijking wacht op een volledige matrix.
 7. ~~Skill herschreven naar één beslissingstabel~~ ✅ 22/09/2026 (WP5).
-8. Schaalfix `optimize --assign` (plan `2026-09-17-wp3-fix-tasks.md`, nog niet gestart).
+8. ~~Schaalfix `optimize --assign`~~ ✅ 22/09/2026 — 140 stops binnen 35 s, 150 stops binnen 90 s op een synthetische matrix; skill vraagt `--max-seconds 300` voor een volledige schoolset.
 9. Zodra de school data levert (WP6): adressen of coördinaten, buscapaciteiten, beltijd, eventuele vaste opstapplaatsen. Daarna `data geocode` en `fetch-matrix` (eerst `--dry-run`). Google's route-optimization-demo op een eigen GCP-project hoort niet bij dit pad.

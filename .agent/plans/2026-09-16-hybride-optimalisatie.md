@@ -88,7 +88,9 @@ Agent-opdracht:
 - Docs: `docs/samples/README.md` (pakket-layout), `docs/data-en-tooling-opties.md`
   (beslissing offline-modus + kostencijfers).
 
-### WP3 — Stdlib-solver `busroutes/optimize.py` + CLI `optimize`
+### WP3 — Stdlib-solver `busroutes/optimize.py` + CLI `optimize` ✅ 16/09/2026, schaalfix ✅ 22/09/2026
+
+Schaalfix (`optimize --assign`): kandidaten via beste invoegpositie, niveau A pas na acceptatie, matrix één keer in het geheugen. Pytest: 40×4 binnen 3 s, 140×7 binnen 35 s, 150×7 binnen 90 s, op een synthetische volledige matrix. Skill: volledige schoolset met `--max-seconds 300`, binnen vijf minuten.
 Agent-opdracht (na WP2, werkt op de matrix van het datapakket):
 - **Doelfunctie** (lexicografisch): 1) langste rit per kind, 2) som van rittijden
   (= gemiddelde), 3) totale rijtijd. Rittijd per kind = tijd van zijn stop tot school
@@ -137,7 +139,7 @@ zwaarder wordt.
 
 ### WP5 — Skill herschrijven (`skills/scenario-evaluator/SKILL.md` + plugin-kopie) ✅ 22/09/2026
 
-Uitgevoerd op branch `wp5-skill`: beslissingstabel in de skill en de plugin-kopie, connector-sectie weg, datapakket via `BUSROUTES_DATA_DIR`. Skill-tests (subagenten): Leuven-bus als scenario-JSON met `"ordering": "given"`, volgorde van bus 6 via `optimize --order`, verdeling met bus1 vast stopt op `OfflineError` en `fetch-matrix --dry-run` (geen aankoop, geen connector). Kaart + cijfers geleverd. `--assign` op 140 stops is niet beloofd; dat blijft `.agent/plans/2026-09-17-wp3-fix-tasks.md`.
+Uitgevoerd op branch `wp5-skill`: beslissingstabel in de skill en de plugin-kopie, connector-sectie weg, datapakket via `BUSROUTES_DATA_DIR`. Skill-tests (subagenten): Leuven-bus als scenario-JSON met `"ordering": "given"`, volgorde van bus 6 via `optimize --order`, verdeling met bus1 vast stopt op `OfflineError` en `fetch-matrix --dry-run` (geen aankoop, geen connector). Kaart + cijfers geleverd. `--assign` op een volledige schoolset (tot ongeveer 150 stops) gebruikt `--max-seconds 300` en hoort binnen vijf minuten terug te zijn (schaalfix 22/09/2026).
 
 Agent-opdracht (met `superpowers:writing-skills`, na WP2+WP3):
 - Beslissingstabel hierboven als kern; werkwijze: pakket controleren → scenario → offline
@@ -174,7 +176,7 @@ WP6 pas zodra de school data levert (na WP2)
 
 ## Verificatie (einde van het geheel)
 
-Stand 22/09/2026, na WP5: punten 4 (skill-test in de repo, nog niet in een geïnstalleerde Cowork-sessie) en 5 zijn gedaan. Punt 3 wacht op een volledige matrix en op de schaalfix. Punt 1 draait in CI zonder de opt-in regressie (`BUSROUTES_REGRESSION=1`); `docs/samples/expected/` is bij WP5 niet gewijzigd.
+Stand 22/09/2026, na de schaalfix: punten 4 (skill-test in de repo, nog niet in een geïnstalleerde Cowork-sessie) en 5 zijn gedaan. Punt 3 wacht op een volledige matrix; de zoekcode voor `--assign` schaalt. Punt 1 draait in CI zonder de opt-in regressie (`BUSROUTES_REGRESSION=1`); `docs/samples/expected/` is bij WP5 niet gewijzigd.
 
 
 

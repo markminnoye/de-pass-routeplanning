@@ -110,3 +110,15 @@ verplaatsing zit **niet** in `ride_min`).
 
 `buses[]` heeft per bus de bezetting, vertrek-/aankomsttijd, rijtijd, km, en per stop
 (`stops[]`) de instaptijd en rittijd van de kinderen die daar opstappen.
+
+## `optimize`
+
+`optimize --order` herordent de stops per bus. `optimize --assign` verplaatst stops
+tussen bussen. `--reference-date` is daarvoor niet nodig (`evaluate` blijft hem eisen).
+
+`--max-perturbations` (default 1000) stopt `--assign` na dat aantal willekeurige
+herstarts, samen met 200 herstarts zonder verbetering. Dat pad is reproduceerbaar
+bij dezelfde seed. `--max-seconds` (default 30) is een noodrem: als hij bijt, meldt
+stderr dat het resultaat van de machinesnelheid afhangt. Voor een volledige schoolset
+(tot ongeveer 150 stops) gebruik je `--max-seconds 300`; dat hoort binnen vijf
+minuten terug te zijn. Stdout eindigt met `Perturbaties: N (gestopt door: …)`.

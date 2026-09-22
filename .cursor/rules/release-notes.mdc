@@ -1,0 +1,28 @@
+---
+description: GitHub-releasetekst is altijd Nederlands en begrijpelijk voor de school
+alwaysApply: true
+---
+
+# Releasetekst voor de school
+
+De tekst op een GitHub Release beschrijft wat er voor de school anders is. Publiek: iemand die de bussen plant, zonder technische achtergrond. Taal: Nederlands.
+
+Bron: `docs/release-notes/vX.Y.Z.md`. De release-job publiceert dat bestand. Gebruik geen `--generate-notes` en plak `CHANGELOG.md` niet op de release. `CHANGELOG.md` blijft het technische logboek.
+
+Schrijf het bestand in dezelfde wijziging als de versiebump. Ontbreekt het, dan faalt `scripts/build_plugin.py --verify-tag`.
+
+Wel: wat de gebruiker ziet of kan doen (kaart, rittijd per kind, verdeling, kosten, installatie).
+Een berekening die aangerekend wordt noem je TomTom, de routeplanner. "Betaald" zonder die naam is onvoldoende.
+Niet: commando's, vlaggen, bestandsnamen, solvers, caches, paden of interne beslissingen.
+
+```markdown
+# Slecht
+### Added
+- `evaluate --offline` en een stdlib-solver met `pinned_stops`
+
+# Goed
+- Je probeert een scenario eerst uit als schatting. De echte tijden vraag je daarna één keer op bij TomTom. TomTom is de routeplanner die per berekening aangerekend wordt.
+- De plugin zoekt zelf een kortere rit per kind. Een bus kun je vastzetten.
+```
+
+Een bestaande release bijwerken: `gh release edit vX.Y.Z --notes-file docs/release-notes/vX.Y.Z.md`.

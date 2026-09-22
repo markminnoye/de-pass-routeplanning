@@ -1,11 +1,21 @@
 # Changelog
 
+Technisch logboek. De tekst op de GitHub Release staat in `docs/release-notes/` (Nederlands, voor de school).
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+- `optimize --assign --max-perturbations` (default 1000): reproduceerbaar stoppunt naast de 200-stall-regel
+
+### Changed
+- `optimize` laadt de matrix één keer per bus (`--order`) of één keer voor alle punten (`--assign`); `--max-seconds` is een noodrem met melding op stderr
+- `optimize`, `data fetch-matrix` en `data add-points` eisen geen `BUSROUTES_REFERENCE_DATE` meer
+- GitHub Releases publiceren `docs/release-notes/vX.Y.Z.md` in plaats van automatisch gegenereerde notities
 
 ## [0.3.0] - 2026-09-22
 

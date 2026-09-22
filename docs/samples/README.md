@@ -113,6 +113,11 @@ thuisstop — die verplaatsing zit **niet** in `ride_min`).
 - Regels die de evaluator afdwingt: elke leerling exact één keer toegewezen, aantal instappers
   per bus ≤ `capacity` (30), elke `bus_id` bestaat in `buses.json`. Overtreding = foutmelding.
 
+`busroutes optimize` heeft geen `--reference-date` nodig. `--assign` stopt reproduceerbaar
+bij `--max-perturbations` (default 1000) of 200 herstarts zonder verbetering.
+`--max-seconds` is een noodrem; voor ongeveer 150 stops is `--max-seconds 300` de
+bedoelde limiet (binnen vijf minuten). Als de noodrem bijt, staat dat op stderr.
+
 ### Meegeleverde scenario's
 
 | Scenario | Idee |

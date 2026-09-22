@@ -35,8 +35,8 @@ Altijd deze volgorde. Eén vaste referentiedatum voor de hele vergelijking (`BUS
    - "Beste verdeling, bus1 vast": `"pinned": true` op die bus. Stops die op hun bus blijven: `pinned_stops`. Daarna `optimize --assign`.
 3. `BUSROUTES_REFERENCE_DATE=2026-09-15 python3 -m busroutes.cli evaluate --offline scenarios/<naam>.json`  
    Cijfers en die kaart zijn een schatting (matrix-tijden, rechte lijnen, km geschat). `metrics.json` heeft `"mode": "offline"`. Niet als definitief presenteren.
-4. Alleen als de tabelrij optimaliseren is: `optimize --order` of `optimize --assign`, met dezelfde referentiedatum. Geen TomTom-key. Output: `scenarios/<naam>-optimized.json` plus vóór/na op stdout. Daarna stap 3 op dat nieuwe bestand.  
-   `--assign` stopt bij `--max-seconds` (default 30). Dat is een tijdslimiet, geen garantie dat een volledige schoolset binnen die tijd uitgerekend is.
+4. Alleen als de tabelrij optimaliseren is: `optimize --order` of `optimize --assign`. Geen TomTom-key. `--reference-date` is voor `optimize` niet nodig. Output: `scenarios/<naam>-optimized.json` plus vóór/na op stdout. Daarna stap 3 op dat nieuwe bestand.  
+   `--assign` op een volledige schoolset (tot ongeveer 150 stops) kan enkele minuten duren en hoort binnen vijf minuten klaar te zijn. Gebruik daarvoor `--max-seconds 300`. Dat is een noodrem: als hij bijt, staat op stderr dat het resultaat van de machinesnelheid afhangt. `--max-perturbations` (default 1000) is het reproduceerbare stoppunt. Stdout meldt `Perturbaties: N (gestopt door: …)`; neem die regel op in het antwoord.
 5. Pas dan, één keer: `BUSROUTES_REFERENCE_DATE=2026-09-15 python3 -m busroutes.cli evaluate scenarios/<naam>.json`  
    Ongeveer 7 TomTom-calls. Zelfde datum. Dit zijn de definitieve cijfers en de kaart met echte wegen.
 6. Toon `out/<naam>/map.html` als HTML-pagina. Daarna `python3 -m busroutes.cli compare` op de `metrics.json`-bestanden. Doorslaggevend: langste en gemiddelde rit per kind.
@@ -57,7 +57,7 @@ Aan het begin van een sessie waarin je scenario's doorrekent, of als de gebruike
 2. Geen veld `repository`, of het netwerk lukt niet: stil doorgaan.
 3. Haal `https://api.github.com/repos/<owner>/<repo>/releases/latest` op. `owner/repo` komt uit `repository`.
 4. Tag `v0.1.0` = `0.1.0`. Alleen een nieuwere Release melden.
-5. Eén alinea: versienummer, download `https://github.com/<owner>/<repo>/releases/latest/download/de-pass-routeplanning.plugin`, oude plugin in Cowork verwijderen en dit bestand installeren. De geïnstalleerde plugin niet zelf overschrijven.
+5. Eén alinea in het Nederlands. Gebruik het veld `body` van de release: dat is de uitleg voor de school. Noem daarna het versienummer, de download `https://github.com/<owner>/<repo>/releases/latest/download/de-pass-routeplanning.plugin`, en dat je de plugin in Claude vervangt via Plugin → Add. De geïnstalleerde plugin niet zelf overschrijven. De commitlijst en `CHANGELOG.md` niet voorlezen.
 
 ## Wat je nooit doet
 

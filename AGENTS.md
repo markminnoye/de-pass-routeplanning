@@ -23,7 +23,7 @@ Deze lagen zijn complementair: laag 1 levert data, laag 2 lost het combinatorisc
 
 - Regiobus die kinderen uit één streek verzamelt (bv. Leuven).
 - Vaste opstapplaatsen voor zones met veel kinderen.
-- Volledig geoptimaliseerde verdeling (`busroutes optimize --assign`; vaste bussen/stops mogen). `--assign` op de volledige schoolset is nog niet geschaald (plan `2026-09-17-wp3-fix-tasks.md`, nog niet gestart) en de voorbeeldmatrix dekt niet alle paren tussen bussen.
+- Volledig geoptimaliseerde verdeling (`busroutes optimize --assign`; vaste bussen/stops mogen). Tot ongeveer 150 stops hoort dat binnen vijf minuten terug te zijn (`--max-seconds 300`). De voorbeeldmatrix dekt niet alle paren tussen bussen; zonder die paren stopt `--assign`.
 
 Per scenario tonen: max. en gemiddelde reistijd/leerling, totale rijtijd, km, bezettingsgraad, aankomsttijden.
 
@@ -51,10 +51,14 @@ Plannen leven in `.agent/plans/` — de repo-kopie is canoniek (ook als een plan
 - **Nieuwe taak:** maak `YYYY-MM-DD-naam.md` en registreer in de index.
 - **Handoff:** voeg `## Status: Paused` toe aan een actief plan met de huidige stand van zaken.
 
+### Releases
+
+De tekst op een GitHub Release staat in `docs/release-notes/vX.Y.Z.md`: Nederlands, voor de school, en alleen wat de gebruiker merkt. Een berekening die aangerekend wordt noem je TomTom. `CHANGELOG.md` is het technische logboek en hoort niet op de release. De release-job publiceert het notitiebestand; zonder dat bestand faalt de tag-check.
+
 ### Continuous Learning
 
 Vraag amendementen aan `@docs/data-en-tooling-opties.md` (of dit bestand) bij nieuwe inzichten over API-limieten, kosten, of solver-gedrag die tijdens implementatie aan het licht komen.
 
 ### Volgende stappen
 
-Zie het einde van `@docs/data-en-tooling-opties.md`. Open: echte leerlingdata (WP6, geblokkeerd) en de schaalfix van `optimize --assign`.
+Zie het einde van `@docs/data-en-tooling-opties.md`. Open: echte leerlingdata (WP6, geblokkeerd). `optimize --assign` schaalt tot ongeveer 150 stops (22/09/2026).
