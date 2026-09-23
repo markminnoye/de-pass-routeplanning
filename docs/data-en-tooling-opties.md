@@ -269,9 +269,13 @@ Alleen volgorde. Op `regiobus-per-zone` ontbreken 13.420 van de 18.496 paren tus
 
 Stdlib is `optimize --order` (2-opt/or-opt op de langste kinderrit). pyvroom 1.15 minimaliseert route-duur, met een dalende `max_travel_time` tot de rit nog haalbaar is. OR-Tools 9.15 gebruikt een tijd-dimensie, boogkost = reistijd + dwell, en `GlobalSpanCost` (1 s zoektijd per bus). Rekentijd is de zoektocht op een matrix die al in het geheugen staat.
 
-**Aanbeveling: de stdlib-solver blijft de plugin-solver.** Op alle drie de scenario's heeft hij de laagste langste rit en de minste ritten boven 60 minuten. pyvroom en OR-Tools rijden iets minder kilometers en maken de langste rit langer: zij optimaliseren routeduur, niet de rit van het kind. Op `opstapplaatsen` heeft pyvroom een lager gemiddelde (32,4 tegen 34,1) en toch een hogere maximumrit; de lexicografische doelfunctie kiest het maximum eerst.
+**Aanbeveling (22/09, alleen volgorde op echte cellen): de stdlib-solver blijft de plugin-solver.** Op alle drie de scenario's heeft hij de laagste langste rit en de minste ritten boven 60 minuten. pyvroom en OR-Tools rijden iets minder kilometers en maken de langste rit langer: zij optimaliseren routeduur, niet de rit van het kind. Op `opstapplaatsen` heeft pyvroom een lager gemiddelde (32,4 tegen 34,1) en toch een hogere maximumrit; de lexicografische doelfunctie kiest het maximum eerst.
 
-Installatie (`uv sync --group bench`, niet in CI): OR-Tools ±66 MB, pyvroom-extensie ±10 MB plus numpy ±22 MB en pandas ±44 MB. Het script is `scripts/bench_solvers.py` (253 regels), buiten `busroutes/` en buiten de plugin. VROOM hosten of OR-Tools in de plugin meeleveren volgt niet uit deze vergelijking. Een `--assign`-benchmark wordt pas zinvol als `fetch-matrix` de ontbrekende paren heeft aangevuld.
+### Vervolg (23/09/2026) — ook de verdeling
+
+`--assign` staat in [solver-benchmark.md](solver-benchmark.md). De sample-matrix heeft nog steeds geen paren tussen bussen. Beide assen gebruiken daarom één lijn door de 4.956 bestaande cellen, zodat elke solver dezelfde reistijd ziet. Op de rit van het kind blijven pyvroom en OR-Tools in de buurt van stdlib; ze rijden minder kilometers omdat ze de busduur minimaliseren. De plugin-solver blijft stdlib. VROOM hosten volgt niet uit de cijfers. OR-Tools blijft een lokale bench.
+
+Installatie (`uv sync --group bench`, niet in CI): OR-Tools ±66 MB, pyvroom-extensie ±10 MB plus numpy ±22 MB en pandas ±44 MB. `scripts/bench_solvers.py` blijft de vergelijking op de echte cellen. De verdeling staat in `scripts/bench_full.py` en [solver-benchmark.md](solver-benchmark.md); die wacht niet meer op `fetch-matrix`.
 
 ## Beslissingen (22/09/2026) — skill
 
@@ -285,7 +289,7 @@ Installatie (`uv sync --group bench`, niet in CI): OR-Tools ±66 MB, pyvroom-ext
 
 1. **Geocoding + verkeersbewuste reistijdmatrix**: TomTom REST, eenmaal opgeslagen in het datapakket. De skill spreekt TomTom daarna alleen aan voor de definitieve kaart (`evaluate`) of een nieuw punt (`data add-points`).
 2. **Scenario-evaluatie**: `evaluate --offline` op de matrix, daarna één `evaluate` met echte wegen.
-3. **Volledige optimalisatie**: stdlib-solver in `busroutes optimize` (langste rit per kind). Benchmark 22/09: pyvroom en OR-Tools verliezen op die score; ze blijven buiten de plugin. Zie "Benchmark solvers".
+3. **Volledige optimalisatie**: stdlib-solver in `busroutes optimize` (langste rit per kind). Benchmark 23/09: ook de verdeling, op één matrix; pyvroom en OR-Tools blijven buiten de plugin. Zie [solver-benchmark.md](solver-benchmark.md).
 4. **Visualisatie**: Leaflet-pagina per scenario (`out/<naam>/map.html`), gevoed met GeoJSON; OSM-basemap plus Overpass-overlay voor De Lijn / TEC / NMBS.
 
 ## Volgende stappen
@@ -295,7 +299,7 @@ Installatie (`uv sync --group bench`, niet in CI): OR-Tools ±66 MB, pyvroom-ext
 3. ~~Eerste versie van de scenario-evaluator~~ ✅ 14/09/2026 — `busroutes` CLI (`evaluate`/`compare`) + skill. Vervolgwensen staan onderaan `.agent/plans/2026-09-14-testset-en-evaluator-v1.md`.
 4. ~~Offline-modus + matrix in het datapakket~~ ✅ 16/09/2026 — `evaluate --offline`, `busroutes data status|fetch-matrix|add-points`, matrix in `docs/samples/matrix/`.
 5. ~~Stdlib-solver (`busroutes optimize`)~~ ✅ 16/09/2026 (WP3) — `optimize --order|--assign` op de matrix, zonder TomTom.
-6. ~~Benchmark pyvroom / OR-Tools~~ ✅ 22/09/2026 (WP4) — stdlib wint op langste rit bij volgorde-per-bus. `--assign`-vergelijking wacht op een volledige matrix.
+6. ~~Benchmark pyvroom / OR-Tools~~ ✅ 22/09/2026 volgorde op echte cellen; ✅ 23/09/2026 ook `--assign`, op één lijn door die cellen (`docs/solver-benchmark.md`). Stdlib blijft de plugin-solver.
 7. ~~Skill herschreven naar één beslissingstabel~~ ✅ 22/09/2026 (WP5).
 8. ~~Schaalfix `optimize --assign`~~ ✅ 22/09/2026 — 140 stops binnen 35 s, 150 stops binnen 90 s op een synthetische matrix; skill vraagt `--max-seconds 300` voor een volledige schoolset.
 9. Zodra de school data levert (WP6): adressen of coördinaten, buscapaciteiten, beltijd, eventuele vaste opstapplaatsen. Daarna `data geocode` en `fetch-matrix` (eerst `--dry-run`). Google's route-optimization-demo op een eigen GCP-project hoort niet bij dit pad.
