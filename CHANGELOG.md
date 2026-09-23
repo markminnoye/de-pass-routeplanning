@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `scripts/bench_full.py` en `docs/solver-benchmark.md`: volgorde én verdeling op één matrix (lijn door de sample-cellen). pyvroom, OR-Tools en matplotlib blijven in de `bench`-groep. Advies: stdlib blijft de plugin-solver; VROOM niet hosten; OR-Tools alleen lokaal.
+- `docs/sr-68-ortools-objective.md`: SR-68 is geen defect in `optimize`. De plugin minimaliseert de langste kinderrit; een TSP op buslengte kan die rit verlengen. De ticketcijfers 84,5 / 92,7 min zijn op `docs/samples` niet te reproduceren.
 
 ## [0.4.0] - 2026-09-22
 
