@@ -4,6 +4,103 @@ Vergelijking van de stdlib-solver, pyvroom en OR-Tools op **één matrix**, voor
 
 De cijfers hier zijn een schatting op een gladgemaakte matrix, geen TomTom-`evaluate` op een verkeersdag. De tabel van 22/09 in [data-en-tooling-opties.md](data-en-tooling-opties.md) blijft de volgorde-vergelijking op de echte per-bus-cellen. De minuten uit de twee tabellen mag je niet naast elkaar leggen.
 
+## Inputparameters
+
+De tabellen en de drie grafieken komen uit **één** run. Hieronder staat alles wat die run vastlegde. Een herhaling met hetzelfde commando op dezelfde bestanden gebruikt dezelfde invoer. OR-Tools en de afgekapte stdlib-verdeling stoppen op de klok, dus de halte kan op een andere machine een stap verschuiven.
+
+### Dataset en matrix
+
+| | |
+|---|---|
+| Pakket | `docs/samples/` (default van de evaluator; geen `data/`, geen `BUSROUTES_DATA_DIR`) |
+| Gegenereerd door | `scripts/generate_testset.py`, seed `20260914`. De benchmark leest de JSON die al in de repo staat en genereert niets opnieuw |
+| School | één: `docs/samples/school.json`, "de pass (Hoegaarden)", `50.778160, 4.896000`, gewenste aankomst `08:30` |
+| Leerlingen | 140, `docs/samples/students.json`, elk een eigen coördinaat. Zones: hoegaarden-centrum 30, tienen 24, leuven 14, meldert 10, boutersem 10, landen 10, outgaarden 8, hoksem 6, jodoigne 6, kumtich 6, bierbeek 6, linter 6, zoutleeuw 4 |
+| Bussen | 7, `docs/samples/buses.json`: `bus1`–`bus7`, capaciteit **30** elk, start = de school |
+| Opstapplaatsen | `docs/samples/pickup_points.json`: Tienen station, Tienen Grote Markt, Leuven station. Alleen `opstapplaatsen` gebruikt ze |
+| Referentiedatum | `2026-09-15` (dinsdag), vast in `scripts/bench_full.py`. Offline negeert het vertrekuur: de ritduren hangen niet van die datum af |
+| Echte cellen | `docs/samples/matrix/`, 4.956 paren met reistijd > 0 en afstand ≥ 1 m. TomTom Matrix Routing v2, `departAt=any`, `traffic=historical`, `travelMode=car`, `routeType=fastest`. Alleen de paren binnen elke referentiebus |
+| Ontbrekend | de paren tussen bussen. Die zijn niet geschat naast de echte cel, want dan zou een overstap een ander soort getal zijn dan een rit binnen de bus |
+
+Elk paar in de benchmark, ook een paar waarvoor een TomTom-cel bestaat, komt uit één kleinste-kwadratenlijn door die 4.956 cellen (`scripts/bench_matrix.py`):
+
+`seconden = max(1, afgerond(277,7976 + 0,075533 × meter))`
+
+Dat is 278 seconden plus 75,5 seconden per kilometer. R² = 0,868. Mediane absolute fout 18,3%. Mediane snelheid in de cellen 6,87 m/s (25 km/u); de helling zelf is ongeveer 48 km/u bovenop die vaste 278 seconden. De lijn is symmetrisch. De diagonaal is 0. Eenrichtingsverkeer en het verschil tussen heen en terug zitten er niet in.
+
+Kilometers in de tabellen zijn niet die lijn. `evaluate --offline` zet elke leg op hemelsbreed × 1,3 (`km_estimated: true`).
+
+### Scenario's
+
+Bestanden in `docs/samples/scenarios/`. Elk scenario wijst alle 140 leerlingen toe, niemand dubbel, niemand vastgezet (`pinned` en `pinned_stops` ontbreken). Invoer heeft `"ordering": "auto"`. Na een solver zet de benchmark de volgorde op `given`, zodat `evaluate` niet nog een keer herordent.
+
+Startbezetting is overal 20 leerlingen per bus (140 / 7). Onevenwicht bij de start is dus 0. Capaciteit 30 wordt nergens geraakt.
+
+| Scenario | Bestand | Startregel | Stops |
+|---|---|---|---|
+| `regiobus-per-zone` | `docs/samples/scenarios/regiobus-per-zone.json` | Eén streek per bus, ophalen aan huis. bus1: 20× hoegaarden-centrum. bus2: 10× hoegaarden-centrum + meldert. bus3: outgaarden + hoksem + jodoigne. bus4: 20× tienen. bus5: 4× tienen + kumtich + boutersem. bus6: bierbeek + leuven. bus7: landen + linter + zoutleeuw | 140 (één stop per leerling) |
+| `opstapplaatsen` | `docs/samples/scenarios/opstapplaatsen.json` | Dezelfde streken. bus4 haalt 10 leerlingen op aan Tienen station en 10 aan de Grote Markt. bus6 haalt bierbeek aan huis en de 14 Leuven-leerlingen aan het station. De rest blijft aan huis | 109 |
+| `spreiding-gemengd` | `docs/samples/scenarios/spreiding-gemengd.json` | Negatieve referentie. `random.Random(20260915)` schudt de 140 id's; daarna round-robin over de zeven bussen. Zones door elkaar, ophalen aan huis | 140 |
+
+### Solverknoppen van de gepubliceerde tabellen
+
+Commando, vanaf de repo-wortel, zonder extra vlaggen:
+
+```bash
+uv sync --group bench
+uv run python scripts/bench_full.py
+```
+
+Dat schrijft `docs/images/solver-bench-order.png`, `solver-bench-assign.png`, `solver-bench-runtime.png` en `out/bench/full.json`. De JSON bevestigt de knoppen hieronder. Een kortere proef met `--stdlib-seconds` of `--scenarios` is een andere run en hoort niet bij deze tabellen.
+
+Stilstand, voor elke solver en voor de score: **30 s + 10 s per leerling op die stop** (`BUSROUTES_DWELL_*` stond niet gezet). Een huisstop is 40 s. Tienen station (10 leerlingen) is 130 s. De rit van een kind loopt van het vertrek aan zijn stop tot aankomst op school en telt de eigen stilstand niet mee.
+
+| Knop | Waarde in deze run |
+|---|---|
+| Seed | **0**, alleen voor `optimize_assign`. Geen tweede seed, geen sweep |
+| stdlib `--order` | `order_stops_for_bus`: 2-opt en or-opt tot een lokaal optimum. Geen tijdslimiet, geen seed. Doel `(langste rit, som van de ritten, totale rijtijd)` |
+| stdlib `--assign` | `max_seconds=180`, `max_perturbations=200`, seed 0. Eerst `--order`, dan relocate/swap. De perturbatielus (ook een stall-limiet van 200) start pas daarna |
+| Wat `--assign` deed | Op **alle drie** de scenario's: `perturbaties=0`, `gestopt door max_seconds`. De eerste lokale zoektocht was na 180 s nog bezig. Het perturbatieplafond is niet gehaald. Dit is niet de CLI-default (die is 30 s en 1.000 perturbaties) |
+| pyvroom | 1.15.2. `exploration_level=5`, `nb_threads=1`, geen timeout. Duurmatrix, profiel `car`. Eerst onbeperkt, dan binaire zoektocht naar de laagste `max_travel_time` die nog elke stop inplant. Volgorde: één voertuig per bus, depot = school. Verdeling: zeven voertuigen, `capacity=[30]`, job `pickup=[aantal leerlingen]`, stilstand = `default_service` |
+| OR-Tools volgorde | 9.15.6755. Eén voertuig per bus, 1 s per bus. Eerste oplossing `PATH_CHEAPEST_ARC`, daarna `GUIDED_LOCAL_SEARCH`. Boog = reistijd + stilstand aan de oorsprong. Tijd-dimensie, `GlobalSpanCost` 100 |
+| OR-Tools verdeling | 8 s voor het hele scenario. Eerste oplossing `PARALLEL_CHEAPEST_INSERTION`, daarna `GUIDED_LOCAL_SEARCH`. Zelfde boog en `GlobalSpanCost` 100. Vaste kost per bus 0. Capaciteit hard, vraag = leerlingen op de stop. `log_search` uit. Deze build heeft geen knop voor één zoekthread |
+
+`stdlib --order` in de verdeeltabel is dezelfde run als de stdlib-rij bij volgorde, geen tweede zoektocht.
+
+### Score
+
+Alles gaat door `evaluate` op de `SpeedMatrixClient` (`mode: offline`).
+
+| Kolom | Definitie |
+|---|---|
+| max rit (min) | langste rit over de 140 leerlingen, in minuten, afgerond op 0,1 |
+| gem. rit (min) | gemiddelde van die 140 ritten, niet het gemiddelde per stop |
+| ritten > 60 | aantal leerlingen met rit > 3.600 s |
+| km | som van de legs, hemelsbreed × 1,3, afgerond op 0,1 km |
+| onevenwicht | leerlingen op de volste bus min leerlingen op de leegste, over alle zeven bussen, lege bus telt als 0 |
+| rekentijd (s) | alleen de zoektocht, niet het inlezen van de matrix en niet `evaluate` |
+
+### Omgeving
+
+| | |
+|---|---|
+| Machine | M3arkBookPro, macOS 26.7, arm64 |
+| Python | 3.13.15, via uv 0.12.15 |
+| pyvroom | 1.15.2 (10,2 MiB), plus numpy 2.5.3 en pandas 3.0.6 |
+| OR-Tools | 9.15.6755 (65,5 MiB) |
+| matplotlib | 3.11.2, alleen voor de PNG's |
+| Plugin | `project.dependencies` is leeg. Deze pakketten zitten in de groep `bench` |
+
+### Wat niet gevarieerd is
+
+- Eén seed (0). Geen herhaling met een andere seed.
+- Eén tijdslimiet per solver, de waarden in de tabel hierboven. Geen sweep.
+- Stilstand, capaciteit, school, leerlingen en de drie scenariobestanden zijn niet gevarieerd.
+- Geen TomTom-`evaluate` zonder `--offline`. De ontbrekende paren zijn niet aangekocht.
+- Geen publieke VROOM-demo (`solver.vroom-project.org` gebruikt OSRM, niet deze matrix).
+- Geen Google Route Optimization (geen GCP-project; dat objectief is vlootkost).
+- De volgorde-tabel van 22/09 op de echte per-bus-cellen is een andere matrix. Die minuten horen niet in deze tabellen.
+
 ## Advies
 
 **De plugin houdt de stdlib-solver.** pyvroom en OR-Tools blijven in de dependency-groep `bench`. VROOM hosten is niet nodig.
@@ -16,53 +113,7 @@ Het doel is de rit van het kind (eerst de langste, dan het gemiddelde, dan het a
 - **Niet hosten.** pyvroom minimaliseert de routeduur en zoekt daarna de krapste `max_travel_time` die nog haalbaar is. Dat is niet de rit van het kind, en door die herhaalde solves duurt een verdeling 2–3 minuten. Een VROOM-dienst zou dezelfde matrix nog moeten ontvangen; de publieke demo gebruikt OSRM en is daarom niet aangeroepen.
 - **OR-Tools alleen lokaal, in `bench`.** 65,5 MiB, niet in de plugin. Nuttig als later een snelle batch of een kilometerdoel nodig is. Google Route Optimization is niet gedraaid: die optimaliseert vlootkost, en er is geen GCP-project.
 
-## Draaien
-
-Vanaf de repo-wortel, na `uv sync --group bench`:
-
-```bash
-uv run python scripts/bench_full.py
-```
-
-Standaard: de drie referentiescenario's, seed 0, stdlib-verdeling tot 200 perturbaties of 180 seconden, OR-Tools-verdeling 8 seconden, pyvroom `exploration_level=5` en `nb_threads=1`. OR-Tools-volgorde is 1 seconde per bus, dezelfde routine als `scripts/bench_solvers.py`.
-
-De run schrijft `docs/images/solver-bench-order.png`, `solver-bench-assign.png` en `solver-bench-runtime.png`, plus `out/bench/full.json` (gitignored). Een kortere proef:
-
-```bash
-uv run python scripts/bench_full.py \
-  --scenarios spreiding-gemengd \
-  --stdlib-seconds 20 --stdlib-perturbations 10 --ortools-seconds 3
-```
-
-Alleen de echte per-bus-cellen, zonder herverdeling:
-
-```bash
-BUSROUTES_REFERENCE_DATE=2026-09-15 uv run python scripts/bench_solvers.py
-```
-
-OR-Tools stopt op de klok. Deze build heeft geen schakelaar voor één zoekthread, dus een herhaling op een andere machine kan een halte verschuiven. De stdlib-verdeling hier stopte ook op de klok (`gestopt door max_seconds`, 0 perturbaties), niet op het reproduceerbare perturbatieplafond. pyvroom met één thread volgt wel een vaste zoektocht.
-
-## Matrix
-
-`docs/samples/matrix/` heeft 4.956 positieve TomTom-cellen, per referentiebus. Paren tussen bussen ontbreken, dus een herverdeling kan daar niet op scoren. Een mix van echte cellen en schattingen zou een rit tussen bussen een ander soort getal maken dan een rit binnen een bus.
-
-`scripts/bench_matrix.py` trekt daarom één lijn door al die cellen en gebruikt die voor elk paar:
-
-`seconden = max(1, afgerond(278 + 0,0755 × meter))`
-
-Dat is 278 seconden plus 76 seconden per kilometer (marginale snelheid ongeveer 48 km/u, mediaan van de cellen 25 km/u). R² = 0,87. De mediane absolute fout is 18%. De lijn is symmetrisch; eenrichtingsverkeer zit er niet in. De diagonaal is 0.
-
-`evaluate --offline` ziet die tijden via een `OfflineClient`. Kilometers blijven hemelsbreed × 1,3.
-
-## Wat elke solver optimaliseert
-
-| Solver | Volgorde | Verdeling |
-|---|---|---|
-| stdlib | 2-opt/or-opt op (langste rit, som van de ritten, rijtijd) | relocate/swap, daarna dezelfde ordening. Hier afgekapt na 180 s, vóór de eerste perturbatie |
-| pyvroom 1.15.2 | kortste routeduur, dan de laagste `max_travel_time` die nog elke stop haalt | hetzelfde, met capaciteit (`pickup` = aantal leerlingen) en zeven voertuigen |
-| OR-Tools 9.15 | tijd-dimensie, boog = reistijd + stilstand, `GlobalSpanCost` 100, 1 s per bus | hetzelfde, plus capaciteit, vaste kost 0, 8 s, eerste oplossing `PARALLEL_CHEAPEST_INSERTION` |
-
-Stilstand is 30 s + 10 s per leerling. De rit van een kind loopt van vertrek aan zijn stop tot aankomst op school, zonder de eigen stilstand. De externe solvers optimaliseren de duur van de bus, niet die rit. De score hierna is wel die rit.
+Herkomen van de run: [Inputparameters](#inputparameters). Externe solvers optimaliseren de duur van de bus; de tabellen scoren de rit van het kind.
 
 ## Volgorde per bus
 
@@ -107,27 +158,21 @@ pyvroom en OR-Tools rijden iets minder kilometers. Op de door elkaar gehusselde 
 
 Onevenwicht = leerlingen op de volste bus min leerlingen op de leegste, lege bussen meegerekend.
 
-De drie `--assign`-rijen van stdlib zijn afgekapt: `perturbaties=0, gestopt door max_seconds`. De lokale zoektocht was na drie minuten nog bezig. Het resultaat hangt daardoor af van de machinesnelheid. Op deze machine is de langste rit toch gelijkwaardig aan pyvroom en OR-Tools.
+De drie `--assign`-rijen van stdlib zijn de afgekapte zoektocht uit [Inputparameters](#inputparameters): `perturbaties=0`, `gestopt door max_seconds`. Op deze machine is de langste rit toch gelijkwaardig aan pyvroom en OR-Tools.
 
 ![Rekentijd van volgorde en verdeling](images/solver-bench-runtime.png)
 
 ## Installatie en omvang
 
-Gemeten in deze `bench`-omgeving (macOS, arm64). Niets hiervan staat in `project.dependencies` (die lijst is leeg) en niets gaat mee in de plugin.
+Versies en machine staan bij [Inputparameters](#inputparameters). Niets daarvan gaat mee in de plugin.
 
-| Onderdeel | Versie | Schijf |
-|---|---|---:|
-| stdlib (`busroutes/optimize.py`) | — | 455 niet-lege regels, geen extra pakket |
-| OR-Tools | 9.15.6755 | 65,5 MiB |
-| pyvroom | 1.15.2 | 10,2 MiB |
-| numpy (vereist door pyvroom) | 2.5.3 | 21,7 MiB |
-| pandas (vereist door pyvroom) | 3.0.6 | 44,4 MiB |
-| matplotlib (alleen de grafieken) | 3.11.2 | 26,6 MiB |
+| Onderdeel | Schijf |
+|---|---:|
+| stdlib (`busroutes/optimize.py`) | 455 niet-lege regels, geen extra pakket |
+| OR-Tools 9.15.6755 | 65,5 MiB |
+| pyvroom 1.15.2 | 10,2 MiB |
+| numpy 2.5.3 | 21,7 MiB |
+| pandas 3.0.6 | 44,4 MiB |
+| matplotlib 3.11.2 | 26,6 MiB |
 
 Scripts, niet-lege regels: `bench_full.py` 497, `bench_solvers.py` 213, `bench_charts.py` 185, `bench_matrix.py` 127.
-
-## Niet aangeroepen
-
-- TomTom `evaluate` zonder `--offline`. Er is geen reden credits te spenderen: de ontbrekende paren zouden eerst aangekocht moeten worden, en deze vergelijking moet juist zonder netwerk herhaalbaar zijn.
-- De publieke VROOM-demo (`solver.vroom-project.org`). Die rekent met OSRM, niet met deze matrix.
-- Google Route Optimization. Geen GCP-project; het objectief is vlootkost.
