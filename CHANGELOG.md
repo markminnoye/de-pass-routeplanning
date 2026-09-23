@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `scripts/bench_full.py`: volgorde én verdeling op één matrix (lijn door de sample-cellen), met pyvroom, OR-Tools en matplotlib alleen in de `bench`-groep
+
 ## [0.4.0] - 2026-09-22
 
 ### Added

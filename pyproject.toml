@@ -10,6 +10,7 @@ busroutes = "busroutes.cli:main"
 
 [dependency-groups]
 bench = [
+    "matplotlib>=3.9",
     "ortools>=9.15.6755",
     "pyvroom>=1.15.2",
 ]
