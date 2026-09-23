@@ -3,9 +3,11 @@
 The map uses OpenStreetMap.de tiles plus an overlay of De Lijn / TEC / NMBS
 stops fetched via Overpass. tile.openstreetmap.org is not used: a local
 file:// map.html sends no Referer, and OSMF volunteer tiles then return 403.
-Leaflet CSS is inlined (artifact-viewer CSP blocks external stylesheets).
-Leaflet JS comes from cdnjs (unpkg is blocked). OSM tiles may still fail in
-an artifact; routes and stops still draw.
+Leaflet CSS is inlined (a published artifact blocks external stylesheets) and
+its images are data URIs. Leaflet JS comes from cdnjs, which that artifact
+still allows. A published artifact blocks every external image, so the tiles
+for the scenario bbox are embedded as data URIs; other zoom levels fall back
+to the live OSM.de URL, which a normal browser can load.
 """
 
 from __future__ import annotations
@@ -175,7 +177,10 @@ def _bus_rows(d: dict, colours: dict[str, str]) -> str:
 
 
 def render_map_html(
-    result: ScenarioResult, geojson: dict, transit_geojson: dict | None = None
+    result: ScenarioResult,
+    geojson: dict,
+    transit_geojson: dict | None = None,
+    basemap_tiles: dict[str, str] | None = None,
 ) -> str:
     d = result.to_dict()
     colours = {
@@ -192,6 +197,7 @@ def render_map_html(
     transit = json.dumps(transit_geojson or {"type": "FeatureCollection", "features": []}).replace(
         "</", "<\\/"
     )
+    tiles = json.dumps(basemap_tiles or {}).replace("</", "<\\/")
     return f"""<!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -202,9 +208,9 @@ def render_map_html(
 <style>
 {LEAFLET_CSS}
   html, body {{ margin: 0; height: 100%; font: 14px/1.4 system-ui, sans-serif; }}
-  #wrap {{ display: flex; height: 100%; }}
+  #wrap {{ display: flex; height: 100%; min-height: 100vh; }}
   #panel {{ width: 360px; overflow: auto; padding: 16px; box-sizing: border-box; border-right: 1px solid #ddd; }}
-  #map {{ flex: 1; }}
+  #map {{ flex: 1; min-height: 420px; }}
   h1 {{ font-size: 18px; margin: 0 0 4px; }}
   p.desc {{ color: #555; margin: 0 0 12px; }}
   p.banner {{ background: #fff3cd; border: 1px solid #ffc107; padding: 8px 12px; margin: 0 0 12px; }}
@@ -238,12 +244,22 @@ def render_map_html(
 <script>
 const data = {data};
 const transitData = {transit};
+const embeddedTiles = {tiles};
 const map = L.map('map');
 const osmAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
-const osmDe = L.tileLayer('https://tile.openstreetmap.de/{{z}}/{{x}}/{{y}}.png', {{
-  maxZoom: 18,
-  attribution: osmAttr
+function osmTileUrl(z, x, y) {{
+  return 'https://tile.openstreetmap.de/' + z + '/' + x + '/' + y + '.png';
+}}
+const OsmTiles = L.GridLayer.extend({{
+  createTile: function (coords) {{
+    const img = document.createElement('img');
+    const key = coords.z + '/' + coords.x + '/' + coords.y;
+    img.alt = '';
+    img.src = embeddedTiles[key] || osmTileUrl(coords.z, coords.x, coords.y);
+    return img;
+  }}
 }});
+const osmDe = new OsmTiles({{ maxZoom: 18, attribution: osmAttr }});
 const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{{z}}/{{y}}/{{x}}', {{
   maxZoom: 19,
   attribution: 'Tiles &copy; Esri'
@@ -311,7 +327,34 @@ L.control.layers({{
   'Schoolbusroutes': layer,
   'OV-haltes (De Lijn, TEC, NMBS)': transitLayer
 }}).addTo(map);
-map.fitBounds(layer.getBounds().pad(0.05));
+const fit = () => {{
+  map.invalidateSize();
+  if (layer.getBounds().isValid()) map.fitBounds(layer.getBounds().pad(0.05));
+}};
+fit();
+// A published artifact gives the map pane its height late, and blocks every
+// external image. Snap to an embedded zoom only when a live tile is refused,
+// so a normal browser keeps the fitBounds zoom and can still load other levels.
+const snapToEmbedded = () => {{
+  const zooms = Object.keys(embeddedTiles).map(key => +key.split('/')[0]);
+  if (!zooms.length) return;
+  const current = map.getZoom();
+  let target = zooms[0];
+  zooms.forEach(zoom => {{
+    if (Math.abs(zoom - current) < Math.abs(target - current)) target = zoom;
+  }});
+  if (target !== current) map.setZoom(target);
+}};
+requestAnimationFrame(() => {{
+  const size = map.getSize();
+  if (size.x < 20 || size.y < 20) fit();
+  const keys = Object.keys(embeddedTiles);
+  if (!keys.length) return;
+  const probe = new Image();
+  probe.onerror = () => snapToEmbedded();
+  probe.src = osmTileUrl.apply(null, keys[0].split('/'));
+}});
+window.addEventListener('resize', () => map.invalidateSize());
 // The legend doubles as an on/off switch per bus (route line plus its stops).
 const busLayers = {{}};
 layer.eachLayer(l => {{
