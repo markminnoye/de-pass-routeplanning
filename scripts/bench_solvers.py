@@ -24,9 +24,19 @@ from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 
 from busroutes.config import load_settings
 from busroutes.evaluate import evaluate
-from busroutes.models import Bus, BusPlan, Scenario, School, Stop, load_samples, load_scenario_file
+from busroutes.models import (
+    Bus,
+    BusPlan,
+    Direction,
+    Scenario,
+    School,
+    Stop,
+    load_samples,
+    load_scenario_file,
+)
 from busroutes.offline import OfflineClient
 from busroutes.optimize import optimize_order
+from busroutes.ordering import open_route_matrix
 
 REPO = Path(__file__).resolve().parents[1]
 SCENARIOS = (
@@ -51,11 +61,16 @@ def _matrix(client: OfflineClient, plan: BusPlan, bus: Bus, school: School) -> l
 
 
 def _vroom_order(
-    matrix: list[list[int]], dwells: list[int], max_travel_time: int | None
+    matrix: list[list[int]],
+    dwells: list[int],
+    max_travel_time: int | None,
+    direction: Direction = "to_school",
 ) -> list[int]:
+    """Open route: to_school ends at the school, from_school starts there."""
+    durations, start, end = open_route_matrix(matrix, direction)
     problem = vroom.Input()
-    problem.set_durations_matrix("car", matrix)
-    problem.add_vehicle(vroom.Vehicle(1, start=0, end=0, max_travel_time=max_travel_time))
+    problem.set_durations_matrix("car", durations)
+    problem.add_vehicle(vroom.Vehicle(1, start=start, end=end, max_travel_time=max_travel_time))
     for i, dwell in enumerate(dwells, start=1):
         problem.add_job(vroom.Job(i, location=i, default_service=dwell))
     solution = problem.solve(exploration_level=5, nb_threads=1)
@@ -65,16 +80,18 @@ def _vroom_order(
     return [step["id"] - 1 for step in steps if step["type"] == "job"]
 
 
-def _vroom_tight_order(matrix: list[list[int]], dwells: list[int]) -> list[int]:
+def _vroom_tight_order(
+    matrix: list[list[int]], dwells: list[int], direction: Direction = "to_school"
+) -> list[int]:
     """Lowest max_travel_time that still visits every stop; falls back to unconstrained."""
-    loose = _vroom_order(matrix, dwells, None)
+    loose = _vroom_order(matrix, dwells, None, direction)
     if not loose:
         return loose
     # Duration of the loose tour is an upper bound. Search the smallest cap
     # that remains feasible. On one vehicle this usually keeps the same tour:
     # the cap cannot trade a longer route for a shorter passenger ride.
     hi = 1
-    while not _vroom_order(matrix, dwells, hi):
+    while not _vroom_order(matrix, dwells, hi, direction):
         hi *= 2
         if hi > 24 * 3600:
             return loose
@@ -82,7 +99,7 @@ def _vroom_tight_order(matrix: list[list[int]], dwells: list[int]) -> list[int]:
     best = loose
     while lo + 1 < hi:
         mid = (lo + hi) // 2
-        order = _vroom_order(matrix, dwells, mid)
+        order = _vroom_order(matrix, dwells, mid, direction)
         if order:
             best = order
             hi = mid
@@ -91,15 +108,20 @@ def _vroom_tight_order(matrix: list[list[int]], dwells: list[int]) -> list[int]:
     return best
 
 
-def _ortools_order(matrix: list[list[int]], dwells: list[int]) -> list[int]:
-    manager = pywrapcp.RoutingIndexManager(len(matrix), 1, 0)
+def _ortools_order(
+    matrix: list[list[int]], dwells: list[int], direction: Direction = "to_school"
+) -> list[int]:
+    """Open route with the same end as evaluate: school for to_school, no return."""
+    durations, start, end = open_route_matrix(matrix, direction)
+    dummy = len(matrix)
+    manager = pywrapcp.RoutingIndexManager(len(durations), 1, [start], [end])
     routing = pywrapcp.RoutingModel(manager)
 
     def transit(from_index: int, to_index: int) -> int:
         i = manager.IndexToNode(from_index)
         j = manager.IndexToNode(to_index)
-        service = dwells[i - 1] if i else 0
-        return int(matrix[i][j]) + service
+        service = dwells[i - 1] if 0 < i < dummy else 0
+        return int(durations[i][j]) + service
 
     callback = routing.RegisterTransitCallback(transit)
     routing.SetArcCostEvaluatorOfAllVehicles(callback)
@@ -118,7 +140,7 @@ def _ortools_order(matrix: list[list[int]], dwells: list[int]) -> list[int]:
     index = routing.Start(0)
     while not routing.IsEnd(index):
         node = manager.IndexToNode(index)
-        if node:
+        if 0 < node < dummy:
             order.append(node - 1)
         index = solution.Value(routing.NextVar(index))
     return order
@@ -154,9 +176,9 @@ def _external_orders(
         matrix = _matrix(client, plan, buses[plan.bus_id], school)
         dwells = [_dwell_s(stop, settings) for stop in plan.stops]
         if solver == "pyvroom":
-            indices = _vroom_tight_order(matrix, dwells)
+            indices = _vroom_tight_order(matrix, dwells, plan.direction)
         elif solver == "ortools":
-            indices = _ortools_order(matrix, dwells)
+            indices = _ortools_order(matrix, dwells, plan.direction)
         else:
             raise RuntimeError(solver)
         orders[plan.bus_id] = _orders_from_indices(plan, indices)

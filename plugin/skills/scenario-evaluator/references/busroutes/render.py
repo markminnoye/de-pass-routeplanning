@@ -17,12 +17,14 @@ import json
 
 from busroutes.evaluate import ScenarioResult
 from busroutes.leaflet_css import LEAFLET_CSS
+from busroutes.models import direction_label
 
 BUS_COLOURS = ["#d7263d", "#1b7f79", "#f46036", "#2e294e", "#3a86ff", "#8338ec", "#ffbe0b"]
 
 COMPARE_COLUMNS = [
     ("scenario", "Scenario"),
     ("mode", "Modus"),
+    ("direction", "Richting"),
     ("buses_used", "Bussen"),
     ("max_ride_min", "Langste rit (min)"),
     ("avg_ride_min", "Gem. rit (min)"),
@@ -66,6 +68,7 @@ def to_geojson(result: ScenarioResult) -> dict:
                     "arrival": bus.arrival.strftime("%H:%M"),
                     "drive_min": round(bus.drive_s / 60, 1),
                     "km": round(bus.length_m / 1000, 1),
+                    "direction": direction_label(bus.direction),
                 },
             }
         )
@@ -112,6 +115,8 @@ def _compare_cell(m: dict, key: str) -> str:
         return str(m[key])
     if key == "mode":
         return str(m.get("settings", {}).get("mode", "tomtom"))
+    if key == "direction":
+        return direction_label(str(m.get("settings", {}).get("direction", "to_school")))
     return str(m["summary"].get(key, ""))
 
 
@@ -137,7 +142,10 @@ def _summary_rows(d: dict) -> str:
     km = f"{s['total_km']} km"
     if d.get("settings", {}).get("km_estimated"):
         km += " (geschat)"
+    direction = str(d.get("settings", {}).get("direction", "to_school"))
+    school_time = "Laatste uitstap" if direction == "from_school" else "Aankomst school"
     items = [
+        ("Richting", direction_label(direction)),
         ("Leerlingen", s["students"]),
         ("Langste rit", f"{s['max_ride_min']} min"),
         ("Gemiddelde rit", f"{s['avg_ride_min']} min"),
@@ -146,7 +154,7 @@ def _summary_rows(d: dict) -> str:
         ("Totale afstand", km),
         ("Gem. bezetting", f"{s['avg_occupancy_pct']} %"),
         ("Vroegste vertrek", s["earliest_departure"]),
-        ("Aankomst school", s["arrival"]),
+        (school_time, s["arrival"]),
     ]
     return "".join(
         f"<tr><th>{html.escape(k)}</th><td>{html.escape(str(v))}</td></tr>" for k, v in items
@@ -293,7 +301,7 @@ const layer = L.geoJSON(data, {{
   onEachFeature: (f, l) => {{
     const p = f.properties;
     if (p.kind === 'route') {{
-      l.bindPopup(`<b>${{p.bus_id}}</b><br>${{p.students}}/${{p.capacity}} leerlingen<br>vertrek ${{p.departure}} → aankomst ${{p.arrival}}<br>${{p.drive_min}} min, ${{p.km}} km`);
+      l.bindPopup(`<b>${{p.bus_id}}</b> (${{p.direction}})<br>${{p.students}}/${{p.capacity}} leerlingen<br>vertrek ${{p.departure}} → aankomst ${{p.arrival}}<br>${{p.drive_min}} min, ${{p.km}} km`);
     }} else if (p.kind === 'stop') {{
       const who = p.students.length === 1 ? p.students[0] : p.students.length + ' leerlingen';
       l.bindPopup(`<b>${{p.name || p.id}}</b> (${{p.bus_id}}, stop ${{p.order}})<br>${{who}}<br>ophalen ${{p.arrival}}, rit ${{p.ride_min}} min`);

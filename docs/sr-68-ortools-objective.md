@@ -15,7 +15,7 @@ Geen defect in `optimize`, en geen verkeerde depot- of tijdconversie in de evalu
 | Bench-OR-Tools | `scripts/bench_solvers.py` | Boog = matrix-seconden + stilstand aan de oorsprong, plus `GlobalSpanCost` 100 op de duur van de bus (depot-vertrek tot depot-terugkomst). Niet de rit vanaf instappen |
 | Klassieke TSP uit het ticket | niet in de plugin | Som van de bogen op een gesloten lus school → stops → school. Een tour en zijn omgekeerde zijn even lang. De eerste oplossing kiest de stop dicht bij school; dat is niet korter |
 
-De evaluator scoort altijd de kinderrit. OR-Tools rekent die gesloten lus: depot en eindpunt zijn allebei de school (`RoutingIndexManager` met één depot). Op een symmetrische afstand zijn beide richtingen even lang, dus de solver mag de stops dicht bij school eerst zetten. Voor een bus die naar school rijdt is ver eerst dezelfde busafstand en een kortere langste kinderrit. Op de Tienen-mix (`s061`–`s070` plus `s023` en `s009`) is dat 13,2 km beide kanten, en 21,7 minuten langste rit tegen 26,9 minuten. De echte verbetering is een open rit die op school eindigt, zonder lege heenrit vanaf school; die zit niet in deze code en wordt apart opgevolgd, niet in deze release.
+De evaluator scoort altijd de kinderrit. OR-Tools rekent die gesloten lus: depot en eindpunt zijn allebei de school (`RoutingIndexManager` met één depot). Op een symmetrische afstand zijn beide richtingen even lang, dus de solver mag de stops dicht bij school eerst zetten. Voor een bus die naar school rijdt is ver eerst dezelfde busafstand en een kortere langste kinderrit. Op de Tienen-mix (`s061`–`s070` plus `s023` en `s009`) is dat 13,2 km beide kanten, en 21,7 minuten langste rit tegen 26,9 minuten. De echte verbetering is een open rit die op school eindigt, zonder lege heenrit vanaf school. Die zit sinds v0.5.0 in de code; de meting staat onder SR-73.
 
 `school-distance-desc` (verste stop eerst, verder geen zoektocht) is op de Tienen-mix hieronder slechter dan de stdlib-solver: de volgorde binnen de verre cluster zigzag dan. Die modus is niet toegevoegd.
 
@@ -54,7 +54,7 @@ Tien Tienen-leerlingen `s061`–`s070` plus de twee unieke Hoegaarden-punten het
 | `order_stops_for_bus` | 21,4 | 1280 | Tienen eerst, `s009` laatst |
 | Afstand tot school, aflopend | 27,2 | 1689 | verste eerst, maar zigzag in Tienen |
 
-De twee TSP-richtingen zijn allebei 13.201 m (13,2 km) en 1190 s bus. Dicht eerst heeft een langste kinderrit van 26,9 minuten, ver eerst 21,7 minuten. 2-opt op een ander zaad wint 8 seconden bus tegenover nearest neighbour (1195 s tegen 1203 s) en zet daarbij de school-nabije stops vooraan; dat is een andere tour, niet het bewijs dat dicht-eerst korter is dan zijn omgekeerde.
+De twee TSP-richtingen zijn allebei 13.201 m (13,2 km) en 1190 s bus. Dicht eerst heeft een langste kinderrit van 26,9 minuten, ver eerst 21,7 minuten. 2-opt op een ander zaad wint 8 seconden bus tegenover nearest neighbour (1195 s tegen 1203 s) en zet daarbij de school-nabije stops vooraan; dat is een andere tour, niet het bewijs dat dicht-eerst korter is dan zijn omgekeerde. Die 2-opt-rij is de tour vóór de oriëntatie. `order_stops` keert hem sindsdien om; zie SR-73.
 
 De voorbeeldmatrix heeft geen paren tussen Tienen en Hoegaarden, dus `evaluate --offline` stopt op die mix (`OfflineError`, één ontbrekende leg van 3486 m). Met de echte cellen waar ze bestaan, en voor die ene leg de lijn uit `docs/solver-benchmark.md` (`seconden = max(1, afgerond(277,7976 + 0,075533 × meter))`), zelfde stilstand:
 
@@ -73,4 +73,32 @@ De twee tourrichtingen delen die ontbrekende leg. Het verschil van 5 minuten op 
 3. **`school-distance-desc` niet toevoegen.** Op de ticket-id's verslaat het de ticketvolgorde (29,8 tegen 37,1 min offline), op de Tienen-mix verliest het van nearest neighbour én van de rittijd-solver, omdat de verre stops onderling niet geordend worden.
 4. **Haversine-2-opt niet stil omzetten naar de rittijd-score.** Dat is een benoemde verkenmodus. De meting "4–13 % langere ritten dan matrix" gaat over padkost. Wie de kinderrit wil op een hemelsbrede schatting, kan `order_stops_for_bus` met een hemelsbrede reistijd aanroepen; dat is geen nieuwe CLI-vlag tot iemand die modus echt naast matrix wil.
 
-Vastgelegd in `tests/test_sr68_objective.py`: op de ticket-id's is de matrix-ordening strikt korter in langste rit dan haversine-auto en dan de ticketvolgorde; op de Tienen-mix is de rittijd-score strikt beter dan `order_stops` op dezelfde hemelsbrede seconden.
+Vastgelegd in `tests/test_sr68_objective.py`: op de ticket-id's is de matrix-ordening strikt korter in langste rit dan haversine-auto en dan de ticketvolgorde. Op de Tienen-mix houdt `order_stops` de korte gesloten tour en rijdt die naar school.
+
+## SR-73 — open rit naar school (v0.5.0)
+
+`direction` staat op het scenario en mag per bus. Ontbreekt het veld, dan is het `to_school`.
+
+- `to_school` (ochtend, default): de zoektocht kort de gesloten lus nog steeds in, en rijdt die daarna naar school. Ver eerst, dicht bij school laatst. Begint de bus op school, dan hoort de lege heenrit niet bij de gerapporteerde route, de kilometers of het vertrek. De kinderrit loopt nog van het vertrek aan de stop tot de bel.
+- `from_school`: exact de omgekeerde volgorde, geen tweede zoektocht. De bus vertrekt op het beluur en stopt bij de laatste leerling. Verste kinderen laatst. Op een symmetrische matrix is de langste rit gelijk aan de ochtend. `ordering: given` wordt niet omgedraaid.
+- De kaart en de vergelijking tonen "naar school" of "van school". Geen extra TomTom-call: dezelfde matrix.
+
+Tienen-mix, hemelsbreed / 40 km/u, stilstand 30 s + 10 s, dezelfde punten als de tabel hierboven:
+
+| | Langste rit | Gesloten tour | Open rijtijd | Eerste / laatste |
+|---|---:|---:|---:|---|
+| 2-opt vóór oriëntatie (dicht eerst) | 27,0 min (1619 s) | 13.255 m, 1195 s | 1179 s | `s009`, `s023` eerst |
+| Dezelfde tour naar school (`order_stops`) | 21,3 min (1280 s) | 13.255 m, 1195 s | 840 s | `s070` eerst, `s009` laatst |
+| `order_stops_for_bus` | 21,4 min (1281 s) | 1280 s gesloten | 841 s | Tienen eerst, `s009` laatst |
+
+21,3 min zit onder de 21,7 min van de klassieke TSP de andere kant op. De gesloten tour blijft de korte 2-opt-lus (13,3 km). Die TSP is 13.201 m en 1190 s; 2-opt zit daar 54 m en 5 s naast. De gerapporteerde ochtendrit is de open weg: 9.314 m hemelsbreed tot school, zonder de 3.941 m lege heenrit.
+
+De drie voorbeeldscenario's (`evaluate --offline`, matrix-ordening) houden dezelfde stopvolgorde en dezelfde kinderrit. Alleen de lege heenrit valt weg.
+
+| Scenario | Rijtijd vóór → na (min) | km vóór → na |
+|---|---|---|
+| regiobus-per-zone | 543,5 → 442,6 | 230,4 → 168,0 |
+| opstapplaatsen | 437,6 → 334,6 | 205,2 → 143,3 |
+| spreiding-gemengd | 1170,3 → 1006,6 | 709,3 → 571,1 |
+
+pyvroom en OR-Tools in `scripts/bench_solvers.py` en `scripts/bench_full.py` gebruiken dezelfde open matrix. De tabellen in `docs/solver-benchmark.md` blijven de gesloten run van 23/09/2026.

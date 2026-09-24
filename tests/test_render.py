@@ -34,8 +34,11 @@ def test_geojson_has_route_lines_stops_and_school(school, students, buses, fake_
     assert kinds.count("school") == 1
     route = next(f for f in gj["features"] if f["properties"]["kind"] == "route")
     assert route["geometry"]["type"] == "LineString"
-    # GeoJSON is [lon, lat]
-    assert route["geometry"]["coordinates"][0] == [school.point.lon, school.point.lat]
+    # Open morning route: first stop, then the school. GeoJSON is [lon, lat].
+    first = result_for(school, students, buses, fake_client).buses[0].stops[0].stop.point
+    assert route["geometry"]["coordinates"][0] == [first.lon, first.lat]
+    assert route["geometry"]["coordinates"][-1] == [school.point.lon, school.point.lat]
+    assert route["properties"]["direction"] == "naar school"
     stop = next(f for f in gj["features"] if f["properties"]["kind"] == "stop")
     assert {"bus_id", "students", "arrival", "ride_min"} <= set(stop["properties"])
     json.dumps(gj)  # serialisable
@@ -139,7 +142,7 @@ def test_compare_markdown_table(school, students, buses, fake_client):
     assert md.splitlines()[0].startswith("| Scenario")
     assert "| r " in md and "| other " in md
     assert "| Bussen |" in md.splitlines()[0]
-    assert "| r | tomtom | 2 |" in md
+    assert "| r | tomtom | naar school | 2 |" in md
 
 
 def test_compare_markdown_includes_modus_column(school, students, buses, fake_client):
@@ -147,7 +150,9 @@ def test_compare_markdown_includes_modus_column(school, students, buses, fake_cl
     md = compare_markdown([d])
     header = md.splitlines()[0]
     assert "| Modus |" in header
+    assert "| Richting |" in header
     assert "| tomtom |" in md
+    assert "| naar school |" in md
 
 
 def test_compare_markdown_marks_mixed_modes(school, students, buses, fake_client):

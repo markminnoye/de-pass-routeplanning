@@ -125,9 +125,10 @@ def test_score_scenario_is_lexicographic_max_ride_first(
     travel = _travel(hand_client)
     score_w = score_scenario(w_first, hand_buses, hand_school, travel, SETTINGS)
     score_z = score_scenario(z_first, hand_buses, hand_school, travel, SETTINGS)
-    # Z-first: lower max-ride, higher total drive. W-first is the opposite.
+    # Z-first: shorter longest ride. The open morning route also drops the long
+    # empty leg out to Z, so the reported bus drive is shorter too.
     assert score_z[0] < score_w[0]
-    assert score_z[2] > score_w[2]
+    assert score_z[2] < score_w[2]
     assert score_z < score_w
 
     better_max: Score = (100, 9999, 9999)
@@ -172,7 +173,7 @@ def test_order_stops_for_bus_from_path_cost_winner_reaches_z_first(
     assert _stop_ids(result) == ["z", "y", "x", "w"]
 
 
-def test_order_stops_for_bus_beats_path_cost_heuristic(
+def test_open_path_and_ride_solver_both_serve_z_first(
     hand_school, hand_students, hand_buses, hand_client
 ):
     scenario = _given("w-first", ["w", "x", "y", "z"], hand_students, hand_buses)
@@ -187,9 +188,11 @@ def test_order_stops_for_bus_beats_path_cost_heuristic(
     solver_stops = order_stops_for_bus(start_stops, start, school, travel, SETTINGS)
     heuristic_score = score_bus(heuristic_stops, start, school, travel, SETTINGS)
     solver_score = score_bus(solver_stops, start, school, travel, SETTINGS)
-    assert _stop_ids(heuristic_stops) == ["w", "x", "y", "z"]
-    assert heuristic_score[0] > solver_score[0]
-    assert solver_score[0] == Z_FIRST_MAX_RIDE_S
+    assert _stop_ids(heuristic_stops) == ["z", "y", "x", "w"]
+    assert _stop_ids(solver_stops) == ["z", "y", "x", "w"]
+    assert heuristic_score[0] == solver_score[0] == Z_FIRST_MAX_RIDE_S
+    w_score = score_bus(start_stops, start, school, travel, SETTINGS)
+    assert w_score[0] > solver_score[0]
 
 
 def test_optimize_order_reorders_each_bus_independently(

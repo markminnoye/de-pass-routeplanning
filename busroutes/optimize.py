@@ -9,7 +9,7 @@ from dataclasses import dataclass, replace
 from typing import Literal
 
 from busroutes.config import Settings
-from busroutes.models import Bus, BusPlan, Point, Scenario, School, Stop
+from busroutes.models import Bus, BusPlan, Direction, Point, Scenario, School, Stop
 
 Score = tuple[int, int, int]  # (max_ride_s, sum_ride_s, total_drive_s)
 StopReason = Literal["stall", "max_perturbations", "max_seconds", "none"]
@@ -25,16 +25,34 @@ def score_bus(
     school: Point,
     travel,
     settings: Settings,
+    direction: Direction = "to_school",
 ) -> Score:
+    """Lexicographic (longest ride, sum of rides, bus drive).
+
+    `to_school` drives start → stops → school. A child's ride is from leaving
+    the stop until the school; the leg after the school is not in the cost.
+    `from_school` drives school → stops and stops there. A child's ride is from
+    the school until arrival at the drop-off.
+    """
     if not stops:
         return (0, 0, 0)
-    points = [start, *[s.point for s in stops], school]
+    if direction == "from_school":
+        points = [school, *[s.point for s in stops]]
+    else:
+        points = [start, *[s.point for s in stops], school]
     legs = [travel(points[i], points[i + 1]) for i in range(len(points) - 1)]
-    total_drive = sum(legs)
+    # The empty leg school → first stop is not part of an open morning route.
+    if direction == "to_school" and (start.lat, start.lon) == (school.lat, school.lon):
+        total_drive = sum(legs[1:])
+    else:
+        total_drive = sum(legs)
     dwells = [_dwell_s(s, settings) for s in stops]
     rides: list[int] = []
     for k, stop in enumerate(stops):
-        ride = sum(legs[k + 1 :]) + sum(dwells[k + 1 :])
+        if direction == "from_school":
+            ride = sum(legs[: k + 1]) + sum(dwells[:k])
+        else:
+            ride = sum(legs[k + 1 :]) + sum(dwells[k + 1 :])
         rides.extend([ride] * len(stop.students))
     if not rides:
         return (0, 0, total_drive)
@@ -62,7 +80,14 @@ def score_scenario(
     settings: Settings,
 ) -> Score:
     return combine_scores(
-        score_bus(plan.stops, buses[plan.bus_id].start, school.point, travel, settings)
+        score_bus(
+            plan.stops,
+            buses[plan.bus_id].start,
+            school.point,
+            travel,
+            settings,
+            plan.direction,
+        )
         for plan in scenario.buses
     )
 
@@ -73,8 +98,15 @@ def order_stops_for_bus(
     school: Point,
     travel,
     settings: Settings,
+    direction: Direction = "to_school",
 ) -> list[Stop]:
-    """Improve the given visiting order with 2-opt and or-opt on score_bus."""
+    """Improve the given visiting order with 2-opt and or-opt on score_bus.
+
+    `from_school` is the reverse of the morning order: same stops, far children last.
+    """
+    if direction == "from_school":
+        morning = order_stops_for_bus(stops, start, school, travel, settings, "to_school")
+        return list(reversed(morning))
     if len(stops) <= 1:
         return list(stops)
     best = list(stops)
@@ -152,7 +184,12 @@ def _apply_order(
     if plan.pinned:
         return _frozen(plan)
     ordered = order_stops_for_bus(
-        plan.stops, buses[plan.bus_id].start, school.point, travel, settings
+        plan.stops,
+        buses[plan.bus_id].start,
+        school.point,
+        travel,
+        settings,
+        plan.direction,
     )
     return replace(plan, stops=ordered, ordering="given")
 
@@ -164,12 +201,13 @@ def _best_insert(
     school: Point,
     travel,
     settings: Settings,
+    direction: Direction = "to_school",
 ) -> list[Stop]:
     best: list[Stop] | None = None
     best_score: Score | None = None
     for pos in range(len(dest) + 1):
         candidate = dest[:pos] + [stop] + dest[pos:]
-        scored = score_bus(candidate, start, school, travel, settings)
+        scored = score_bus(candidate, start, school, travel, settings, direction)
         if best_score is None or scored < best_score:
             best = candidate
             best_score = scored
@@ -188,7 +226,14 @@ def _plan_score(
     travel,
     settings: Settings,
 ) -> Score:
-    return score_bus(plan.stops, buses[plan.bus_id].start, school.point, travel, settings)
+    return score_bus(
+        plan.stops,
+        buses[plan.bus_id].start,
+        school.point,
+        travel,
+        settings,
+        plan.direction,
+    )
 
 
 def _score_plans(
@@ -245,7 +290,9 @@ def _first_improving_relocate(
             if stop.id in pinned_stops:
                 continue
             src_stops = src.stops[:stop_i] + src.stops[stop_i + 1 :]
-            src_score = score_bus(src_stops, src_start, school.point, travel, settings)
+            src_score = score_bus(
+                src_stops, src_start, school.point, travel, settings, src.direction
+            )
             for dst_i, dst in enumerate(plans):
                 if dst_i == src_i or dst.pinned:
                     continue
@@ -258,9 +305,15 @@ def _first_improving_relocate(
                     school.point,
                     travel,
                     settings,
+                    dst.direction,
                 )
                 dst_score = score_bus(
-                    inserted, buses[dst.bus_id].start, school.point, travel, settings
+                    inserted,
+                    buses[dst.bus_id].start,
+                    school.point,
+                    travel,
+                    settings,
+                    dst.direction,
                 )
                 estimate = _with_replaced(scores, {src_i: src_score, dst_i: dst_score})
                 if estimate < current_score:
@@ -322,13 +375,17 @@ def _first_improving_swap(
                     rest_i = plan_i.stops[:a] + plan_i.stops[a + 1 :]
                     rest_j = plan_j.stops[:b] + plan_j.stops[b + 1 :]
                     inserted_i = _best_insert(
-                        stop_b, rest_i, start_i, school.point, travel, settings
+                        stop_b, rest_i, start_i, school.point, travel, settings, plan_i.direction
                     )
                     inserted_j = _best_insert(
-                        stop_a, rest_j, start_j, school.point, travel, settings
+                        stop_a, rest_j, start_j, school.point, travel, settings, plan_j.direction
                     )
-                    score_i = score_bus(inserted_i, start_i, school.point, travel, settings)
-                    score_j = score_bus(inserted_j, start_j, school.point, travel, settings)
+                    score_i = score_bus(
+                        inserted_i, start_i, school.point, travel, settings, plan_i.direction
+                    )
+                    score_j = score_bus(
+                        inserted_j, start_j, school.point, travel, settings, plan_j.direction
+                    )
                     estimate = _with_replaced(scores, {i: score_i, j: score_j})
                     if estimate < current_score:
                         new_plans = list(plans)

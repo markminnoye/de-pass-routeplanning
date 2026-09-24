@@ -1,7 +1,8 @@
-"""SR-68: passenger ride time versus path-cost ordering. No default change.
+"""SR-68 / SR-73: passenger ride time versus an open school route.
 
 The ticket stop ids are twelve Hoegaarden-centrum students in docs/samples.
-A classic TSP on bus length is not what `optimize` minimizes.
+A classic TSP on bus length is not what `optimize` minimizes. Since SR-73 the
+haversine search still shortens the closed tour, then drives it toward school.
 """
 
 from datetime import date
@@ -13,7 +14,7 @@ from busroutes.geo import haversine_m
 from busroutes.models import BusPlan, Scenario, Stop, load_samples
 from busroutes.offline import OfflineClient
 from busroutes.optimize import order_stops_for_bus, score_bus
-from busroutes.ordering import _nearest_neighbour, order_stops
+from busroutes.ordering import _nearest_neighbour, order_stops, path_cost
 from busroutes.travel import travel_from_matrix
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -87,11 +88,12 @@ def test_matrix_order_beats_ticket_and_haversine_on_sample_stops():
     assert matrix_order[0] != ticket_order[0]
 
 
-def test_path_cost_order_raises_max_ride_on_tienen_plus_near_school():
+def test_open_orientation_keeps_the_short_tour_and_cuts_the_long_ride():
     """10 Tienen stops plus the two Hoegaarden points closest to school.
 
-    `order_stops` shortens the bus and puts the near-school stops first.
-    `order_stops_for_bus` on the same haversine seconds keeps the long ride shorter.
+    The closed 2-opt tour is the same length either way (13,3 km). Toward school
+    the longest ride is 21,3 min; the other way it is 27,0 min. The reported
+    morning route drops the empty leg out from school.
     """
     school, students, buses = load_samples(ROOT / "docs" / "samples")
     del buses
@@ -127,13 +129,21 @@ def test_path_cost_order_raises_max_ride_on_tienen_plus_near_school():
     nn_score = score_bus(nn, school.point, school.point, travel, SETTINGS)
     path_score = score_bus(path, school.point, school.point, travel, SETTINGS)
     passenger_score = score_bus(passenger, school.point, school.point, travel, SETTINGS)
+    near_first = score_bus(list(reversed(path)), school.point, school.point, travel, SETTINGS)
+    metres = [[round(haversine_m(a, b)) for b in points] for a in points]
+    closed_m = path_cost([0, *path_idx, len(points) - 1], metres)
 
     assert [stop.id for stop in nn[-2:]] == ["s009", "s023"]
-    assert [stop.id for stop in path[:2]] == ["s009", "s023"]
+    assert [stop.id for stop in path[:2]] == ["s070", "s069"]
+    assert [stop.id for stop in path[-2:]] == ["s023", "s009"]
     assert passenger[0].id not in near
     assert passenger[-1].id in near
-    assert nn_score == (1288, 8689, 1203)
-    assert path_score == (1619, 11011, 1195)
-    assert passenger_score == (1281, 8545, 1280)
-    assert passenger_score[0] < nn_score[0] < path_score[0]
-    assert path_score[2] < nn_score[2]
+    assert nn_score == (1288, 8689, 848)
+    assert path_score == (1280, 8609, 840)
+    assert near_first == (1619, 11011, 1179)
+    assert passenger_score == (1281, 8545, 841)
+    assert path_score[0] <= 21.7 * 60
+    assert passenger_score[0] <= 21.7 * 60
+    assert path_score[0] < near_first[0]
+    assert closed_m == 13255
+    assert path_score[2] < near_first[2]

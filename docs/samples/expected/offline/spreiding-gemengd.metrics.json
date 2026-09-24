@@ -5,6 +5,7 @@
   "settings": {
     "traffic": "historical",
     "ordering_strategy": "matrix",
+    "direction": "to_school",
     "depart_at_reference": "2026-09-15T07:30+02:00",
     "target_arrival": "08:30",
     "dwell_base_s": 30,
@@ -23,22 +24,23 @@
     "rides_over_90_min": 47,
     "max_to_stop_km": 0.0,
     "students_with_to_stop_over_1km": 0,
-    "total_drive_min": 1170.3,
-    "total_km": 709.3,
+    "total_drive_min": 1006.6,
+    "total_km": 571.1,
     "avg_occupancy_pct": 66.7,
-    "earliest_departure": "05:05",
+    "earliest_departure": "05:28",
     "arrival": "08:30"
   },
   "buses": [
     {
       "bus_id": "bus1",
+      "direction": "to_school",
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "06:14",
+      "departure": "06:32",
       "arrival": "08:30",
-      "drive_min": 121.8,
-      "km": 59.4,
+      "drive_min": 104.4,
+      "km": 44.7,
       "max_ride_min": 117.0,
       "stops": [
         {
@@ -285,13 +287,14 @@
     },
     {
       "bus_id": "bus2",
+      "direction": "to_school",
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "05:05",
+      "departure": "05:28",
       "arrival": "08:30",
-      "drive_min": 190.8,
-      "km": 112.7,
+      "drive_min": 167.9,
+      "km": 96.0,
       "max_ride_min": 180.6,
       "stops": [
         {
@@ -538,13 +541,14 @@
     },
     {
       "bus_id": "bus3",
+      "direction": "to_school",
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "05:39",
+      "departure": "06:05",
       "arrival": "08:30",
-      "drive_min": 157.6,
-      "km": 94.8,
+      "drive_min": 131.1,
+      "km": 71.9,
       "max_ride_min": 143.8,
       "stops": [
         {
@@ -791,13 +795,14 @@
     },
     {
       "bus_id": "bus4",
+      "direction": "to_school",
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "05:14",
+      "departure": "05:38",
       "arrival": "08:30",
-      "drive_min": 182.2,
-      "km": 116.6,
+      "drive_min": 158.1,
+      "km": 92.5,
       "max_ride_min": 170.8,
       "stops": [
         {
@@ -1044,13 +1049,14 @@
     },
     {
       "bus_id": "bus5",
+      "direction": "to_school",
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "05:12",
+      "departure": "05:36",
       "arrival": "08:30",
-      "drive_min": 183.9,
-      "km": 118.4,
+      "drive_min": 159.9,
+      "km": 97.7,
       "max_ride_min": 172.6,
       "stops": [
         {
@@ -1297,13 +1303,14 @@
     },
     {
       "bus_id": "bus6",
+      "direction": "to_school",
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "05:27",
+      "departure": "05:49",
       "arrival": "08:30",
-      "drive_min": 169.1,
-      "km": 112.6,
+      "drive_min": 147.2,
+      "km": 97.1,
       "max_ride_min": 159.9,
       "stops": [
         {
@@ -1550,13 +1557,14 @@
     },
     {
       "bus_id": "bus7",
+      "direction": "to_school",
       "students": 20,
       "capacity": 30,
       "occupancy_pct": 66.7,
-      "departure": "05:31",
+      "departure": "05:58",
       "arrival": "08:30",
-      "drive_min": 164.8,
-      "km": 95.0,
+      "drive_min": 137.9,
+      "km": 71.3,
       "max_ride_min": 150.6,
       "stops": [
         {
