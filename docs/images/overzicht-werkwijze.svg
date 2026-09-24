@@ -29,8 +29,8 @@
     <text x="16" y="104" class="desc">
       <tspan x="16" dy="0">Leerlingen, haltes en</tspan>
       <tspan x="16" dy="18">de 7 schoolbussen.</tspan>
-      <tspan x="16" dy="24" font-weight="600" fill="#0f766e">🔒 Blijft 100% lokaal</tspan>
-      <tspan x="16" dy="18">bij de school.</tspan>
+      <tspan x="16" dy="24" font-weight="600" fill="#0f766e">🛡️ Zero PII / Anoniem</tspan>
+      <tspan x="16" dy="18">Enkel GPS-punten.</tspan>
     </text>
   </g>
 
@@ -46,8 +46,8 @@
     <text x="92" y="39" class="badge" text-anchor="middle">STAP 2</text>
     <text x="16" y="80" class="title">Vraag in Claude</text>
     <text x="16" y="104" class="desc">
-      <tspan x="16" dy="0">Stel je vraag gewoon</tspan>
-      <tspan x="16" dy="18">in mensentaal:</tspan>
+      <tspan x="16" dy="0">In gewone mensentaal</tspan>
+      <tspan x="16" dy="18">(Nederlands of Frans):</tspan>
       <tspan x="16" dy="22" font-style="italic" fill="#334155">"Wat als bus 3 naar</tspan>
       <tspan x="16" dy="18" font-style="italic" fill="#334155">Tienen rijdt?"</tspan>
     </text>
@@ -67,7 +67,7 @@
     <text x="16" y="104" class="desc">
       <tspan x="16" dy="0">Optimaliseert voor de</tspan>
       <tspan x="16" dy="18" font-weight="600" fill="#c2410c">kortste rit per kind</tspan>
-      <tspan x="16" dy="18">(niet enkel vlootkost).</tspan>
+      <tspan x="16" dy="18">(geen ritten van 2u+).</tspan>
       <tspan x="16" dy="20">Snel &amp; doeltreffend.</tspan>
     </text>
   </g>
@@ -87,7 +87,7 @@
       <tspan x="16" dy="0">Interactieve kaart met</tspan>
       <tspan x="16" dy="18">echte wegen, stops,</tspan>
       <tspan x="16" dy="18">openbaar vervoer en</tspan>
-      <tspan x="16" dy="18">heldere reistijden.</tspan>
+      <tspan x="16" dy="18">exacte reistijden.</tspan>
     </text>
   </g>
 </svg>
