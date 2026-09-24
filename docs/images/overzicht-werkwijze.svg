@@ -46,8 +46,8 @@
     <text x="92" y="39" class="badge" text-anchor="middle">STAP 2</text>
     <text x="16" y="80" class="title">Vraag in Claude</text>
     <text x="16" y="104" class="desc">
-      <tspan x="16" dy="0">In gewone mensentaal</tspan>
-      <tspan x="16" dy="18">(Nederlands of Frans):</tspan>
+      <tspan x="16" dy="0">Stel je vraag gewoon</tspan>
+      <tspan x="16" dy="18">in je eigen taal:</tspan>
       <tspan x="16" dy="22" font-style="italic" fill="#334155">"Wat als bus 3 naar</tspan>
       <tspan x="16" dy="18" font-style="italic" fill="#334155">Tienen rijdt?"</tspan>
     </text>

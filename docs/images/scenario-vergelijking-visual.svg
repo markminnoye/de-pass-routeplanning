@@ -18,7 +18,7 @@
 
   <g transform="translate(24, 20)">
     <text class="header-title" x="0" y="16">Wat levert het op in de praktijk? (Voorbeeldvergelijking)</text>
-    <text class="header-sub" x="0" y="36">Doel: nooit meer urenlang op de bus. Het verschil tussen de huidige uitschieters en geoptimaliseerde scenario's.</text>
+    <text class="header-sub" x="0" y="36">Doel: nooit meer urenlang op de bus. Het verschil tussen de huidige ritten en geoptimaliseerde scenario's.</text>
   </g>
 
   <!-- Table Card -->
@@ -36,10 +36,10 @@
     <!-- Row 1: Langste rit -->
     <line x1="0" y1="42" x2="852" y2="42" class="divider"/>
     <text class="metric-label" x="24" y="74">⏱️ Langste rit per kind</text>
-    <text class="val-old" x="320" y="74">tot 170 min (2u50!)</text>
+    <text class="val-old" x="320" y="74">&gt; 120 minuten</text>
     <text class="val-new" x="510" y="74">48 minuten</text>
     <rect x="712" y="58" width="112" height="24" class="pill-win"/>
-    <text class="text-win" x="768" y="74" text-anchor="middle">-122 min korter! 🎉</text>
+    <text class="text-win" x="768" y="74" text-anchor="middle">&gt; 1u korter! 🎉</text>
 
     <!-- Row 2: Vroegste vertrek -->
     <line x1="0" y1="90" x2="852" y2="90" class="divider"/>
