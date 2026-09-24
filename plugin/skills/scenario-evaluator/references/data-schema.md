@@ -81,7 +81,11 @@ van af, totale rijtijd/km wel.
     - **matrix** (default, TomTom-reistijden): rittijd-solver (2-opt/or-opt op
       kindritten), niet padkost.
     - **haversine** (`--ordering haversine`): oude padkost-heuristiek (nearest
-      neighbour + 2-opt op hemelsbrede afstand).
+      neighbour + 2-opt op hemelsbrede afstand). Die minimaliseert de lengte van
+      de busrit, niet de langste kinderrit; 2-opt kan stops dicht bij school
+      naar voren halen. Voor de kinderrit: matrix, of `optimize --order`.
+      Een klassieke TSP (kortste busrit) zit niet in de plugin. Zie
+      `docs/sr-68-ortools-objective.md`.
 - `"pinned": true` op een bus-object: `optimize` (`--order` én `--assign`) raakt die
   bus niet aan: geen herverdeling, geen herordening, en een `"ordering": "auto"` blijft
   `auto`. Ontbrekend of `false` → niet vastgezet.
