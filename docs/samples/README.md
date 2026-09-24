@@ -103,7 +103,9 @@ thuisstop — die verplaatsing zit **niet** in `ride_min`).
     - **matrix** (default, TomTom-reistijden): rittijd-solver (2-opt/or-opt op kindritten),
       niet padkost.
     - **haversine** (`--ordering haversine`): oude padkost-heuristiek (nearest neighbour +
-      2-opt op hemelsbrede afstand).
+      2-opt op hemelsbrede afstand). Die minimaliseert de lengte van de busrit, niet de
+      langste kinderrit. Voor de kinderrit: matrix, of `optimize --order`. Zie
+      [sr-68-ortools-objective.md](../sr-68-ortools-objective.md).
 - `"pinned": true` op een bus-object: `optimize` (`--order` én `--assign`) raakt die bus
   niet aan: geen herverdeling, geen herordening, en een `"ordering": "auto"` blijft `auto`.
   Ontbrekend of `false` → niet vastgezet.

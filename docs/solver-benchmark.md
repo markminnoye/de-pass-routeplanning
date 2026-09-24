@@ -115,6 +115,8 @@ Het doel is de rit van het kind (eerst de langste, dan het gemiddelde, dan het a
 
 Herkomen van de run: [Inputparameters](#inputparameters). Externe solvers optimaliseren de duur van de bus; de tabellen scoren de rit van het kind.
 
+De OR-Tools-rij is geen klassieke TSP op hemelsbrede afstand. Boogkost is reistijd plus stilstand, met `GlobalSpanCost` op de duur van de bus (vertrek depot tot terugkomst), niet op de rit van instappen tot school. Een losse TSP die wel alleen de buslengte minimaliseert kan die kinderrit nog verder verlengen door de tour de andere kant op te leggen. Dat verschil, en waarom de cijfers uit Linear SR-68 niet op `docs/samples` terugkomen, staat in [sr-68-ortools-objective.md](sr-68-ortools-objective.md). De plugin-default blijft de stdlib-solver.
+
 ## Volgorde per bus
 
 De verdeling blijft die van het scenario. Elke bus heeft 20 leerlingen, dus het onevenwicht is 0.
