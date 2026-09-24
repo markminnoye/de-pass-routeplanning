@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-09-24
+
+### Added
+- `busroutes --version` (`__version__` in `busroutes/__init__.py`, gelijk aan `pyproject.toml`). De plugin-skill noemt die versie aan het begin van een sessie, ook als er geen nieuwere GitHub Release is.
+
+### Changed
+- Plugin-skill: publiceer `map.html` zoals `evaluate` hem schreef. Een overgetypt artifact verliest de ingebedde straten (Claude-CSP blokkeert externe afbeeldingen; zie `docs/data-en-tooling-opties.md`, 24/09/2026).
+
 ## [0.4.1] - 2026-09-24
 
 ### Added
@@ -89,7 +97,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initiële evaluator- en plugin-basis (nog niet als GitHub Release gepubliceerd).
 
-[Unreleased]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.2.1...v0.3.0

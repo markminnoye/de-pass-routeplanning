@@ -10,6 +10,7 @@ from dataclasses import replace
 from datetime import date
 from pathlib import Path
 
+from busroutes import __version__
 from busroutes.config import (
     DEFAULT_ENV_PATH,
     REPO_ROOT,
@@ -332,6 +333,7 @@ def cmd_optimize(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="busroutes", description=__doc__)
+    parser.add_argument("--version", action="version", version=f"busroutes {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
     ev = sub.add_parser("evaluate", help="reken één scenario door")

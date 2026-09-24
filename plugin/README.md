@@ -35,11 +35,12 @@ vergelijkingstabel. Op de kaart staan ook publieke De Lijn-, TEC- en NMBS-haltes
 
 ## Updates
 
-Bij het doorrekenen checkt Claude of GitHub Releases een nieuwere versie heeft. Is dat
-zo, dan krijg je de downloadlink van `de-pass-routeplanning.plugin`. Je vervangt de
-plugin in Claude via Plugin → Add.
+Aan het begin van een sessie zegt Claude welke pluginversie hij gebruikt. Daarna
+checkt hij of GitHub Releases een nieuwere versie heeft. Is dat zo, dan krijg je
+de downloadlink van `de-pass-routeplanning.plugin`. Je vervangt de plugin in Claude
+via Plugin → Add.
 
-Zolang er nog geen GitHub Release is, zegt Claude niets en werkt de plugin gewoon.
+Lukt die check niet, dan hoor je alsnog de versie die nu geïnstalleerd is.
 
 ## Privacy
 

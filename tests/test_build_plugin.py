@@ -49,7 +49,7 @@ def _mini_repo(root: Path, *, version: str = "0.1.0") -> None:
     schema = root / "skills" / "scenario-evaluator" / "references" / "data-schema.md"
     schema.write_text("# schema\n")
     (root / "busroutes").mkdir()
-    (root / "busroutes" / "__init__.py").write_text('"""pkg"""\n')
+    (root / "busroutes" / "__init__.py").write_text(f'"""pkg"""\n__version__ = "{version}"\n')
     (root / "busroutes" / "__pycache__").mkdir()
     (root / "busroutes" / "__pycache__" / "x.pyc").write_bytes(b"nope")
     (root / "plugin" / ".claude-plugin").mkdir(parents=True)
@@ -68,7 +68,9 @@ def test_sync_copies_skill_and_busroutes_skips_pycache(tmp_path: Path):
     dst = tmp_path / "plugin" / "skills" / "scenario-evaluator"
     assert (dst / "SKILL.md").read_text() == "# skill\n"
     assert (dst / "references" / "data-schema.md").read_text() == "# schema\n"
-    assert (dst / "references" / "busroutes" / "__init__.py").read_text() == '"""pkg"""\n'
+    assert (
+        dst / "references" / "busroutes" / "__init__.py"
+    ).read_text() == '"""pkg"""\n__version__ = "0.1.0"\n'
     assert not (dst / "references" / "busroutes" / "__pycache__").exists()
     assert (tmp_path / "plugin" / "README.md").read_text() == "# readme\n"
 
@@ -249,7 +251,11 @@ def test_generic_skill_has_version_check_repo_skill_does_not():
     generic = (ROOT / "skills" / "scenario-evaluator" / "SKILL.md").read_text()
     repo = (ROOT / ".claude" / "skills" / "scenario-evaluator" / "SKILL.md").read_text()
     assert "releases/latest" in generic
+    assert "python3 -m busroutes.cli --version" in generic
+    assert "Ik gebruik pluginversie" in generic
     assert "releases/latest" not in repo
+    assert "Schrijf de HTML niet opnieuw" in generic
+    assert "Schrijf de HTML niet opnieuw" in repo
 
 
 def test_check_passes_on_this_repo():
