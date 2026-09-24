@@ -9,9 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-09-24
+
 ### Added
 - `scripts/bench_full.py` en `docs/solver-benchmark.md`: volgorde én verdeling op één matrix (lijn door de sample-cellen). pyvroom, OR-Tools en matplotlib blijven in de `bench`-groep. Advies: stdlib blijft de plugin-solver; VROOM niet hosten; OR-Tools alleen lokaal.
-- `docs/sr-68-ortools-objective.md`: SR-68 is geen defect in `optimize`. De plugin minimaliseert de langste kinderrit; een TSP op buslengte kan die rit verlengen. De ticketcijfers 84,5 / 92,7 min zijn op `docs/samples` niet te reproduceren.
+- `docs/sr-68-ortools-objective.md`: SR-68 is geen defect in `optimize`. De OR-Tools-lus school → stops → school is in beide richtingen even lang; dicht-eerst is een willekeurige richting, geen kortere bus. De ticketcijfers 84,5 / 92,7 min zijn op `docs/samples` niet te reproduceren.
 
 ### Fixed
 - `map.html` toont een stratenbasiskaart in een gepubliceerd Claude-artifact (SR-67). De artifact-CSP blokkeert elke externe afbeelding; tiles van de scenariobbox zitten er als data-URI in, en de Leaflet-icoontjes ook. Een gewone browser blijft live OSM.de-tiles laden buiten die zoomniveaus.
@@ -87,7 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initiële evaluator- en plugin-basis (nog niet als GitHub Release gepubliceerd).
 
-[Unreleased]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.2.0...v0.2.1

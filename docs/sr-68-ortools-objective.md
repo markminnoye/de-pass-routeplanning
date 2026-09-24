@@ -13,9 +13,9 @@ Geen defect in `optimize`, en geen verkeerde depot- of tijdconversie in de evalu
 | `optimize --order` en `ordering: auto` met strategie `matrix` (default sinds 0.3.0) | `order_stops_for_bus` | `(langste kinderrit, som van de kinderritten, totale rijtijd)`. Rit = vertrek aan de stop tot aankomst op school, eigen stilstand niet mee, latere stilstand wel |
 | `ordering: auto` met `--ordering haversine` (default in v0.2.0, nu een verkenmodus) | `busroutes/ordering.py` | Lengte van school → stops → school (nearest neighbour van de school terug, daarna 2-opt op die padkost) |
 | Bench-OR-Tools | `scripts/bench_solvers.py` | Boog = matrix-seconden + stilstand aan de oorsprong, plus `GlobalSpanCost` 100 op de duur van de bus (depot-vertrek tot depot-terugkomst). Niet de rit vanaf instappen |
-| Klassieke TSP uit het ticket | niet in de plugin | Som van de bogen. Een tour en zijn omgekeerde zijn even lang. De richting "eerst de stop dicht bij school" laat de verre leerlingen de hele rit meerijden |
+| Klassieke TSP uit het ticket | niet in de plugin | Som van de bogen op een gesloten lus school → stops → school. Een tour en zijn omgekeerde zijn even lang. De eerste oplossing kiest de stop dicht bij school; dat is niet korter |
 
-De evaluator scoort altijd de kinderrit, ook als de volgorde uit een ander doel komt. Een kortere bus kan daardoor een slechtere tabel opleveren. Dat is het doel van de school (kortste rit per kind), niet een rekenfout.
+De evaluator scoort altijd de kinderrit. OR-Tools rekent die gesloten lus: depot en eindpunt zijn allebei de school (`RoutingIndexManager` met één depot). Op een symmetrische afstand zijn beide richtingen even lang, dus de solver mag de stops dicht bij school eerst zetten. Voor een bus die naar school rijdt is ver eerst dezelfde busafstand en een kortere langste kinderrit. Op de Tienen-mix (`s061`–`s070` plus `s023` en `s009`) is dat 13,2 km beide kanten, en 21,7 minuten langste rit tegen 26,9 minuten. De echte verbetering is een open rit die op school eindigt, zonder lege heenrit vanaf school; die zit niet in deze code en wordt apart opgevolgd, niet in deze release.
 
 `school-distance-desc` (verste stop eerst, verder geen zoektocht) is op de Tienen-mix hieronder slechter dan de stdlib-solver: de volgorde binnen de verre cluster zigzag dan. Die modus is niet toegevoegd.
 
@@ -39,7 +39,7 @@ In `docs/samples/students.json` zijn dat twaalf leerlingen uit **hoegaarden-cent
 
 OR-Tools 9.15.6755 op deze coördinaten, zelfde eerste oplossing en local search als het ticket, 10 s, boogkost = afgeronde meters of seconden bij 40 km/u, mét en zonder `GlobalSpanCost` 100, levert de ticketvolgorde niet. Held-Karp op meters: optimum **4242 m**. De ticketvolgorde is **8382 m**, bijna het dubbele, dus ook geen TSP-optimum op dit pakket. De bench-variant (matrixcellen + stilstand + `GlobalSpanCost`, 1 s) evenmin.
 
-De hypothese "deze volgorde is de kortste busrit, en daarom slechter voor de kinderen" klopt niet voor de gepubliceerde id's. Wel klopt het mechanisme, op een mix die het ticket beschrijft.
+De hypothese "deze volgorde is de kortste busrit, en daarom slechter voor de kinderen" klopt niet voor de gepubliceerde id's. Op de Tienen-mix hieronder is dicht-eerst ook niet korter dan ver-eerst: het is dezelfde lus, de andere kant op.
 
 ## Waar het mechanisme wel zichtbaar is
 
@@ -54,7 +54,7 @@ Tien Tienen-leerlingen `s061`–`s070` plus de twee unieke Hoegaarden-punten het
 | `order_stops_for_bus` | 21,4 | 1280 | Tienen eerst, `s009` laatst |
 | Afstand tot school, aflopend | 27,2 | 1689 | verste eerst, maar zigzag in Tienen |
 
-2-opt wint 8 seconden bus en verliest 5,5 minuten op de langste kinderrit, door de twee stops naast de school vooraan te zetten. De omgekeerde TSP houdt de buslengte en haalt bijna de rittijd-solver.
+De twee TSP-richtingen zijn allebei 13.201 m (13,2 km) en 1190 s bus. Dicht eerst heeft een langste kinderrit van 26,9 minuten, ver eerst 21,7 minuten. 2-opt op een ander zaad wint 8 seconden bus tegenover nearest neighbour (1195 s tegen 1203 s) en zet daarbij de school-nabije stops vooraan; dat is een andere tour, niet het bewijs dat dicht-eerst korter is dan zijn omgekeerde.
 
 De voorbeeldmatrix heeft geen paren tussen Tienen en Hoegaarden, dus `evaluate --offline` stopt op die mix (`OfflineError`, één ontbrekende leg van 3486 m). Met de echte cellen waar ze bestaan, en voor die ene leg de lijn uit `docs/solver-benchmark.md` (`seconden = max(1, afgerond(277,7976 + 0,075533 × meter))`), zelfde stilstand:
 
