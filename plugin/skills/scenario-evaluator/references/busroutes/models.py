@@ -9,6 +9,17 @@ from pathlib import Path
 from typing import Literal
 
 Ordering = Literal["given", "auto"]
+Direction = Literal["to_school", "from_school"]
+
+DIRECTION_LABELS: dict[str, str] = {
+    "to_school": "naar school",
+    "from_school": "van school",
+}
+
+
+def direction_label(direction: str) -> str:
+    """Dutch label for tables and the map. Unknown values pass through."""
+    return DIRECTION_LABELS.get(direction, direction)
 
 
 class ScenarioError(ValueError):
@@ -78,6 +89,7 @@ class BusPlan:
     bus_id: str
     stops: list[Stop]
     ordering: Ordering = "auto"  # resolved: bus-level override, else the scenario's
+    direction: Direction = "to_school"  # resolved: bus-level override, else the scenario's
     pinned: bool = False
 
     @property
@@ -92,6 +104,7 @@ class Scenario:
     ordering: Ordering
     buses: list[BusPlan] = field(default_factory=list)
     pinned_stops: tuple[str, ...] = ()
+    direction: Direction = "to_school"
 
 
 def _point(d: dict, where: str) -> Point:
@@ -239,11 +252,20 @@ def _parse_stop(raw: str | dict, students: dict[str, Student], where: str) -> St
     )
 
 
+def _parse_direction(value: object, where: str) -> Direction:
+    if value == "to_school" or value == "from_school":
+        return value
+    raise ScenarioError(
+        f"{where}: direction moet 'to_school' of 'from_school' zijn, niet '{value}'"
+    )
+
+
 def load_scenario(data: dict, students: dict[str, Student], buses: dict[str, Bus]) -> Scenario:
     """Build and validate a Scenario from its JSON form. Raises ScenarioError on any violation."""
     ordering = data.get("ordering", "auto")
     if ordering not in ("given", "auto"):
         raise ScenarioError(f"ordering moet 'given' of 'auto' zijn, niet '{ordering}'")
+    direction = _parse_direction(data.get("direction", "to_school"), "scenario")
 
     plans: list[BusPlan] = []
     seen: dict[str, str] = {}
@@ -260,10 +282,17 @@ def load_scenario(data: dict, students: dict[str, Student], buses: dict[str, Bus
             raise ScenarioError(
                 f"{bus_id}: ordering moet 'given' of 'auto' zijn, niet '{bus_ordering}'"
             )
+        bus_direction = _parse_direction(raw_bus.get("direction", direction), bus_id)
         pinned = raw_bus.get("pinned", False)
         if not isinstance(pinned, bool):
             raise ScenarioError(f"{bus_id}: 'pinned' moet true of false zijn, niet {pinned!r}")
-        plan = BusPlan(bus_id=bus_id, stops=stops, ordering=bus_ordering, pinned=pinned)
+        plan = BusPlan(
+            bus_id=bus_id,
+            stops=stops,
+            ordering=bus_ordering,
+            direction=bus_direction,
+            pinned=pinned,
+        )
         for sid in plan.student_ids:
             if sid in seen:
                 raise ScenarioError(f"leerling {sid} zit op {seen[sid]} én op {bus_id}")
@@ -296,6 +325,7 @@ def load_scenario(data: dict, students: dict[str, Student], buses: dict[str, Bus
         ordering=ordering,
         buses=plans,
         pinned_stops=tuple(raw_pinned_stops),
+        direction=direction,
     )
 
 
@@ -321,6 +351,8 @@ def scenario_to_dict(scenario: Scenario) -> dict:
         }
         if plan.ordering != scenario.ordering:
             bus_d["ordering"] = plan.ordering
+        if plan.direction != scenario.direction:
+            bus_d["direction"] = plan.direction
         if plan.pinned:
             bus_d["pinned"] = True
         buses.append(bus_d)
@@ -328,6 +360,7 @@ def scenario_to_dict(scenario: Scenario) -> dict:
         "name": scenario.name,
         "description": scenario.description,
         "ordering": scenario.ordering,
+        "direction": scenario.direction,
         "buses": buses,
     }
     if scenario.pinned_stops:

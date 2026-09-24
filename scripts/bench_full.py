@@ -1,7 +1,10 @@
 """Order and assignment on one matrix, scored by evaluate --offline.
 
 The sample pack has no cross-bus TomTom cells. scripts/bench_matrix.py fits one
-line through the cells that do exist and both axes use that line. Solvers:
+line through the cells that do exist and both axes use that line. pyvroom and
+OR-Tools see an open school route (`scenario.direction`, default to_school):
+morning ends at the school, afternoon starts there. The tables in
+docs/solver-benchmark.md are the closed-loop run of 23/09/2026. Solvers:
 
 - stdlib: optimize --order / optimize --assign (passenger ride)
 - pyvroom: minimise route duration, then the tightest max_travel_time that
@@ -40,8 +43,9 @@ from ortools.constraint_solver import pywrapcp, routing_enums_pb2  # noqa: E402
 
 from busroutes.config import load_settings  # noqa: E402
 from busroutes.evaluate import evaluate  # noqa: E402
-from busroutes.models import Scenario, load_data_pack, load_scenario_file  # noqa: E402
+from busroutes.models import Direction, Scenario, load_data_pack, load_scenario_file  # noqa: E402
 from busroutes.optimize import optimize_assign, optimize_order  # noqa: E402
+from busroutes.ordering import open_route_matrix  # noqa: E402
 
 SCENARIOS = (
     "regiobus-per-zone",
@@ -121,9 +125,9 @@ def _order_external(scenario, school, client, settings, solver: str) -> dict[str
         matrix = _dense(client, [school.point, *[stop.point for stop in plan.stops]])
         dwells = [bench_solvers._dwell_s(stop, settings) for stop in plan.stops]
         if solver == "pyvroom":
-            indices = bench_solvers._vroom_tight_order(matrix, dwells)
+            indices = bench_solvers._vroom_tight_order(matrix, dwells, plan.direction)
         elif solver == "ortools":
-            indices = bench_solvers._ortools_order(matrix, dwells)
+            indices = bench_solvers._ortools_order(matrix, dwells, plan.direction)
         else:
             raise RuntimeError(solver)
         orders[plan.bus_id] = bench_solvers._orders_from_indices(plan, indices)
@@ -168,15 +172,17 @@ def _vroom_once(
     demands: list[int],
     capacities: list[int],
     max_travel_time: int | None,
+    direction: Direction = "to_school",
 ) -> tuple[list[list[int]] | None, dict]:
+    durations, start, end = open_route_matrix(matrix, direction)
     problem = vroom.Input()
-    problem.set_durations_matrix("car", matrix)
+    problem.set_durations_matrix("car", durations)
     for index, capacity in enumerate(capacities, start=1):
         problem.add_vehicle(
             vroom.Vehicle(
                 index,
-                start=0,
-                end=0,
+                start=start,
+                end=end,
                 capacity=[capacity],
                 max_travel_time=max_travel_time,
             )
@@ -201,24 +207,25 @@ def _vroom_assign(
     dwells: list[int],
     demands: list[int],
     capacities: list[int],
+    direction: Direction = "to_school",
 ) -> list[list[int]]:
     """Tightest max_travel_time that still visits every stop; else the loose tour."""
-    loose, payload = _vroom_once(matrix, dwells, demands, capacities, None)
+    loose, payload = _vroom_once(matrix, dwells, demands, capacities, None, direction)
     if loose is None:
         raise RuntimeError("pyvroom laat stops onbezet zonder reistijdlimiet")
     durations = [int(route["duration"]) for route in payload["routes"]]
     hi = max(durations, default=1)
-    capped, _payload = _vroom_once(matrix, dwells, demands, capacities, hi)
+    capped, _payload = _vroom_once(matrix, dwells, demands, capacities, hi, direction)
     while capped is None:
         hi = max(hi + 1, hi * 2)
         if hi > 24 * 3600:
             return loose
-        capped, _payload = _vroom_once(matrix, dwells, demands, capacities, hi)
+        capped, _payload = _vroom_once(matrix, dwells, demands, capacities, hi, direction)
     best = capped
     lo = 0
     while lo + 1 < hi:
         mid = (lo + hi) // 2
-        routes, _payload = _vroom_once(matrix, dwells, demands, capacities, mid)
+        routes, _payload = _vroom_once(matrix, dwells, demands, capacities, mid, direction)
         if routes is not None:
             best = routes
             hi = mid
@@ -233,20 +240,27 @@ def _ortools_assign(
     demands: list[int],
     capacities: list[int],
     seconds: float,
+    direction: Direction = "to_school",
 ) -> list[list[int]]:
+    durations, start, end = open_route_matrix(matrix, direction)
+    dummy = len(matrix)
     n_vehicles = len(capacities)
-    manager = pywrapcp.RoutingIndexManager(len(matrix), n_vehicles, 0)
+    manager = pywrapcp.RoutingIndexManager(
+        len(durations), n_vehicles, [start] * n_vehicles, [end] * n_vehicles
+    )
     routing = pywrapcp.RoutingModel(manager)
 
     def transit(from_index: int, to_index: int) -> int:
         origin = manager.IndexToNode(from_index)
         dest = manager.IndexToNode(to_index)
-        service = dwells[origin - 1] if origin else 0
-        return int(matrix[origin][dest]) + service
+        service = dwells[origin - 1] if 0 < origin < dummy else 0
+        return int(durations[origin][dest]) + service
 
     def demand_at(from_index: int) -> int:
         node = manager.IndexToNode(from_index)
-        return demands[node - 1] if node else 0
+        if not 0 < node < dummy:
+            return 0
+        return demands[node - 1]
 
     transit_cb = routing.RegisterTransitCallback(transit)
     demand_cb = routing.RegisterUnaryTransitCallback(demand_at)
@@ -273,7 +287,7 @@ def _ortools_assign(
         route: list[int] = []
         while not routing.IsEnd(index):
             node = manager.IndexToNode(index)
-            if node:
+            if 0 < node < dummy:
                 route.append(node - 1)
             index = solution.Value(routing.NextVar(index))
         routes.append(route)
@@ -373,7 +387,7 @@ def _run_assign(
 
     print(f"  assign pyvroom {scenario.name}", file=sys.stderr, flush=True)
     started = time.perf_counter()
-    routes = _vroom_assign(matrix, dwells, demands, capacities)
+    routes = _vroom_assign(matrix, dwells, demands, capacities, scenario.direction)
     optimized = _apply_routes(scenario, routes, "pyvroom")
     elapsed = time.perf_counter() - started
     scored = evaluate(optimized, school, students, buses, client, settings)
@@ -381,7 +395,9 @@ def _run_assign(
 
     print(f"  assign ortools {scenario.name}", file=sys.stderr, flush=True)
     started = time.perf_counter()
-    routes = _ortools_assign(matrix, dwells, demands, capacities, ortools_seconds)
+    routes = _ortools_assign(
+        matrix, dwells, demands, capacities, ortools_seconds, scenario.direction
+    )
     optimized = _apply_routes(scenario, routes, "ortools")
     elapsed = time.perf_counter() - started
     scored = evaluate(optimized, school, students, buses, client, settings)
