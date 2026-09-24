@@ -116,4 +116,4 @@ Thuisadressen en identiteiten van minderjarige leerlingen zijn gevoelige informa
 
 * 🛡️ **Zero PII (Geen persoonsgegevens):** Er worden nergens namen, voornamen, straatnamen of huisnummers opgeslagen of uitgewisseld.
 * 📍 **100% Geanonimiseerd:** Leerlingen worden uitsluitend geregistreerd met willekeurige identificatienummers (zoals `s001`, `s002`) en anonieme GPS-coördinaten (bv. een straathoek of opstapplaats).
-* 🔒 **Privacy by Design:** Zowel intern in het rekenalgoritme als bij het opvragen van reistijden bij TomTom worden uitsluitend anonieme coördinaten gebruikt. Persoonsgegevens verlaten de schoolomgeving dus nooit.
+* 🔒 **Privacy by Design:** Zowel intern in het rekenalgoritme als bij het opvragen van reistijden bij TomTom worden uitsluitend anonieme coördinaten gebruikt. Er worden geen persoonsgegevens gebruikt of opgeslagen.
