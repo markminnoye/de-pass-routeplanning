@@ -28,7 +28,7 @@ In plaats van handmatig puzzelen met spreadsheets of dure adviesbureaus in te sc
 * 📍 **Regiobussen uittesten:** *"Wat gebeurt er als bus 3 alle leerlingen rond Tienen ophaalt via een snelle verbinding?"*
 * 🚏 **Vaste opstapplaatsen simuleren:** *"Wat als we in Leuven een centrale opstapplaats gebruiken aan het station in plaats van deur-aan-deur?"*
 * 🔄 **Bussen herverdelen:** *"Verdeel de leerlingen opnieuw over bus 1 en 2 zodat niemand langer dan 45 minuten op de bus zit."*
-* 🗺️ **Interactieve kaarten bekijken:** bekijk de echte wegen, haltes en zelfs aansluitingen met bussen van De Lijn of treinen van de NMBS.
+* 🗺️ **Interactieve kaarten bekijken:** bekijk de echte wegen inclusief haltes van De Lijn en TEC.
 
 ---
 
