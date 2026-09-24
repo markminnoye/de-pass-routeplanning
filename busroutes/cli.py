@@ -20,6 +20,7 @@ from busroutes.config import (
 )
 from busroutes.datapack import add_points, fetch_matrix, pack_status
 from busroutes.evaluate import evaluate
+from busroutes.maptiles import load_basemap_tiles
 from busroutes.models import (
     Point,
     Scenario,
@@ -92,7 +93,17 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     (out_dir / "metrics.json").write_text(json.dumps(metrics, indent=2, ensure_ascii=False) + "\n")
     (out_dir / "routes.geojson").write_text(json.dumps(geojson) + "\n")
     (out_dir / "transit.geojson").write_text(json.dumps(transit, ensure_ascii=False) + "\n")
-    (out_dir / "map.html").write_text(render_map_html(result, geojson, transit_geojson=transit))
+    basemap_tiles, tile_warning = load_basemap_tiles(geojson, settings.cache_dir)
+    if tile_warning:
+        print(
+            f"Waarschuwing: basiskaart niet volledig ingebed ({tile_warning}). "
+            "In een Claude-artifact blijft de stratenlaag dan grijs; "
+            "een gewone browser laadt de tiles alsnog.",
+            file=sys.stderr,
+        )
+    (out_dir / "map.html").write_text(
+        render_map_html(result, geojson, transit_geojson=transit, basemap_tiles=basemap_tiles)
+    )
 
     print(compare_markdown([metrics]), end="")
     print()

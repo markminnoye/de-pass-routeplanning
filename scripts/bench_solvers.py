@@ -1,10 +1,10 @@
-"""Compare stop-order solvers on the sample matrix, scored by evaluate --offline.
+"""Compare stop-order solvers on the real per-bus TomTom cells, scored by evaluate --offline.
 
 Assignment is out of scope here: docs/samples/matrix covers each reference bus
-(school + that bus's stops) but not cross-bus pairs, so a reassignment would
-not be the same matrix for every solver. Google Route Optimization and the
-public VROOM demo are not called (no GCP project; the demo uses OSRM, not
-this matrix).
+(school + that bus's stops) but not cross-bus pairs. The order-and-assign
+comparison on one completed matrix is scripts/bench_full.py. Google Route
+Optimization and the public VROOM demo are not called (no GCP project; the
+demo uses OSRM, not this matrix).
 
 Run from the repo root, with the bench group installed:
 

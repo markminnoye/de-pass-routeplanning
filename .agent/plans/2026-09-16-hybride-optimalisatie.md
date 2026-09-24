@@ -1,6 +1,6 @@
 # Plan: hybride optimalisatie — datapakket, offline-modus, stdlib-solver, skill-herwerking
 
-Status: 🔄 actief — WP0 ✅, WP1 ✅ (spec), WP2 ✅ (16/09/2026, branch `wp2-datapakket-offline`), WP3 ✅ (16/09/2026, branch `wp3-stdlib-solver`), WP4 ✅ (22/09/2026, branch `wp4-benchmark-spike`), WP5 ✅ (22/09/2026, branch `wp5-skill`). Volgende: WP6, geblokkeerd tot de school data levert.
+Status: 🔄 actief — WP0 ✅, WP1 ✅ (spec), WP2 ✅ (16/09/2026, branch `wp2-datapakket-offline`), WP3 ✅ (16/09/2026, branch `wp3-stdlib-solver`), WP4 ✅ (22/09 volgorde, 23/09 ook verdeling, `docs/solver-benchmark.md`), WP5 ✅ (22/09/2026, branch `wp5-skill`). Volgende: WP6, geblokkeerd tot de school data levert.
 
 ## Context
 
@@ -110,12 +110,16 @@ Agent-opdracht (na WP2, werkt op de matrix van het datapakket):
   B verplaatst een verkeerd ingedeeld kind; pinned blijft staan; capaciteit gerespecteerd;
   seed → identieke output.
 
-### WP4 — Benchmark-spike (throwaway, parallel aan WP3 na WP2) ✅ 22/09/2026
-Resultaat: op volgorde per bus wint de stdlib-solver op alle drie de referentiescenario's
-(laagste langste rit, minste ritten > 60 min). `--assign` is niet vergeleken: de
-sample-matrix dekt elke bus, niet de paren tussen bussen (13.420 van 18.496 ontbrekend
-op `regiobus-per-zone`). Geen TomTom-`evaluate`, geen VROOM-demo, geen Google Route
-Optimization. Cijfers en aanbeveling: `docs/data-en-tooling-opties.md`.
+### WP4 — Benchmark-spike (throwaway, parallel aan WP3 na WP2) ✅ 22/09/2026, assign ✅ 23/09/2026
+Resultaat 22/09: op volgorde per bus, op de echte per-bus-cellen, wint de stdlib-solver
+op alle drie de referentiescenario's (laagste langste rit, minste ritten > 60 min).
+`--assign` kon daar niet op dezelfde matrix: de sample-matrix dekt elke bus, niet de
+paren tussen bussen.
+
+SR-63 (23/09): volgorde én verdeling op één lijn door die cellen (`scripts/bench_full.py`).
+De drie solvers halen ongeveer dezelfde langste rit; stdlib blijft de plugin-solver.
+Geen TomTom-`evaluate`, geen VROOM-demo, geen Google Route Optimization.
+Cijfers: `docs/solver-benchmark.md`. De tabel van 22/09 blijft in `docs/data-en-tooling-opties.md`.
 
 Agent-opdracht: op de **fictieve** set de solver van WP3 vergelijken met echte
 VRP-solvers, allemaal gevoed met **dezelfde matrix uit het datapakket** (zodat enkel de
@@ -176,7 +180,7 @@ WP6 pas zodra de school data levert (na WP2)
 
 ## Verificatie (einde van het geheel)
 
-Stand 22/09/2026, na de schaalfix: punten 4 (skill-test in de repo, nog niet in een geïnstalleerde Cowork-sessie) en 5 zijn gedaan. Punt 3 wacht op een volledige matrix; de zoekcode voor `--assign` schaalt. Punt 1 draait in CI zonder de opt-in regressie (`BUSROUTES_REGRESSION=1`); `docs/samples/expected/` is bij WP5 niet gewijzigd.
+Stand 23/09/2026: de solververgelijking voor `--assign` staat in `docs/solver-benchmark.md` (één lijn door de sample-cellen, geen aangekochte paren tussen bussen). Punt 3 hieronder — `--assign` op het voorbeeldpakket plus één echte `evaluate` — wacht nog op die paren. Punt 4 (skill-test in een geïnstalleerde Cowork-sessie) is open. Punt 1 draait in CI zonder de opt-in regressie (`BUSROUTES_REGRESSION=1`); `docs/samples/expected/` is bij WP5 niet gewijzigd.
 
 
 

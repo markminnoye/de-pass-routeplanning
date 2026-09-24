@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
+import tomllib
 import zipfile
 from pathlib import Path
 
@@ -223,6 +224,16 @@ def test_generic_skill_decision_table_replaces_connector():
     assert "pyvroom" not in lowered
     assert "or-tools" not in lowered
     assert "vroom" not in lowered
+
+
+def test_bench_solvers_stay_out_of_runtime_dependencies():
+    data = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    runtime = data["project"]["dependencies"]
+    bench = " ".join(data["dependency-groups"]["bench"])
+    assert runtime == []
+    for name in ("ortools", "pyvroom", "matplotlib"):
+        assert name not in runtime
+        assert name in bench
 
 
 def test_plugin_includes_every_busroutes_module():

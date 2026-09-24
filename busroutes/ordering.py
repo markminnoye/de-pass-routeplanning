@@ -1,7 +1,9 @@
-"""Simple stop-ordering heuristic for `ordering: auto` (nearest neighbour + 2-opt).
+"""Path-cost stop order for `ordering: auto` when the strategy is haversine.
 
-Works on a travel-time matrix over indices. Deliberately basic; OR-Tools replaces
-this once the fully optimised scenario is built.
+Nearest neighbour (built backwards from the school) plus 2-opt on the total
+length of start → stops → school. That is the length of the bus ride, not the
+longest passenger ride. The passenger objective lives in `busroutes.optimize`
+and is what `ordering: auto` uses when the strategy is `matrix`.
 """
 
 from __future__ import annotations
