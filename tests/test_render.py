@@ -56,10 +56,20 @@ def test_map_html_embeds_data_and_leaflet(school, students, buses, fake_client):
     assert "tile.openstreetmap.org" not in html
     assert "cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" in html
     assert ".leaflet-container" in html  # Leaflet CSS inlined (artifact CSP)
-    assert "cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/" in html
+    assert "cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/" not in html
+    assert "embeddedTiles" in html
     assert "unpkg.com" not in html
     assert "leaflet.css" not in html
     assert '<link rel="stylesheet"' not in html
+
+
+def test_map_html_embeds_basemap_tiles_as_data_uris(school, students, buses, fake_client):
+    result = result_for(school, students, buses, fake_client)
+    tiles = {"12/2102/1374": "data:image/png;base64,AAAA"}
+    html = render_map_html(result, to_geojson(result), basemap_tiles=tiles)
+    assert '"12/2102/1374": "data:image/png;base64,AAAA"' in html
+    assert "embeddedTiles[key] || osmTileUrl" in html
+    assert "probe.onerror = () => snapToEmbedded()" in html
 
 
 def test_map_html_puts_stop_order_inside_the_marker(school, students, buses, fake_client):

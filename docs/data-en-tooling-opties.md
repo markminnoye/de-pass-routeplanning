@@ -229,6 +229,10 @@ De optimalisatie- en connector-keuze in deze lijst is bijgesteld op 16/09 en 22/
 - **Offline-modus:** `evaluate --offline` rekent een scenario door op de matrix in het datapakket, zonder TomTom-key of netwerk. Tijden komen uit de cellen; km zijn hemelsbreed × wegenfactor (`km_estimated: true`); de kaart toont rechte lijnen. Definitieve cijfers en wegen blijven `evaluate` (TomTom `calculateRoute`).
 - **Matrix in het datapakket:** de reistijdmatrix leeft in `<data>/matrix/` (default `docs/samples/matrix/`), niet meer alleen in `.cache/tomtom/cells/`. Eén keer ophalen: ±8.000 transacties voor de ~141 punten van de fictieve set; een nieuw punt kost ±280 transacties (rij + kolom). Daarna is offline-evaluatie onbeperkt en gratis.
 
+## Beslissingen (23/09/2026)
+
+- **Artifact-basiskaart: ingebedde OSM.de-tiles.** Een gepubliceerd Claude-artifact laat scripts van cdnjs toe en blokkeert elke externe afbeelding (`img-src` beperkt tot `data:` en `blob:`). Er is geen tile-host die daardoorheen komt, dus wisselen van provider lost SR-67 niet op. `evaluate` haalt maximaal 32 PNG-tiles voor de scenariobbox op (cache `.cache/map-tiles/`) en zet ze als data-URI in `map.html`. Mislukte fetch → waarschuwing; routes en stops (SVG) blijven, de stratenlaag in het artifact niet. In een gewone browser laden zoomniveaus zonder embed alsnog live van OpenStreetMap.de, en de Esri-laag blijft beschikbaar. Leaflet-icoontjes in de CSS zijn ook data-URI's.
+
 ## Benchmark solvers (22/09/2026)
 
 ### Gebruikte data

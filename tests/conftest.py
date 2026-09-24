@@ -48,6 +48,14 @@ class FakeGeoClient:
         return point
 
 
+@pytest.fixture(autouse=True)
+def no_live_basemap_tiles(monkeypatch: pytest.MonkeyPatch) -> None:
+    """CLI tests must not download OSM tiles. Tile servers block CI runners,
+    and this suite stays offline. maptiles unit tests call the loader directly.
+    """
+    monkeypatch.setattr("busroutes.cli.load_basemap_tiles", lambda *_a, **_k: ({}, None))
+
+
 @pytest.fixture
 def school() -> School:
     return School(id="school", name="de pass", point=SCHOOL, target_arrival=time(8, 20))
