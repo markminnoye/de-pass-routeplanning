@@ -81,4 +81,4 @@ Aan het begin van een sessie waarin je scenario's doorrekent, of als de gebruike
 
 ## Interpretatie
 
-Rittijd = instappen tot school. Thuis→stop zit er niet in (`to_stop_km`, `max_to_stop_km`). Een opstapplaats van de school weg maakt de rittijd korter dan deur-tot-school. Vergelijk alleen bij dezelfde referentiedatum en dezelfde modus. Verander per vergelijking één ding, of lees de gewijzigde bus in `buses[].stops[]` (`ride_min`, `arrival`).
+Rittijd = instappen tot school, tenzij `direction` `from_school` is: dan van school tot uitstappen. Ontbreekt `direction`, dan is de rit naar school en stappen de verste kinderen eerst in. Een `"ordering": "given"` wordt niet omgedraaid. Thuis→stop zit er niet in (`to_stop_km`, `max_to_stop_km`). Een opstapplaats van de school weg maakt de rittijd korter dan deur-tot-school. Vergelijk alleen bij dezelfde referentiedatum en dezelfde modus. Verander per vergelijking één ding, of lees de gewijzigde bus in `buses[].stops[]` (`ride_min`, `arrival`).

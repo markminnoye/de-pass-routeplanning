@@ -2,6 +2,8 @@
 
 Vergelijking van de stdlib-solver, pyvroom en OR-Tools op **één matrix**, voor twee vragen: de stopvolgorde per bus (`optimize --order`) en de verdeling van leerlingen over de bussen (`optimize --assign`). Score is `evaluate --offline`.
 
+De harness rekent sinds v0.5.0 een open schoolrit (`direction`, default naar school). De tabellen en grafieken hieronder blijven de gesloten lus van deze run (23/09/2026). Die cijfers zijn niet opnieuw gedraaid.
+
 De cijfers hier zijn een schatting op een gladgemaakte matrix, geen TomTom-`evaluate` op een verkeersdag. De tabel van 22/09 in [data-en-tooling-opties.md](data-en-tooling-opties.md) blijft de volgorde-vergelijking op de echte per-bus-cellen. De minuten uit de twee tabellen mag je niet naast elkaar leggen.
 
 ## Inputparameters

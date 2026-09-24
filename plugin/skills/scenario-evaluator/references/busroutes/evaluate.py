@@ -9,7 +9,7 @@ from statistics import mean, median
 
 from busroutes.config import Settings
 from busroutes.geo import haversine_m
-from busroutes.models import Bus, BusPlan, Point, Scenario, School, Stop, Student
+from busroutes.models import Bus, BusPlan, Direction, Point, Scenario, School, Stop, Student
 from busroutes.offline import OfflineClient
 from busroutes.optimize import order_stops_for_bus
 from busroutes.ordering import Matrix, OrderingStrategy, order_stops
@@ -32,6 +32,7 @@ class BusResult:
     stops: list[StopResult]
     departure: datetime
     arrival: datetime
+    direction: Direction = "to_school"
 
     @property
     def drive_s(self) -> int:
@@ -80,6 +81,7 @@ class ScenarioResult:
         settings_d: dict = {
             "traffic": self.settings.traffic,
             "ordering_strategy": self.settings.ordering,
+            "direction": self.scenario.direction,
             "depart_at_reference": self.depart_at_reference.isoformat(timespec="minutes"),
             "target_arrival": _hhmm(self.school.target_arrival),
             "dwell_base_s": self.settings.dwell_base_s,
@@ -110,11 +112,12 @@ class ScenarioResult:
                 if used
                 else 0.0,
                 "earliest_departure": _hhmm(min(b.departure for b in used)) if used else None,
-                "arrival": _hhmm(self.school.target_arrival),
+                "arrival": _summary_arrival(self, used),
             },
             "buses": [
                 {
                     "bus_id": b.bus.id,
+                    "direction": b.direction,
                     "students": b.student_count,
                     "capacity": b.bus.capacity,
                     "occupancy_pct": round(100 * b.occupancy, 1),
@@ -159,6 +162,31 @@ def _minutes(seconds: float) -> float:
     return round(seconds / 60, 1)
 
 
+def _summary_arrival(result: ScenarioResult, used: list[BusResult]) -> str:
+    """Morning: the school bell. Afternoon: the latest drop-off."""
+    if result.scenario.direction == "from_school" and used:
+        return _hhmm(max(bus.arrival for bus in used))
+    return _hhmm(result.school.target_arrival)
+
+
+def _same_point(a: Point, b: Point) -> bool:
+    return (a.lat, a.lon) == (b.lat, b.lon)
+
+
+def route_points(bus: Bus, stops: list[Stop], school: School, direction: Direction) -> list[Point]:
+    """Points the bus actually drives.
+
+    `to_school` ends at the school. When the bus starts at the school, the empty
+    leg out to the first stop is not part of that route. `from_school` starts at
+    the school and ends at the last stop.
+    """
+    if direction == "from_school":
+        return [school.point, *[stop.point for stop in stops]]
+    if _same_point(bus.start, school.point):
+        return [*(stop.point for stop in stops), school.point]
+    return [bus.start, *(stop.point for stop in stops), school.point]
+
+
 def _hhmm(t) -> str:
     return t.strftime("%H:%M")
 
@@ -189,10 +217,12 @@ def _ordered_stops(
     if settings.ordering == "matrix":
         matrix = client.matrix(points, points)
         travel = travel_from_matrix(points, matrix)
-        return order_stops_for_bus(plan.stops, bus.start, school.point, travel, settings)
+        return order_stops_for_bus(
+            plan.stops, bus.start, school.point, travel, settings, plan.direction
+        )
     matrix = _cost_matrix(points, client, settings.ordering)
     start, end = 0, len(points) - 1
-    order = order_stops(list(range(1, end)), start, end, matrix)
+    order = order_stops(list(range(1, end)), start, end, matrix, plan.direction)
     return [plan.stops[i - 1] for i in order]
 
 
@@ -209,21 +239,51 @@ def evaluate_bus(
     stops = _ordered_stops(plan, bus, school, client, settings)
     if not stops:
         return BusResult(
-            bus=bus, route=RouteResult(legs=[]), stops=[], departure=arrival, arrival=arrival
+            bus=bus,
+            route=RouteResult(legs=[]),
+            stops=[],
+            departure=arrival,
+            arrival=arrival,
+            direction=plan.direction,
         )
-    points = [bus.start, *[s.point for s in stops], school.point]
-    route = client.route(points, depart_at)
+    points = route_points(bus, stops, school, plan.direction)
+    when = arrival if plan.direction == "from_school" else depart_at
+    route = client.route(points, when)
     if len(route.legs) != len(points) - 1:
         raise RuntimeError(
             f"{bus.id}: {len(route.legs)} legs voor {len(points)} punten "
             f"(verwacht {len(points) - 1})"
         )
+    if plan.direction == "from_school":
+        results, bus_departure, bus_arrival = _schedule_from_school(stops, route, settings, arrival)
+    else:
+        deadhead = len(points) == len(stops) + 2
+        results, bus_departure, bus_arrival = _schedule_to_school(
+            stops, route, settings, arrival, deadhead=deadhead
+        )
+    return BusResult(
+        bus=bus,
+        route=route,
+        stops=results,
+        departure=bus_departure,
+        arrival=bus_arrival,
+        direction=plan.direction,
+    )
 
-    # walk backwards from the school: leg k connects points[k] -> points[k+1]
+
+def _schedule_to_school(
+    stops: list[Stop],
+    route: RouteResult,
+    settings: Settings,
+    arrival: datetime,
+    *,
+    deadhead: bool,
+) -> tuple[list[StopResult], datetime, datetime]:
+    """Walk backwards from the school. A deadhead is an extra leg before the first stop."""
     results: list[StopResult] = []
     t = arrival
     for k in range(len(stops) - 1, -1, -1):
-        leg_after = route.legs[k + 1]
+        leg_after = route.legs[k + 1] if deadhead else route.legs[k]
         departure = t - timedelta(seconds=leg_after.travel_time_s)
         stop_arrival = departure - _dwell(stops[k], settings)
         results.append(
@@ -236,8 +296,36 @@ def evaluate_bus(
         )
         t = stop_arrival
     results.reverse()
-    bus_departure = results[0].arrival - timedelta(seconds=route.legs[0].travel_time_s)
-    return BusResult(bus=bus, route=route, stops=results, departure=bus_departure, arrival=arrival)
+    if deadhead:
+        bus_departure = results[0].arrival - timedelta(seconds=route.legs[0].travel_time_s)
+    else:
+        bus_departure = results[0].arrival
+    return results, bus_departure, arrival
+
+
+def _schedule_from_school(
+    stops: list[Stop],
+    route: RouteResult,
+    settings: Settings,
+    school_departure: datetime,
+) -> tuple[list[StopResult], datetime, datetime]:
+    """Walk forward from the school. Ride time ends when the child gets off."""
+    results: list[StopResult] = []
+    t = school_departure
+    for k, stop in enumerate(stops):
+        stop_arrival = t + timedelta(seconds=route.legs[k].travel_time_s)
+        dwell = _dwell(stop, settings)
+        departure = stop_arrival + dwell
+        results.append(
+            StopResult(
+                stop=stop,
+                arrival=stop_arrival,
+                departure=departure,
+                ride_s=int((stop_arrival - school_departure).total_seconds()),
+            )
+        )
+        t = departure
+    return results, school_departure, results[-1].arrival
 
 
 def evaluate(

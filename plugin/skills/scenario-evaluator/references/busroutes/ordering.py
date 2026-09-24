@@ -1,14 +1,22 @@
 """Path-cost stop order for `ordering: auto` when the strategy is haversine.
 
-Nearest neighbour (built backwards from the school) plus 2-opt on the total
-length of start → stops → school. That is the length of the bus ride, not the
-longest passenger ride. The passenger objective lives in `busroutes.optimize`
-and is what `ordering: auto` uses when the strategy is `matrix`.
+Nearest neighbour plus 2-opt on the length of start → stops → end. That length
+is the bus ride, not the longest passenger ride. A closed loop is the same
+length in both directions, so after the search the route is oriented:
+
+- `to_school`: open path that ends at the school (the deadhead out to the first
+  stop is not what decides the direction). Far stops come first.
+- `from_school`: the exact reverse, an open path that starts at the school.
+
+The passenger objective lives in `busroutes.optimize` and is what
+`ordering: auto` uses when the strategy is `matrix`.
 """
 
 from __future__ import annotations
 
 from typing import Literal
+
+from busroutes.models import Direction
 
 Matrix = list[list[int]]
 
@@ -55,9 +63,79 @@ def _two_opt(order: list[int], start: int, end: int, matrix: Matrix) -> list[int
     return best
 
 
-def order_stops(stop_indices: list[int], start: int, end: int, matrix: Matrix) -> list[int]:
-    """Return `stop_indices` in visiting order for a route start -> stops -> end."""
+def _open_cost(order: list[int], start: int, end: int, matrix: Matrix, direction: Direction) -> int:
+    """Length of the open route. `end` is the school node.
+
+    `to_school` pays for stops → school and not for the deadhead from `start`.
+    `from_school` pays for school → stops and not for a leg back.
+    """
+    if not order:
+        return 0
+    if direction == "from_school":
+        return path_cost([end, *order], matrix)
+    return path_cost([*order, end], matrix)
+
+
+def _orient(
+    order: list[int], start: int, end: int, matrix: Matrix, direction: Direction
+) -> list[int]:
+    """Pick the direction of a closed tour. Bus length breaks a tie."""
+    reverse = list(reversed(order))
+
+    def key(candidate: list[int]) -> tuple[int, int, list[int]]:
+        closed = path_cost([start, *candidate, end], matrix)
+        return (_open_cost(candidate, start, end, matrix, direction), closed, candidate)
+
+    return min((order, reverse), key=key)
+
+
+def open_route_matrix(
+    matrix: Matrix, direction: Direction = "to_school"
+) -> tuple[Matrix, int, int]:
+    """Duration matrix with a dummy node so a solver can run an open school route.
+
+    Node 0 of `matrix` is the school, nodes 1..n-1 are stops. The dummy is not a
+    stop. `to_school` starts at the dummy (cost 0 to every stop) and ends at the
+    school. `from_school` starts at the school and ends at the dummy (cost 0
+    from every stop). An unused vehicle may take the direct dummy arc at cost 0.
+    Arcs that would close the loop stay expensive.
+    """
+    n = len(matrix)
+    dummy = n
+    blocked = 100_000_000
+    durations = [[blocked] * (n + 1) for _ in range(n + 1)]
+    for i in range(n):
+        for j in range(n):
+            durations[i][j] = matrix[i][j]
+    durations[dummy][dummy] = 0
+    if direction == "from_school":
+        durations[0][dummy] = 0
+        for stop in range(1, n):
+            durations[stop][dummy] = 0
+        return durations, 0, dummy
+    durations[dummy][0] = 0
+    for stop in range(1, n):
+        durations[dummy][stop] = 0
+    return durations, dummy, 0
+
+
+def order_stops(
+    stop_indices: list[int],
+    start: int,
+    end: int,
+    matrix: Matrix,
+    direction: Direction = "to_school",
+) -> list[int]:
+    """Return `stop_indices` in visiting order.
+
+    The search still shortens start → stops → end. `direction` then picks which
+    way that tour is driven. `from_school` is the reverse of `to_school`.
+    """
+    if direction == "from_school":
+        morning = order_stops(stop_indices, start, end, matrix, direction="to_school")
+        return list(reversed(morning))
     if len(stop_indices) <= 1:
         return list(stop_indices)
     initial = _nearest_neighbour(stop_indices, start, end, matrix)
-    return _two_opt(initial, start, end, matrix)
+    tuned = _two_opt(initial, start, end, matrix)
+    return _orient(tuned, start, end, matrix, "to_school")

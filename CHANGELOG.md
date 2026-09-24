@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-24
+
+### Added
+- Scenario-veld `direction` (`to_school` of `from_school`, default `to_school`, per bus te overschrijven). Zichtbaar in de metrics, de vergelijking en op de kaart ("naar school" / "van school").
+
+### Changed
+- De default-rit is een open ochtendrit die op school eindigt. Verste kinderen eerst. Begint de bus op school, dan vallen de lege heenrit, die kilometers en dat vroege vertrek weg. `from_school` is exact de omgekeerde volgorde: vertrek op school, verste kinderen laatst, geen terugrit. `ordering: given` wordt niet herordend.
+- pyvroom en OR-Tools in `scripts/bench_solvers.py` en `scripts/bench_full.py` gebruiken dezelfde open rit. De tabellen in `docs/solver-benchmark.md` blijven de gesloten run van 23/09/2026.
+
 ## [0.4.1] - 2026-09-24
 
 ### Added
@@ -89,7 +98,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initiële evaluator- en plugin-basis (nog niet als GitHub Release gepubliceerd).
 
-[Unreleased]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/markminnoye/de-pass-routeplanning/compare/v0.2.1...v0.3.0

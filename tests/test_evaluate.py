@@ -52,12 +52,14 @@ def test_schedule_is_backwards_from_target_arrival(school, students, buses, fake
     assert (last_stop.departure - last_stop.arrival).total_seconds() == dwell
     first_stop = bus1.stops[0]
     assert (last_stop.arrival - first_stop.departure).total_seconds() == leg_mid
-    assert (first_stop.arrival - bus1.departure).total_seconds() == leg_first
+    # The bus starts at the school, so the empty leg out is not part of the route.
+    assert bus1.departure == first_stop.arrival
+    assert leg_first > 0
 
     # ride time = from leaving the stop until arriving at school
     assert last_stop.ride_s == leg_last
     assert first_stop.ride_s == leg_mid + dwell + leg_last
-    assert bus1.drive_s == leg_first + leg_mid + leg_last
+    assert bus1.drive_s == leg_mid + leg_last
     assert bus1.length_m == sum(leg.length_m for leg in bus1.route.legs)
     assert bus1.occupancy == 1.0
 

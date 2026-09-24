@@ -80,12 +80,18 @@ van af, totale rijtijd/km wel.
   - `"auto"` — de evaluator bepaalt zelf een volgorde per bus.
     - **matrix** (default, TomTom-reistijden): rittijd-solver (2-opt/or-opt op
       kindritten), niet padkost.
-    - **haversine** (`--ordering haversine`): oude padkost-heuristiek (nearest
-      neighbour + 2-opt op hemelsbrede afstand). Die minimaliseert de lengte van
-      de busrit, niet de langste kinderrit; 2-opt kan stops dicht bij school
-      naar voren halen. Voor de kinderrit: matrix, of `optimize --order`.
-      Een klassieke TSP (kortste busrit) zit niet in de plugin. Zie
-      `docs/sr-68-ortools-objective.md`.
+    - **haversine** (`--ordering haversine`): padkost-heuristiek (nearest
+      neighbour + 2-opt op de gesloten lus, daarna de open rit naar school).
+      Die minimaliseert de lengte van de busrit, niet de langste kinderrit.
+      Voor de kinderrit: matrix, of `optimize --order`. Een klassieke TSP
+      zit niet in de plugin. Zie `docs/sr-68-ortools-objective.md`.
+- `direction` (scenario-breed, per bus te overschrijven met `"direction"`):
+  - `"to_school"` (default als het veld ontbreekt) — ochtend. De rit eindigt
+    op school, de verste kinderen eerst. Begint de bus op school, dan telt de
+    lege heenrit niet mee.
+  - `"from_school"` — de spiegel. Vertrek op school, verste kinderen laatst,
+    geen terugrit. De rittijd loopt tot het uitstappen.
+  - `"ordering": "given"` draait niet om; alleen de klok volgt de richting.
 - `"pinned": true` op een bus-object: `optimize` (`--order` én `--assign`) raakt die
   bus niet aan: geen herverdeling, geen herordening, en een `"ordering": "auto"` blijft
   `auto`. Ontbrekend of `false` → niet vastgezet.
@@ -100,7 +106,8 @@ van af, totale rijtijd/km wel.
 ## Output (`out/<naam>/metrics.json`)
 
 `settings` legt vast waarmee gerekend is: `traffic`, `ordering_strategy`
-(`haversine` of `matrix`), `depart_at_reference`, `target_arrival` en de dwell-tijden.
+(`haversine` of `matrix`), `direction` (`to_school` of `from_school`),
+`depart_at_reference`, `target_arrival` en de dwell-tijden.
 Twee scenario's zijn alleen vergelijkbaar als dit blok identiek is.
 
 `summary` bevat de evaluatiecriteria: `max_ride_min`, `avg_ride_min`, `median_ride_min`,
@@ -108,9 +115,10 @@ Twee scenario's zijn alleen vergelijkbaar als dit blok identiek is.
 `students_with_to_stop_over_1km`, `total_drive_min`, `total_km`, `avg_occupancy_pct`,
 `earliest_departure`, `buses_used`/`buses_unused`.
 
-`students[]` heeft per kind `bus_id`, `stop_id`, `pickup` (instaptijd), `ride_min` (van
-instappen tot school) en `to_stop_km` (hemelsbreed thuis→stop, 0 bij een thuisstop — die
-verplaatsing zit **niet** in `ride_min`).
+`students[]` heeft per kind `bus_id`, `stop_id`, `pickup` (instaptijd), `ride_min`
+(ochtend: van instappen tot school; middag: van school tot uitstappen) en
+`to_stop_km` (hemelsbreed thuis→stop, 0 bij een thuisstop — die verplaatsing zit
+**niet** in `ride_min`).
 
 `buses[]` heeft per bus de bezetting, vertrek-/aankomsttijd, rijtijd, km, en per stop
 (`stops[]`) de instaptijd en rittijd van de kinderen die daar opstappen.

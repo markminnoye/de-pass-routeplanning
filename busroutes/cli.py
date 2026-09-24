@@ -25,6 +25,7 @@ from busroutes.models import (
     Point,
     Scenario,
     ScenarioError,
+    direction_label,
     load_samples,
     load_scenario_file,
     scenario_to_dict,
@@ -75,7 +76,10 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
         )
 
     result = evaluate(scenario, school, students, buses, client, settings)
-    print(f"Referentiedatum {settings.reference_date} · ordening '{settings.ordering}'")
+    print(
+        f"Referentiedatum {settings.reference_date} · ordening '{settings.ordering}'"
+        f" · richting '{direction_label(scenario.direction)}'"
+    )
     if args.dry_run:
         print(usage_report(client.usage, dry_run=True))
         return 0
