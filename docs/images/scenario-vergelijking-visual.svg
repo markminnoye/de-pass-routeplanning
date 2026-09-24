@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 280" width="100%" height="auto">
+  <defs>
+    <style>
+      .card-base { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 12px; }
+      .header-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; font-weight: 700; fill: #0f172a; }
+      .header-sub { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; fill: #64748b; }
+      .col-header { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 600; fill: #475569; }
+      .metric-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 600; fill: #1e293b; }
+      .val-old { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; font-size: 14px; font-weight: 500; fill: #64748b; }
+      .val-new { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; font-size: 14px; font-weight: 700; fill: #0f766e; }
+      .pill-win { fill: #dcfce7; rx: 10px; }
+      .text-win { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 700; fill: #15803d; }
+      .divider { stroke: #f1f5f9; stroke-width: 1.5; }
+    </style>
+  </defs>
+
+  <rect width="900" height="280" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+
+  <g transform="translate(24, 20)">
+    <text class="header-title" x="0" y="16">Wat levert het op in de praktijk? (Voorbeeldvergelijking)</text>
+    <text class="header-sub" x="0" y="36">Doel: minder tijd op de bus voor elk kind. Het verschil tussen de huidige routes en geoptimaliseerde scenario's.</text>
+  </g>
+
+  <!-- Table Card -->
+  <g transform="translate(24, 70)">
+    <rect class="card-base" width="852" height="185"/>
+
+    <!-- Table Header Row -->
+    <rect x="0" y="0" width="852" height="42" fill="#f1f5f9" rx="12"/>
+    <rect x="0" y="30" width="852" height="12" fill="#f1f5f9"/> <!-- flatten bottom corners -->
+    <text class="col-header" x="24" y="26">Criterium voor de school</text>
+    <text class="col-header" x="330" y="26">Huidige situatie</text>
+    <text class="col-header" x="510" y="26">Geoptimaliseerd scenario</text>
+    <text class="col-header" x="720" y="26">Winst per kind</text>
+
+    <!-- Row 1: Langste rit -->
+    <line x1="0" y1="42" x2="852" y2="42" class="divider"/>
+    <text class="metric-label" x="24" y="74">⏱️ Langste rit per kind</text>
+    <text class="val-old" x="330" y="74">72 minuten</text>
+    <text class="val-new" x="510" y="74">48 minuten</text>
+    <rect x="716" y="58" width="105" height="24" class="pill-win"/>
+    <text class="text-win" x="768" y="74" text-anchor="middle">-24 min korter!</text>
+
+    <!-- Row 2: Gemiddelde rit -->
+    <line x1="0" y1="90" x2="852" y2="90" class="divider"/>
+    <text class="metric-label" x="24" y="122">🚌 Gemiddelde rit per kind</text>
+    <text class="val-old" x="330" y="122">39 minuten</text>
+    <text class="val-new" x="510" y="122">26 minuten</text>
+    <rect x="716" y="106" width="105" height="24" class="pill-win"/>
+    <text class="text-win" x="768" y="122" text-anchor="middle">-13 min winst</text>
+
+    <!-- Row 3: Totale kilometers -->
+    <line x1="0" y1="138" x2="852" y2="138" class="divider"/>
+    <text class="metric-label" x="24" y="168">🌱 Totale kilometers (alle 7 bussen)</text>
+    <text class="val-old" x="330" y="168">295 km</text>
+    <text class="val-new" x="510" y="168">248 km</text>
+    <rect x="716" y="152" width="105" height="24" class="pill-win"/>
+    <text class="text-win" x="768" y="168" text-anchor="middle">-47 km minder</text>
+  </g>
+</svg>
