@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 
+from busroutes import __version__
 from busroutes.cli import build_parser, main
 from busroutes.config import read_env_file
 from busroutes.models import Point, load_samples, load_scenario_file
@@ -455,3 +456,10 @@ def test_optimize_assign_time_limit_message(tmp_path, monkeypatch, capsys):
     assert code == 0
     err = capsys.readouterr().err
     assert "tijdslimiet" in err
+
+
+def test_version_flag_prints_package_version(capsys):
+    with pytest.raises(SystemExit) as exc:
+        main(["--version"])
+    assert exc.value.code == 0
+    assert capsys.readouterr().out.strip() == f"busroutes {__version__}"

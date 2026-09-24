@@ -39,7 +39,7 @@ Altijd deze volgorde. Eén vaste referentiedatum voor de hele vergelijking (`BUS
    `--assign` op een volledige schoolset (tot ongeveer 150 stops) kan enkele minuten duren en hoort binnen vijf minuten klaar te zijn. Gebruik daarvoor `--max-seconds 300`. Dat is een noodrem: als hij bijt, staat op stderr dat het resultaat van de machinesnelheid afhangt. `--max-perturbations` (default 1000) is het reproduceerbare stoppunt. Stdout meldt `Perturbaties: N (gestopt door: …)`; neem die regel op in het antwoord.
 5. Pas dan, één keer: `BUSROUTES_REFERENCE_DATE=2026-09-15 uv run busroutes evaluate scenarios/<naam>.json`  
    Ongeveer 7 TomTom-calls. Zelfde datum. Dit zijn de definitieve cijfers en de kaart met echte wegen.
-6. Toon `out/<naam>/map.html` als HTML-pagina. Daarna `uv run busroutes compare` op de `metrics.json`-bestanden. Doorslaggevend: langste en gemiddelde rit per kind.
+6. Toon `out/<naam>/map.html` als HTML-pagina: publiceer dat bestand zoals het er staat. Schrijf de HTML niet opnieuw. De straten zitten als plaatjes in het bestand; een overgetypte kaart verliest ze, en in Claude mogen straatplaatjes niet van internet komen. Daarna `uv run busroutes compare` op de `metrics.json`-bestanden. Doorslaggevend: langste en gemiddelde rit per kind.
 
 Ontbreekt een matrixpaar (`OfflineError`, of `data status` toont ontbrekende paren): nogmaals `data status`, dan `uv run busroutes data fetch-matrix --dry-run`. Meld de raming en stop. Toon de offline-kaart die je al hebt, met het label schatting. Het voorbeeldpakket dekt de drie referentiescenario's per bus (`docs/samples/scenarios/`), niet de paren tussen bussen. Een nieuwe verdeling kan dus `OfflineError` geven ook al staan alle punten in het pakket. Vertrek voor een proef van zo'n referentie.
 

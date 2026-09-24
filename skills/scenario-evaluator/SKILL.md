@@ -39,7 +39,7 @@ Altijd deze volgorde. Eén vaste referentiedatum voor de hele vergelijking (`BUS
    `--assign` op een volledige schoolset (tot ongeveer 150 stops) kan enkele minuten duren en hoort binnen vijf minuten klaar te zijn. Gebruik daarvoor `--max-seconds 300`. Dat is een noodrem: als hij bijt, staat op stderr dat het resultaat van de machinesnelheid afhangt. `--max-perturbations` (default 1000) is het reproduceerbare stoppunt. Stdout meldt `Perturbaties: N (gestopt door: …)`; neem die regel op in het antwoord.
 5. Pas dan, één keer: `BUSROUTES_REFERENCE_DATE=2026-09-15 python3 -m busroutes.cli evaluate scenarios/<naam>.json`  
    Ongeveer 7 TomTom-calls. Zelfde datum. Dit zijn de definitieve cijfers en de kaart met echte wegen.
-6. Toon `out/<naam>/map.html` als HTML-pagina. Daarna `python3 -m busroutes.cli compare` op de `metrics.json`-bestanden. Doorslaggevend: langste en gemiddelde rit per kind.
+6. Toon `out/<naam>/map.html` als HTML-pagina: publiceer dat bestand zoals het er staat. Schrijf de HTML niet opnieuw. De straten zitten als plaatjes in het bestand; een overgetypte kaart verliest ze, en in Claude mogen straatplaatjes niet van internet komen. Daarna `python3 -m busroutes.cli compare` op de `metrics.json`-bestanden. Doorslaggevend: langste en gemiddelde rit per kind.
 
 Ontbreekt een matrixpaar (`OfflineError`, of `data status` toont ontbrekende paren): nogmaals `data status`, dan `python3 -m busroutes.cli data fetch-matrix --dry-run`. Meld de raming en stop. Toon de offline-kaart die je al hebt, met het label schatting. Het voorbeeldpakket dekt de drie referentiescenario's per bus, niet de paren tussen bussen. Een nieuwe verdeling kan dus `OfflineError` geven ook al staan alle punten in het pakket.
 
@@ -49,15 +49,16 @@ De plugin bevat geen datapakket. De school zet haar map (school, leerlingen, bus
 
 Echte leerlingdata nooit in git en nooit in de plugin. Een ad-hoc scenario hoort in `scenarios/`, niet in het voorbeeldpakket en niet in `expected/`.
 
-## Versie-check (eenmaal per sessie)
+## Versie (eenmaal per sessie)
 
-Aan het begin van een sessie waarin je scenario's doorrekent, of als de gebruiker naar de versie vraagt. Niet bij elke follow-up.
+Aan het begin van een sessie waarin je scenario's doorrekent, vóór het eerste scenario, of als de gebruiker naar de versie vraagt. Niet bij elke follow-up.
 
-1. Lees `version` uit `.claude-plugin/plugin.json` in de pluginwortel.
-2. Geen veld `repository`, of het netwerk lukt niet: stil doorgaan.
-3. Haal `https://api.github.com/repos/<owner>/<repo>/releases/latest` op. `owner/repo` komt uit `repository`.
-4. Tag `v0.1.0` = `0.1.0`. Alleen een nieuwere Release melden.
-5. Eén alinea in het Nederlands. Gebruik het veld `body` van de release: dat is de uitleg voor de school. Noem daarna het versienummer, de download `https://github.com/<owner>/<repo>/releases/latest/download/de-pass-routeplanning.plugin`, en dat je de plugin in Claude vervangt via Plugin → Add. De geïnstalleerde plugin niet zelf overschrijven. De commitlijst en `CHANGELOG.md` niet voorlezen.
+1. `python3 -m busroutes.cli --version`. Dat is de versie die je gebruikt. Zeg die altijd, in één zin: "Ik gebruik pluginversie X.Y.Z."
+2. Lees `version` uit `.claude-plugin/plugin.json` in de pluginwortel. Wijkt die af van `--version`, noem dan beide.
+3. Geen veld `repository`, of het netwerk lukt niet: klaar na stap 1.
+4. Haal `https://api.github.com/repos/<owner>/<repo>/releases/latest` op. `owner/repo` komt uit `repository`.
+5. Tag `v0.1.0` = `0.1.0`. Alleen een nieuwere Release extra melden.
+6. Is er een nieuwere Release: één alinea in het Nederlands, na de zin uit stap 1. Gebruik het veld `body` van de release: dat is de uitleg voor de school. Noem daarna het nieuwere versienummer, de download `https://github.com/<owner>/<repo>/releases/latest/download/de-pass-routeplanning.plugin`, en dat je de plugin in Claude vervangt via Plugin → Add. De geïnstalleerde plugin niet zelf overschrijven. De commitlijst en `CHANGELOG.md` niet voorlezen.
 
 ## Wat je nooit doet
 

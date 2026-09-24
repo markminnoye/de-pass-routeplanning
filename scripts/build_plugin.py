@@ -16,6 +16,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PLUGIN_NAME = "de-pass-routeplanning"
 _KEBAB = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+_PACKAGE_VERSION = re.compile(r'^__version__ = "([^"]+)"', re.MULTILINE)
 
 
 class BuildError(RuntimeError):
@@ -86,6 +87,18 @@ def require_customer_release_notes(paths: Paths, tag: str) -> None:
         )
     if not path.read_text(encoding="utf-8").strip():
         raise BuildError(f"leeg: {path}")
+
+
+def read_package_version(paths: Paths) -> str:
+    init = paths.busroutes_src / "__init__.py"
+    if not init.is_file():
+        raise BuildError(f"ontbreekt: {init}")
+    match = _PACKAGE_VERSION.search(init.read_text(encoding="utf-8"))
+    if match is None:
+        raise BuildError("busroutes/__init__.py heeft geen __version__")
+    version = match.group(1)
+    parse_version(version)
+    return version
 
 
 def read_project_version(paths: Paths) -> str:
@@ -175,6 +188,9 @@ def check(paths: Paths) -> None:
     got = data.get("version")
     if got != want:
         raise BuildError(f"plugin.json version {got!r} wijkt af van pyproject {want!r}")
+    package = read_package_version(paths)
+    if package != want:
+        raise BuildError(f"busroutes __version__ {package!r} wijkt af van pyproject {want!r}")
 
 
 def zip_plugin(paths: Paths, out: Path | None = None) -> Path:
