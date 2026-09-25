@@ -217,8 +217,13 @@ def render_map_html(
 {LEAFLET_CSS}
   html, body {{ margin: 0; height: 100%; font: 14px/1.4 system-ui, sans-serif; }}
   #wrap {{ display: flex; height: 100%; min-height: 100vh; }}
-  #panel {{ width: 360px; overflow: auto; padding: 16px; box-sizing: border-box; border-right: 1px solid #ddd; }}
-  #map {{ flex: 1; min-height: 420px; }}
+  #panel {{ width: 360px; flex: 0 0 auto; overflow: auto; padding: 16px; box-sizing: border-box; }}
+  #splitter {{
+    flex: 0 0 6px; cursor: col-resize; background: #eee;
+    border-left: 1px solid #ddd; border-right: 1px solid #ddd;
+  }}
+  #splitter:hover, #splitter.dragging {{ background: #ccc; }}
+  #map {{ flex: 1; min-width: 0; min-height: 420px; }}
   h1 {{ font-size: 18px; margin: 0 0 4px; }}
   p.desc {{ color: #555; margin: 0 0 12px; }}
   p.banner {{ background: #fff3cd; border: 1px solid #ffc107; padding: 8px 12px; margin: 0 0 12px; }}
@@ -231,7 +236,14 @@ def render_map_html(
   tr.off {{ opacity: 0.45; }}
   .stop-pin {{ background: none; border: 0; }}
   .stop-pin span {{ display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 22px; height: 22px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); font-size: 11px; font-weight: 700; }}
-  @media (max-width: 800px) {{ #wrap {{ flex-direction: column; }} #panel {{ width: auto; border-right: 0; border-bottom: 1px solid #ddd; max-height: 45%; }} }}
+  @media (max-width: 800px) {{
+    #wrap {{ flex-direction: column; }}
+    #panel {{ width: auto !important; max-height: 45%; }}
+    #splitter {{
+      flex-basis: 6px; width: 100%; cursor: row-resize;
+      border-left: 0; border-right: 0; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd;
+    }}
+  }}
 </style>
 </head>
 <body>
@@ -247,6 +259,7 @@ def render_map_html(
     </table>
     <p class="desc">Tijden voor verkeer op {html.escape(d["settings"]["depart_at_reference"])} ({html.escape(d["settings"]["traffic"])}).</p>
   </div>
+  <div id="splitter" role="separator" aria-orientation="vertical" aria-label="Paneelgrootte aanpassen" tabindex="0"></div>
   <div id="map"></div>
 </div>
 <script>
@@ -363,6 +376,53 @@ requestAnimationFrame(() => {{
   probe.src = osmTileUrl.apply(null, keys[0].split('/'));
 }});
 window.addEventListener('resize', () => map.invalidateSize());
+// Drag the splitter to resize panel vs map (column on desktop, row on small screens).
+(() => {{
+  const wrap = document.getElementById('wrap');
+  const panel = document.getElementById('panel');
+  const splitter = document.getElementById('splitter');
+  let dragging = false;
+  const stacked = () => window.matchMedia('(max-width: 800px)').matches;
+  const clientPos = e => {{
+    const t = e.touches && e.touches[0];
+    return {{ x: t ? t.clientX : e.clientX, y: t ? t.clientY : e.clientY }};
+  }};
+  const onMove = e => {{
+    if (!dragging) return;
+    const rect = wrap.getBoundingClientRect();
+    const {{ x, y }} = clientPos(e);
+    if (stacked()) {{
+      const h = Math.min(Math.max(y - rect.top, 120), rect.height - 160);
+      panel.style.maxHeight = 'none';
+      panel.style.height = h + 'px';
+    }} else {{
+      const w = Math.min(Math.max(x - rect.left, 200), rect.width - 200);
+      panel.style.width = w + 'px';
+    }}
+    map.invalidateSize();
+    e.preventDefault();
+  }};
+  const stop = () => {{
+    if (!dragging) return;
+    dragging = false;
+    splitter.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  }};
+  const start = e => {{
+    dragging = true;
+    splitter.classList.add('dragging');
+    document.body.style.cursor = stacked() ? 'row-resize' : 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  }};
+  splitter.addEventListener('mousedown', start);
+  splitter.addEventListener('touchstart', start, {{ passive: false }});
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, {{ passive: false }});
+  window.addEventListener('mouseup', stop);
+  window.addEventListener('touchend', stop);
+}})();
 // The legend doubles as an on/off switch per bus (route line plus its stops).
 const busLayers = {{}};
 layer.eachLayer(l => {{

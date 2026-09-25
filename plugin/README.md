@@ -45,5 +45,6 @@ Lukt die check niet, dan hoor je alsnog de versie die nu geïnstalleerd is.
 ## Privacy
 
 Het datapakket hoort bij de school: niet in deze plugin, niet in git. TomTom krijgt
-coördinaten, alleen voor de definitieve kaart of een nieuw punt. Bewaar de werkmap niet
-op een plek die breder gedeeld wordt dan nodig.
+alleen anonieme coördinaten — geen adressen. Dat gebeurt alleen voor de definitieve
+kaart of een nieuw punt. Adressen verlaten je omgeving niet via TomTom. Bewaar de
+werkmap niet op een plek die breder gedeeld wordt dan nodig.
