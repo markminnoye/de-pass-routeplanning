@@ -64,6 +64,9 @@ def test_map_html_embeds_data_and_leaflet(school, students, buses, fake_client):
     assert "unpkg.com" not in html
     assert "leaflet.css" not in html
     assert '<link rel="stylesheet"' not in html
+    assert 'id="splitter"' in html
+    assert "col-resize" in html
+    assert "map.invalidateSize()" in html
 
 
 def test_map_html_embeds_basemap_tiles_as_data_uris(school, students, buses, fake_client):

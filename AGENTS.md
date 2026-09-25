@@ -36,7 +36,7 @@ Per scenario tonen: max. en gemiddelde reistijd/leerling, totale rijtijd, km, be
 
 ### Privacy
 
-Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Cloud-geocoding (TomTom e.a.) stuurt adressen naar een externe dienst. Het datapakket bewaart coördinaten en willekeurige ids, geen adressen, en hoort niet in git en niet in de plugin. Gebruik in ontwikkeling en demo's uitsluitend het fictieve voorbeeld in `docs/samples/` tot de school data levert (WP6). Zie `@docs/data-en-tooling-opties.md`, sectie "Aandachtspunt: privacy van kinderdata".
+Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Het datapakket bewaart coördinaten en willekeurige ids, geen adressen, en hoort niet in git en niet in de plugin. TomTom krijgt alleen anonieme coördinaten — geen adressen. Gebruik in ontwikkeling en demo's uitsluitend het fictieve voorbeeld in `docs/samples/` tot de school data levert (WP6). Zie `@docs/data-en-tooling-opties.md`, sectie "Aandachtspunt: privacy van kinderdata".
 
 ### Environment & Configuration
 

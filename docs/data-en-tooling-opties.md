@@ -206,7 +206,7 @@ Beide kunnen naast elkaar bestaan in dezelfde skill: TomTom voor de reistijden, 
 
 ## Aandachtspunt: privacy van kinderdata
 
-Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Bij cloud-API's (TomTom, Google, Mapbox) verlaten die adressen de eigen infrastructuur als geocoding-requests. Overpass krijgt alleen een bounding box rond de scenario-geometrie (geen adressenlijst). Geen juridisch advies, maar wel een factor om in het achterhoofd te houden zodra er met échte adressen gewerkt wordt.
+Thuisadressen van minderjarigen zijn gevoelige persoonsgegevens. Het datapakket bevat geen adressen: alleen anonieme coördinaten en willekeurige ids. TomTom krijgt diezelfde anonieme coördinaten — geen adressen. Overpass krijgt alleen een bounding box rond de scenario-geometrie (geen adressenlijst). Geen juridisch advies, maar wel een factor om in het achterhoofd te houden zodra er met échte leerlingdata gewerkt wordt.
 
 ## Beslissingen (14/09/2026)
 
